@@ -1,0 +1,663 @@
+-~
+
+Kidnapped is an S-80 adventure
+for 16K machines.
+by Peter Kirsch
+You awaken on the 9th floor of
+a strange building, the victim of a
+kidnapping. The kidnapper is
+elsewhere, busy counting the
+ransom money. Your only job is to
+escape from the building, floor by
+floor. You must beware of the
+kidnapper, and stay alive. Many
+traps have been set, so be careful!
+This adventure has a total of 65
+locations, with each floor
+independent from the rest. You
+cannot carry items from floor to
+floor, so you need only to use
+items found on that particular
+floor to escape down to the next.
+Use 1- or 2-word commands to
+communicate with the computer,
+such as GET AX, DROP AX,
+OPEN DOOR. To move in a
+particular direction, type that
+direction or merely its first letter
+(N,E,S,W,U,D). To restore the
+
+I
+
+KIDNAPPED!
+display, if needed, type LOOK. To
+see a list of the items you ' re
+carrying, type INVENTORY or
+just I.
+You awaken . . .
+VARIABLES
+A= Current player location.
+N, W,E,S,U,D = direction pointers.
+DT =dark flag.
+DK= Flashlight on?
+TI= Current time (9th floor only).
+FL= Floor pointer.
+CF, CT ,KY, G, C = Message flags (if
+0, respective message appears).
+G,V,B,K,Kl,K2 ,K4=Loops.
+Kl ,K3,TM,F,J,X,Y =Work variables.
+PM,FR,DP ,PF,SC = Monster or
+hazard flags (0 =active,
+I= absent).
+EF,SD,UM,SP,JK,Cl,Rl = Item
+flags (0= natural state, I =changed).
+RS= Rope status (0 =loose, l =tied
+to stake, 2 =stretched across
+quicksand).
+BO= Balloon status (0 =deflated,
+I= inflated, 2 =tied to string).
+PT= Plant status (0 =small,
+
+BY P£TER KIRSCH
+»£ 1980
+
+5 GOT0200
+Lines 10-i'Sl Roof! descriPtions
+10 1FA=66Tlf:N6000ELSEIFDT=1Tll:'.H320ELSEOHAGOT011,12,13,11,15,16,1
+1,IB,6,~,~.n,n,~,~,u,v,~,29,~,~'~'D'~'~'36'~'~
+t~t~1flt~t~r~t~r%1V118,191~1fil1~1~t~1~1~1~1~1~1
+~.M,a,~,M,~,~.g,~,69,n,n,n,13,~,i'S
+
+11 PRIHTJtlW=1:N=2lE=8l5=7lGOT0350
+12 PRINTH$lN=3lS=llGOT0350
+13 PRIHT"IN A CLOSET."lS=2lGOT0350
+11 PRIHTJtlH=SlE=llS=6:GOT0350
+15 PRINTH$lS=1:GOT0350
+16 PRIHT"IN A RESTR001, "lN=1lGOT0350
+17 PRIHTN$lN=l:GOT0350
+18 PRIHTJtlH=t:H=9lS=10lGOT0350
+19 PRIHT"IN AH El...EVATIJR,"lS=8lGOT0350
+20 PRIHT"IN A HAIHT8Ml: ROOl.''lN=8lGOT0350
+21 PRIHT"IN A CIWl.SPACE ON TOP CF Tlf: ElfVATOR,":D=9:GOT03SO
+n PRINT"ON A '.{RY NARROW LIDGE.": GOT0350
+n PRINTJtlW=11l5=16lGOT0350
+21 PRINT"IN A VISITOR'S Llll.tlGE. ":H=15lE=13:GOT0350
+~ PRINT"IN A CLOSET."lE=l1:GOT0350
+26 PRIHTN$:H=13lE=17lGOT0350
+V PRINTH$:W=16:GOT0350
+~ PRINTJt:W=20lN=19lE=21l5=21:GOT0350
+29 PRINTH$l5=18lGOT0350
+30 PRINT" IN A TIXl. CRIB," :E=18lGOT0350
+31 PRINTJt:N=1B:E=nlGOT0350
+~ PRINTN$lW=21lE=nlGOT0350
+
+52
+
+I =huge).
+BR= Book read?
+STRINGS
+A$= Player input command.
+E$ =Picks last 3 letters of object
+command D$.
+J$,N$ =Room descriptions
+(repeated use) .
+M$,R$ =Used to change, add or
+remove an item in room or if
+carried.
+ARRAYS
+H$(X) =Permanent storage of
+items.
+A$(X) =Temporary storage of
+items .
+B$(X) =Commands.
+C$(X) =Items carried by player.
+A(X) =Item location (room #s) .
+B(X) =Holds room #s accessible
+from current location.
+D(X) =Command codes.
+l(X) =Main purpose: If item X is
+carried by player, I(X) = I .
+G(X) =Door status (0 =locked,
+I = open).
+
+33 PRINT" IN A SHALL STORAGE RCXJi," :H=n!GOT0350
+31 PRINTJt:M=18lGOT0350
+~ PRINT"IN A NARROW STAIRWAY,"lH=21lGOT0350
+36 PRINTJt:H=31:N=27:E=29lS=30:GOT0350
+37 PRINTN$:N=~lS=Z6:GOT0350
+~ PRINT"IN A CLOSET,":S=V:GOT0350
+~ PRINT"IN A GAtE ROOM, "lH=26lGOT0350
+10 PRINTN$lN=26:GOT0350
+11 PRINTJt:H=D:N=~lE=26lGOT0350
+12 PRINT"IN A STmE ROOll. :S=31 :GOT0350
+13 PRINTN$lE=31lGOT0350
+~ PRINT"ON A LARGE LEDGE BY HOOQH,"lH=36:GOT0350
+15 PRINT"IN Tl£ VAll.T,":W=36lGOT0350
+16 PRINT"ON A LARGE LEDGE BY llIMlCJM, "lE=31lGOT0350
+17 PRINTN$lS=11:GOT0350
+18 PRINTJt:E=13lN=~lS=10lGOT0350
+19 PRINTN$:S=~:GOT0350
+50 PRINTN$:N=~lGOT0350
+51 PRINTJt:H=13:N=37lS=12!GOT03SO
+52 PRINTN$lH=11 :GOT0350
+II
+
+~ PRINTJt:M=~lE=11lGOT0350
+~ PRINT"IN A STAIRCASE.":GOT0350
+~ PRINTJtlH=16:E=18lS=17lGOT03SO
+
+~ PRIHTN$:S=15:GOT0350
+57 PRINT"IN A LIBRARY. 11 :N=1S:GOT0350
+~ PRINT"IN Tl£ SWIH ROOll.":H=15:GOT0350
+59 PRIHT"IN Tl£ SHiii RCXJi,"lH=50lE=51lGOT0350
+60 PRIHT"IN A LAl.N>RY RCXJi, ":5=19lGOT0350
+61 PRINT"IN A Dnmt ROOll.":H=19lGOT0350
+62 PRINTJtlN--53lE~lGOT0350
+~ FfilHT"IN A RESTR001."lS=52lGOT0350
+
+SoftSidc DECE MBER , 1980
+
+61 PRINTJf:W--52:E"55:GOT0350
+65 PRINTJ$:W=S'l:N=56:GOT0350
+66 PRIHT"IN A L.ABffiATffiY,":S=55:GOT0350
+67 PRINT"IN A CHILD'S PLAYRIDI. II :N=SS:GOT0350
+68 PRIHTNS:M=59:GOT0350
+69 PRINT"IN A LClta.":E=58:GOT0350
+70 PRINT" IN A CRAil.WAY. "lE=61 :GOT0350
+71 PRINT"IN A CRAil.WAY. "lW=60lGOT0350
+72 GOT05i
+73 PRINT"IN A LD..NGE, ":E=61:GOT0350
+71 PRINTJ$:W=63:GOT0350
+75 PRINT" IN TIE OORAtU HALL." :GOT0350
+
+387 IFA=lOIFCl=lIFCT=OPRINT"filCTRICAL TAPE: IS TIERE"
+388 IFCA=l6)1(0f'=OlTIEN1500ELSEIF<A=11)1(PF=O>THEN1505ELSEIF<A=2
+5)1(SC=O>THEN1510ELSEJF<A=35>1<Pt1=0>THEN1515ELSEIF<A=35)1(Ptl=llT
+IEN1516ELSEIF<A=11)1(FR=O>TIEN1520ELSEIFCA=18>1<SP=O>TIEN1530ELS
+EIF<A=18>1<SP=1>THEN15'10
+Lines 390-10 0: Pla'1er input
+
+Lines 200-300: Initialization
+200 CLEAR3oo :DI~s<sa> ,A<SS> ,B< 12>.BS<39> ,csm ,D<39> ,Hf<58> ,I<s
+
+8)
+210 F~1T055:READA$!A>:READA<A>:Hf<A>=AS!A>lNEXTlFCl<A=1T039:RE
+AOB$!A>:NEXT:F(l(A=13T039:READO<A>lNEXT
+220 A=l:G=t:FL=9lTtl=-2lJ$="IN A IW..UIAY,"lN$="IN AN ITTICE."
+300 H=O lW=O :E=O:S=O:U=O:O=O :Y=O :CLS:PRIHT"Yfll'RE II; :IFDK=OAMHl{>
+2'1Tl£t{)T=1
+
+390 IJERRffiGOT03000:C=O:Ttl=TK+t:PRINT:PRINT"~T 00 Yfll MAHT TO
+DO"; :IhPUTAS:IFDT=2Tl£N7200ELSEIFAS="LfD<"Tl£N300ELSEIFA$="..lff"
+Tl£HBO OELSEIFA$="SWD1"TIEN975ELSEIFA$="~IT"THEN1 OSOELSEPRINT :FO
+RB=1T012:IFA$=BS<B>Tf£N39ZELSENEXT:GOT0391
+392 IFBCB> O OTHENA--S<B> :GOT0300ELSEPRINT"YllJ CAN'T ltJVE THAT ~y
+,":GOT0390
+391 IFASO "I"AM>RIGHTS<AS,3l O "ffiY"THEN100ELSEPRIHT"YflJ ARE CARR
+YINGl" :F!J\'1{=1 T07:PRINTTAB<POS<O>+'l>CS<Kl; :IFPOS<O J>15PRINT
+396 IEXT: GOT0390
+100 Fffi8=13T039:F=L.EN<BS<B>>:IFLEFT$(A$ 1 Fl=BS<B>THEH150ELSEIEXT:
+PRINT"DOO'T Ktol IWIT "CHR$(31lA$CHR$(31l" IEANS,"lGOT0390
+Line 150: String sorting routine
+150 0$=RIGHT$!A$ 1 (L£N(A$l-f>-1l:E$=RIGHTSCD$ 1 3)
+
+Lines 310-388: Description of current location
+310 GOT010
+320 PRINT~<29>"FMR FAILURE! IT'S TOO~( TO SEE!":DT=Z:GOT
+0390
+350 PRIHT@SO I "FLOOR"FL: PRINT :IFN..'>O(l(W..'>O~OOOS> OORU>OOOD>OTIEtf>
+RIHT"SCH: EXITS Alif: ";:FOOB=1T012:B<B>=Olt£XT
+360 IFM>OPRINT" WEST"; :B< 1>=WlB<2>=W
+361 IF<A='1 l) I <FF:=O >Tl£H363ELSEIFN>OPRINT" tO<TH"; :B (3 )=N :B (1) =N
+362 IF<A=16)1CDP=O>TIEN366ELSEIFE>OPRIHT" EAST"; :B<S>=E:B<6>=E
+363 IFS>OPRINT" SOUTH"; :am=S:B<S>=S
+361 IFU>OPRIHT" LP"; lB<9>=U:B<lO>=U
+365 IFD>OPRIHT" roiN"; :B< 11>=0:B<12l=O
+366 f'RIHT:PRIHT
+370 F008=1T058lIFABSCA<B>>=ATIENC=C+l:GOT0372
+371 t£XT:PRINT:GOT0371
+372 IFC=lPRIHT"THINGS Yfll SEE IERE:"
+373 PRINT" "A$!B) :GOT0371
+371 IFA=37IFFl\'=1PRIHT"YflJ FORGOT Yfll WERE NAAED
+YOU BLUSH AM> Rtil OUT":A=11:GOT05000
+375 IFG=lPRIHT"YflJ AWA/:EN ON THE 9TH FLOOR OF A STIW«
+BUILDING, OBVIflJSLY A. KIDNAP VICTIM. YOU ARE
+ALIJE AT TIE l'll!ENT AM> tlJST ESCAP£ F~ TIE
+BUILDING, FLOOR BY FLOOR" :G=O
+376 IFA=7PRIHT"Yfll SEE A SliALL LEDGE flJTSIDE TIE Wltml"lIFKY=OP
+RIHT"MI> A SINGLE KEY ON A KEY CHAIN ON TIE LEDGE"
+377 IFRS=2IFA=61ffiA=6!i'RINT"ROPE IS STRETCIED ACROSS OOICKSAl«l"
+378 IFA=:r.FRINT"TIERE IS A WIDE, LIN; LEDGE
+flJTSIOE THE MINOCM. II
+382 IFA--56IFJ(=OPRINT"LABELS ON BOTTLES:
+SCl.UTION: AHTITOOE:
+FLUID: lKIPIERABLE"
+383 IFA---58PRINT"A IJR!Xl.It(; {llJGATffi EtOCKS Y!ll ~y
+EAST, HE HAS THE R9IAINS CF TIE KIDHAPPER
+IN HIS toJTH, Yfll CATCH A GlitPSE CF A
+STAIRCASE PAST TIE ALLIGATffi"
+38'1 IFA=61IFRS<ZPRIHT"A Hta BOG CF OOICKSAM> BLOCKS Y!ll
+~y EAST. TIE FRONT EHTIW«:E IS TIERE,
+Y~ ~y 10 SAf£TY. TIERE IS A LARGE
+tm< ON 11£ OTHER SIDE All> A TOO STAKE
+00 THIS SIDE"
+38S IFA--59THEtffINT"TIERf IS A TRAP ~ ABOVE Yfll"ELSEIFA=61IFR
+l=OPRINT"Tlfl(lCH THE TfW> ~ Yfll SEE
+A LIN;, COil.ED R!P£ ON TIE
+FLOOR BEl(Jj"
+386 IFA=10IFC1=1IFCF=OPRIHT"A FLASIUGHT IS TIERE"
+
+Lines 160-180: GET COfl"and• Afl':1 special conditions are
+checked to see if dangerrus, staticriar~, or otherwise
+hidden itef!S can be carried, else itl!fl is given to
+pli!';ler and I!Xl is set to 1.
+160 IFD<BJ 0 1THEN'190
+161 IFES="GHT"ffiE$="APE"IFA=lOIFC1=0TIEtf>RIHT"CABDET IS LOCKED"
+:GOT05008ELSEIFES="GHT"AttlCF=OnENJ=C"J6:A$CJl="FLASIUGHT"lH$(Jl=
+AS< Jl :AC J l =10: CF =1ELSEJFES:"APE"AM>CT =OTIEHJ=57: At< Jl="ElfCTRIC
+TAPE" :Hf CJl=AS!Jl :ACJl=10 lCT=1
+162 IFA=7IFKY=OIFE$="KEY"IFI<1l 0 1TJ£1f>RINT"YOLR ARl1 IS TOO SKJR
+T TO ~'EACH IT,":GOT05000ELSEJ=58:A$CJl=E$:H$(JJ=At<JJ:A(JJ=7:IC5
+Bl=1:KY=1
+165 IFA=63IFEt="KEY"PRINT"1£ ALL Ktol PIMUS HAVE KEYS"lJ=56lAt<
+Jl:E$:H$!Jl=ES:A<Jl=63lI(56l=1
+166 IFC <A=l 1 l•CES="NHA" )l(Pf=O l )+( <A=17l•<ES="HAN"J Jt( CA--SS)1(E$
+:"Tffi"l JTHEN7000
+167 IFA=35IFES="PER"ffi<ES="LAR"ffiES="NEY"l•<IC27J=OlTIEflRIHT"YO
+UGET TOO CLOSE TO HIM,
+HE ..lff>S All) STRAtafS YllJ. II: GOT07300ELSEIFI (27 l=1PRINT"KIDNAPPE
+RSEES Y!ll Glli All> FREEZES
+YOU GRAB A D!llAR":ASC56l="[)(llAR":H$C56l=At<56> :A<56l=35:Ptl=1:E
+$="LAR"
+168 IFIC18l=1IFES="TER"IFA--SSIC57l=1lR$="Cl.P OF MATER":K3=18lGOS
+lll1100:H$C18l=Rt:GOT01900
+169 IFE$=".¥1R"PRINT"~CH CH:?":GOTOSOOO
+170 FffiJ=1T058llFE$=RIGHTS(A$CJl,3lANDA=ABS(A(JllTHEH173
+171 IEXT
+172 PRIHT"TIERE Is NO "0$" IERE. ": GOT0390
+173 IFSGNCACJl l=-1PRINT"BE REASOtWlLE NOW. THAT'S Df>!JSSIR.E. ":
+GOT0390
+171 IFE$="1D<"PRINT"TITLE CF BOO{: IOI TO II: :IFA:17Tif1flRINT"SMI
+tl"ELSEIFA=61PRINT"llALK A TIGHTRlff"
+180 PRIHT"ll< 1 ":F!J\'1{=1 T07:IFCt<K>=""Tte«:$!Kl=A$(Jl :GOSLe3500 :H<K
+>=J:A$(J)="" :A<J>=O lGOT05000ELSEJ£XT
+Lines 180-590: DRIJ> COllftaOd, If itefol is carried it's
+dropped in current rOOfl. Proqr~ checks for ilO"j changes
+that "iqht occur if certain itefol is dropped in certain
+rOOfl. I<Xl is set to r0011 t.
+190 IFD<B> 0 2~00
+500 FffiJ=1T07:IFESORIGHTSCC$(Jl,3lELSES20
+510 NEXT: PRIHT"Yfll I RE NOT CARRYn«; IT. ti: GOT0390
+
+SoftSide DECE MBER, 1980
+
+continued on next page
+
+53
+
+520 FrnK=l T058:IFAS<K>='"'TIENA$<K)=C$!J) lA!Kl=AlH<Jl=OELSEt£XT
+530 PRINT"ll< !II :FrnK1=1 TOS8lIFC$(J)=H$(K1) TI£NC$(J)="" :GOT0510ELS
+Df:XT
+510 IFA=HIFES="ILL"PRINT"YCXJ DRiJ> PILL IN THE AllWUL.tl"lPF=l:K3
+=15ltff="SL£EPIHG P~" lGOStlll200lGOT05000
+515 IFA=16IFOP=OIFES="~"PRINT"PIRANHA OEl.ORi OOOERtlAN PINCHER
+
+680 IFE$="TV"IFA--5PRINT"MLETIN:
+PMR MILL BE SH.JT ITT AT HIDNIGHT" lGOTOSOOO
+690 IFES="OCK"IFA--5PRINT"TDE: "l lTI=INTCTIV2l lIFTDlZTHEtf>RINT"
+PAST HIDNIGHT" lGOTOSOOOELSEP!UNTTI"P .H," lGOTOSOOO
+696 IFES="Oll<"IFI<38l=10RI<5Zl=l THEMlR=l lGOTOi900
+Lines 700-730: F1.JSH cOl¥lal'ld.
+
+THEN DIES IF O'.fREATit«;"lDP=1lK3=15ltff="GLUTTCJ«l.IS DEAD PIIWKI"
+lGOStll1200 lK1=15lA(S7)=-16lA$(S7l="EATEN OOBERWlH" :HS<57l=A$(S7 >
+lGOT0590
+550 IFA=32IFE$="LAR"A$(57l="LIK STRit«;"lH$!S7)=A$(57) lA!S7l=32l
+Kl =S7: K3=S6 ltff="" lGOStll1200
+590 I<Kl l=AlGOTOSOOO
+Lines 600-618: GO c0!¥lal'ld. If conditions are 11et, plCl';ll!r
+goes where requested (~ can't go through a locked
+door or down a broken staircase), Variable A is then
+set to new location.
+
+700 IFD <B l0 6THEN830ELSEIFEK> "T~"THEN10 0OELSEIFA--9IFEF =1 THENPR
+INT"ELEVATOR GOES OOWN 1 II :A=13lGOT08000
+710 IFA=i2IFFR=OPRINT"SPR!tf(L.£R TI.RHED ~, FIJ\'E OUT,
+E:UT YOUR CLOTHES Ali'E t.,fRY 1U,
+YOU TAKE THEH OFF. YOO ARE NOW NAKED.''lFR=l !A$!57l="WET CLOTHES"
+:HS<57l=A$!57l!A!57l=-12!GOT05000
+720 IFA='l6IFSf'=OPRINT"CLICf(" :SP=l: GOTOSO 00
+730 F'IUNT"NOTHING HAPPENS" :GOTOSm
+Lines BOO-Bl 0: ,.!.tlf' colV'land,
+
+BO 0 IF:r=600RA=610RA=61THEN71 OOELSEIFA=3'10RA=36IFI (ZS l =1AM>B0=2TH
+ENF'IUNT"e.IUOOH CARRIES YOU DOWN ONE FLOOR"lA=13!GOT08000ELSE710
+600 IF0(8)(>3THEN620ELSEIF< <A=16)1(E$="11AN" l >+< <A--58l1!ES="TOR" l 0
+>THEH7000ELSEIF< <A=il>1<ES="IR£"l )+( <A=6iJ1<ES="AN> 11 l >THEH7200EL B05 IFI<39)=1IFUl1=1THEM''IUNT"YOO FLOAT D<Hl ONE FUXJR" :A=5Z:GOTO
+SEIFA=2Sllt{)ES="IRS"AN>SC=OPRINT"STEP IS HISSOC! YCXJ FELL DOWN T 8000ELSEPRINT"UHE'.f\'ELLA WASN'T OF'EN 111 :GOT07100
+HE STAIRS"lGOT07200
+810 GOT0730
+605 IFE$="1PE"IFR1=1IFA=170RA=61A=A+l lRl=O lIFA-1=17n£H8000ELSE3
+00
+Lines 830-B45! TIE COl!11arid.
+606 IFES="AKT"IFPT=lIFA--59TIENA=60lGOT0300ELSEIFA=60A=S9lGOT0300
+607 IFES="IPE"IFA=6STIENA=6i lGOT030 OELSEIFRS=2IFA=6iIFBR=l TIENA= 830 IFD<B><>9THEN8SOELSEIFA=11IFE$="RES"IFTH<23THENPRINT"YOO'RE
+65lGOT0300ELSEPRIHT"YCXJ DON'T Ktoi t«JW TO IW..K A TIGHTI\1PE"lGOTO ELECTROCUTED! :GOT07200ELSEIFI (57)=1 THEl£F=1!A$(12)="TAPED MIRES
+7200
+:HS< 12)=A$( 12) !GOT04900ELSEPRINT"IURES FALL APART AGAIN"lGOTOSO
+60B IFES="OCM"IFA=3imA=36A=A-1 lGOT0300
+00
+111
+610 IFES="OGE"IFA=7THEtff!NT"LEDGE BREAKS lGOT07200ELSEIFA=331Jl
+B35 IFE$="00N"ORE$="0C"IFB0=1IFI!ZSl=1IFI(S7)=1K3=57!R$=""!GOSU
+A=35A=A+1lGOT0300
+BUDD !K3=2S:RS="IlflATED E'.ALL~ WITH STRIM;" lGOSlll1100!B0=2!GOT
+612 IFES="IRS"IFA=zsmA=i1ffiA=62A=A+1: GOTOSO 00
+Oi900
+615 IFE$="00R"IFA=2imA=iDA=30!EA=65IFG((A/10-IHT !A/10 l )110 l=O
+THEtf>RINT"THE ~'S LOCKED": GOTOSOOOELSEA=A+ 1lGOT0300
+616 IFE$="00R"IFA--SSIFSD=10R.J<=1 TIENA=S7lGOT0300ELSEPRINT"IT'S S B'lO IFE$0 "0PE"THEN8SOELSEIFA=61IFI !51 >=1K3=51 :RS="" !GOSlll1100 !A
+TOCK ! YCXJ RE NOT STRI)«;
+$(51)="00 OF R!l'E TIED TO STAKE"lH$(51l=A$(51l!A(51)=-6'l!RS=l!G
+Et«JDi TO 1PEN IT!"lGOTOSOOO
+OTOi900
+845 IFA=17IFI<l1>=1PRINT"ROPE TIED TO DESK"!K3=1'l!R$= 1111 :GOSlllt10
+617 IFES="IDE"IFA--57PRINT"YCXJ SLIDE TifnGi to...E IN FlOOR"lA--58: 0:Af <Bl="R!l'E HAt«;IHG WT IUMXJW" !R1=1:H$(8)=A$(8) !A!8l=-17!GOTO
+GOTOSOOO
+5000
+61B IFA--9IFES="OOR"m£$="AIR"IFI<3l=ATHEtf>RIHT"YCXJ STEP ~ THE C
+HAIR All> J.JST
+!Wm: TO REACH THE TRAP ~"lA=11lGOT05000ELSEPRINT"YOO CAN'T
+Lines B50-970! LIGHT, HAKE, GLLE, INFlATE, SKXJT, KHIT C011REACH IT"lGOTOSOOO
+11ands.
+II
+
+II
+
+I
+
+Lines 620-630: !PEN c0!¥lal'ld. Chect.s first if Plil';ll!r has a
+ke":1 for doors or cabinet.
+
+620 IFD<Bl0*1THEN650B..SEIFE$="00R"IFA=5STHENIF.J<=OTHEN616ELSEGOS
+llliOOOlG<l>=1lSD=llGOTOi900B..SEIFA=1~2imA=6SIFI<S6l=10R!A=1
+
+3)1(!(12l=1HHENGOSl.lli000 :GC (A/10-IHTCA/10> >•10 l=llPRINT"~'S
+IPEN"lGOTOSOOOELSEPRINT"YOO tEED A KEY"lGOTOSOOO
+625 IFA=10IFC1=0IFI<S8l=lPRINT"CABit£T'S IPEN"lC1=1lGOT05000
+630 IFI<39l=1IFE$="LLA"K3=39lRS="IPEN F1FPIN'S lHlREUA"lGOSlll11
+OO:Ltl=1lGOTOi900
+Lines 650-696: READ cOMand.
+
+650 IFD<B lO STHEH700ELSEIFE$="ITI"IFA=6Tteff!NT"GRAFFIU: MATCH
+WT FOR LIVE IH:S"lGOT05000B..SEIFA=S3PRINT"GRAFFIU: DO YOO HAV
+E A SPLIT PERSCWALITY?"lGOTOSOOO
+660 IFES="OTE"IFI<l l=ACIU!l >=10R<A=2J1m1 >=O lPRINT"NOTE SAYS:
+"Qm(31l"Ilf'mTAKT TV PRcx;RAl1 ~"Cll<$(31llGOT0390
+670 IFE$="IGH"IFA=32PRIHT"SIGH: Snru«; COSTS $1,00"lGOTOSOOO
+
+54
+
+BSD IFD<Bl 0 10THEN900ELSEIFA<13IFE$="GHT"IFICS6>=1K3=S6:RS="LIT
+FLASIUGHT" lGOSLE:1100 :HS<S6>=R$!DK=1 :GOTOi900
+900 IFD<Bl0 11 THEN930ELSEIFA=19IFES="KEY"IFI (21 l=1A$(56)="CRWE
+KEY" :HS<S6>=AS!S6l :A<S6>=19lGOTOi900
+930 IFD<B>0 12THEN9SOELSEIFA=ZSIFI <19>=1IFI120 >=10RI <ZO l=AIFH="
+TEP"ORES="Ili.'S"PRINT"STAIR'S FIXED" !SC=l lR$= 1111 !K3=2D lGOStll1100 !Hf
+=1111 lGOSllllZOO lGOTOSOOO
+950 IFD<Bl0 13THEN960ELSEIFI (2Sl=1IFICZ1l=10RI121 l=AIFE$="00N"K3
+=25 !R$="LARGE INFlATED Btt.LOOH" :GOStll110 0: H$ (2Sl=R$: B0=1 :GOT0190
+0
+
+960 IFD<B lO 11THEN970ELSEIFE$="~"m£$="PER"IFI 127 l =1IF A=3STHEN
+PRINT"~ HAD BLANKS I
+KIDNAPPER Sl«XJTS YOO! "! GOT07200ELSEPRINT"GUN HISFIRES": GOTOSOOO
+970 IFD<E:>0 15THEN980ELSEIFFR=1IFI<32>=1IFI<33>=1IFES="HES"PRINT
+"YOO HAVE l:NITIED A FINE SUIT
+AN> ARE IEARIHG IT":FR=Z!GOTOSOOO
+
+Line 975: SWIH cOl¥lal'ld,
+
+SoftSide DECEMBER, 1980
+
+975 IFSP=OTHEN1000ELSEIFA=19Tl£NA=18:'GOT.1J300ELSEIFA=18IFBR=OTIEN
+PRINT"YOU OOH' T KHfM tOI TO SIWI! :GOT07ZllOELSEA=.i9lGOTO'l900
+11
+
+Line 980-982: DRINK cOMand.
+980 IFD<B> <>18TIEN985ELSEIFE$="ION"IFI (11 )=!IF J<=l T1£M?RINT"YOO I
+VE awao BACK!" :.J:=o :GOTosoooELSE190o
+982 IFE$="UID"IFI<15>=1PRINT"Y.OO'VE CIJttNGED INTO HR, HYDE'
+YOU AR£ VERY STROt.t!":J<=1:GOTOSOOO
+Line 985: POrn cOMand.
+985 !FD <BK>19TIEN990ELSEIFA--59IFH="TIR"IF1<57 >=lf'RINT"PLAHT GR
+!JIS TO C£ILIJ«;":Af(19l="Hta FtANT":PT=l:H$(19)=Af<19) :GOT05000
+
+Line 990-993: FtAY CO'lfland,
+990 IFD<B> 0 20TIEN99SELSEIFES="UTE"IFA=61IFI<50)=1IFR1=0PRINT"IN
+DIAN RIFE RISES If' TO YOO":R1=1:AS<56>="Et{) CF RCFE":Hf<56>=Af(5
+6)lA<56>=-61:GOT05000
+993 IFD="At«J"IFA=63PR1NT"LIElRACE YOO'.RE: t«:IT 111 :GOT05000
+
+following each string · indicates the rOOl'I nuttier the
+·ite11 is placed.in initial!~ and read into A<Xl. A<X>
+will alw~ · correspond ~ith AS<X> where X is the itl!l'I
+nul'ber. A negative l'Mlber indicates an itl!l'I camot be
+rl!f'IOVed fr°" r0011 Llf'lder an~rcondition, but it could
+still be altered.
+2000 DATAPAPER MJTE,2,0ESK,-2,CHAIR,2,Lf)t«; BROOl,3, TV SET ,-5,a..O
+CK,-5,GRAFFITI ON WALL,-6,0PEN IID«Ol,-7,TRAP DCm IN C£ILING,-9
+,~ BlJTTON,-9,CABitU,-10,Et{)S Cf 2 'LIVE' WIRE:S,-11,AOOARil.tl,
+-11,R!J>E,15,SLEEPING PILL,16,0P£N WillJOW,-17
+2010 DATAOESl(,-17,KEY ltAKING HACHIIE,-19,SLPER Gll£,20,l«JOOEN ST
+AIR STEP ,20, THICK CTFPER SHEET ,23,LOCKED DOOR,-21,l«XDEN STAIRS,
+-25, TAtf( CF 1£LIUl1 GAS,28,LARGE DEFLATED BIU~,29
+2020 DATALOCKED DOOR,-30,GLIN,30,SIGN ON NALL,-32,STRD«; VEN>ING
+HACHThf,-32,!HN llil«XJW,-33,LOCKED IXXJR,-13,BIU Cf YARH,39,KHIT
+TING NEE!llES, 10, F1JSH BUTTON ON NAl.L, -'12, "SEXY, Yiu«; GIRL CFFICE
+lllJll<ERS", -37, ST AIRS, -11
+2030 DATAPUSH BUTTON ON WALL,-16,BOOl<,~7,f'V!RY PIFPIN'S l.tlMUA,
+50,!JlEN WI~,-51,GRAFFITI ON NALL,-53,StlALL KEY,37,STEEL IXXJR,
+-55,JAR OF YELL()I SCl..UTION,56,JAR OF FLUID,56,00LD'S SLIDE,-57
+
+Line 995: TlfDI COMand.
+995 Ifl)(8){>2ITIElUO-OOELSEIFE$="rff"IFA=61IFRS=OPRINT"TIE T1£ OT
+IER 00 FIRST":GOT05000ELSEIFRS=1TIENPRINT"llXJK ON RCff CATDES
+Im( NEAR ENTRAt«I
+11
+1111
+At{) STRE:TDES TIGHT :RS=2:K3=51:Hf= :GOS1.E1200:GOT05000
+Lines t000-1050: Various 11essaqes,
+1000 Pf<INT"YOO CAN'T 00 THAT l«JW, ":GOT0390
+1050 PRINT"3 ~ PASS":TH=Tlft5lGOT0390
+Lines 1100-1210: ·Subroutines change, add, or vanish itl!f!S
+that are carried or in etrrrent ro011. I\'$ or Hf is set
+to itel'I (change, add) or to null <vanish),
+1100 FCJi:K2=1T07:IFCf(K2)=Hf(K3l~$(r.2>=Rf:GOSl.ll1150lRE:TLRNELS
+EtEXT:RETI.RN
+1150 IFR$=""I<K3>=0
+1160 RETlRN
+1200 FCJi:K2=1 T058:IFA$(K2)=Hf(K3)Tl£HA$ <K2)=MlHf (K3 l=M :IFHf<>""
+
+EB
+
+D
+
+T~SEA<K2>=0:I<K3l=O
+
+1210 ET:RfTURH
+1.,99 GOTOSOOO
+
+Lines 1500-1510: Descriptions (part 'Of line 388 to ·further
+describe contents of rOOl'll.
+
+2010 DAT AllA TER CO'.llR, -581 PAPER CLf, 58, StlALl.-SIZED Pl..AHT, -59, FLU
+TE,61,STAIRS,-62,StlALL BOOl{,6.,,PIAt«:l,-63,Lat«; R{l>E,63,FRtWT IXXJR
+,-65
+Lines 210.0-211'0: CoMand data. COMands are read into Bf<X>.
+BSUHl$(12) hold all possible directions and shorthand notation allowing for pl~r to ir-.iut entire
+direction or just the first letter. Starting with
+'8$(13) all COMaOds have a corresponding code nul'ber
+read into D<X> which picks the proper action, allowing
+the use of s~ for the sa11e cOMand.
+
+1500 PRINT"TIERE IS A'PATH EAST, BUT A
+VISCIOOS, SHARLING- IXJllERMN
+EtOCKS YOCR MAY. II lGOT0390
+1505 Pf<INT"All.WUIJ1 IS Fl.li CJ' PIRMWI FISH •II : GOT0390
+1510 PRINT"T1£ STAIRCASE IS VERY ROTTEN
+At{) ot£ liOOlEN STEP IS
+HISSING. II: GOT0390
+1515 FfilNT"KIDHAPf'ER IS CO!MTOC IO£Y.
+1£ DOCSH'T SEE YOO Y£T.":GOT0390
+·1516 PRINT "KIDHAPf'ER IS SCARE:D II : GOT039 0
+1520 FfilNT"TIERE IS A PATH t«J<TH, Em
+A RAGING FIRE BLOCl(S Yo..R
+MAY.":GOT0390
+1530 PRINT"A LARGE SMitffiNG POCl. SPANS ACROSS
+T1£ ENTIRE ROOH, DIVIDOC IT IN PA.F.
+IT IS VERY O£EP At{) IT IS Eli'TY. ":GOT0390
+1510 f'RINT"SMitffiNG POCl IS FllL CJ' MATER." :GOT0390
+
+2100 DAT~ST,11,l«JRTH,N,EAST,E,SClJTH,S,lP,U,~,D,GET,TAl<E,ORCP
+1PUT,GIVE 1 PAY,CL.Itll,GO,ENTIR,CFEH,READ 1DECK 1MATCH 1PRE:SS,F1.JSH 1 TA
+P£ 1 TIE 1 LIGHT,HAKE 1 Gll£,Itf'LATE,Sl«XJT,KNIT~DR:rtf(,Po..R,PLAY,~
+
+2110 DATA1,1,2,2,2,2,3,3,3,1,5,5,5,6,6,9,9,10,11,12,13,11,15,18,
+19,20,21
+Lines 3000--'llOO: Short subroutines.
+
+Lines 2000-2010: Itl!l'I data. Strings are read perl'lanentl~
+into Hf(Xl and tl!l'IPoraril~ into AS<XJ. The rlOl'lber
+
+3000 PRIHT"llWIT?" :REst.J£S100
+3500 FCR<1=.1TOSB:IFAf(J)=Hf(K1Hl£HI<K1l=1ELSD£XT
+3600 ~
+100 0 IFA=21Tl£NX=22ELSEIFA='13Tl£NX=31ELSEIFA--ssn£NX=1:ELSEX=55
+
+SoftSide D ECE MB ER, 1980
+
+continued on next :page
+
+55
+
+'l10 0 AS (X>=11 1f'EH DCKJl" ll\U\JlH
+Lines 1900-SlOO: Ti"ing loop. This is the ool~ delcr.:1 in the
+proqra11 and is vsed to give pl~r ti..e to read ..essages,
+
+1900 PRIHT 11 (1(! 11
+5000 IfES= 110ffi 11 AN>A=71PRIHT"YClJ NEED A KEY"
+5100 F~1TOZOOO:N:XT:GOT0300
+Line 6000:
+
+YClJ DIE A tm!Bl.f NI) GRIZZLY DEATH,
+y~ BOOY TORN TO SKiEDS. II: GOT07300
+7100 PRIHT 11 YClJ tOI LOO< UKE A PNCAKE!"
+720 0 f'RINT"YClJ SEEH TO HAVE GOITTN YllRSELF KILLED! II
+7300 PRIHT:f'RINT 11 TO TRY AGAIN YIJJ'LL HAVE TO START
+OVER f"R()t TIE 9TH Fum."
+7100 Flll8=1T0100:ClJT2SS,3:ClJT2SS,200:IEXT:OO
+Line 8000: Drops ~ down to the next floor. You lose ~
+ite11 ~ were carr~ing. CS<X> is cleared as is part of
+
+You win!
+
+I<Xl.
+6000 PRIHT 11 ClJT, YClJ'VE HADE IT. 11 :00
+Lines 7000-7100: ·You're dead. Note line 7100. A special 32character WaY'j effect is created for a few seconds if
+pla':IE!r ..eets his dOOfl, then reverts back to 61-character for~t and stops.
+
+BODO I<3Bl=O:G(1)=0:IFJ<=1TIEtff!HT"YClJ FIEGClT TtE tmIOOTE. FL
+UID POISONS YOU. 11 :GOT07200ELS£BR::O!FL=FL-1:f'RINT"YClJ HADE IT DCM
+N TO Tl£ h£XT FL~
+lllT YOU DRCJ> ~ YClJ !ERE CARRYING,":FIE=1T07!CS!Gl=""!h£X
+T:FORG=56TOSB:I<G>=O:~.xr:GOTOSOOO
+
+IfYiI@IBIE &IBIBTIW&Jl§
+&1r~
+"!l!!~~pchange
+TOLL FREE 1·llJG.2&6-1780
+
+SCE L SI
+Publications
+
+Th is book is a guide to b uying a microcomputer . Computl'r s.
+like people. come in all sizes.
+The mos t popular maxicomputer has been th e IBM 370
+(which is being rep laced by the IBM 3030 and th e IBM 4300): thl'
+most popu lar minicorr.puter is the PDP-11: the most popular
+microcomputer is the TRS-80'" . But before you buy a co mputl'r .
+look at the compe titi on. IBM. DEC and Radio Shack uren't the
+only fish in the sea: some of their compl'tit ors have something to
+offe r. too . Treat a compu ter purchase just as you'd treil t <ln y
+other impor tan t decision - check ou t all thl' facts.
+by Scelbi Publica tion s
+................ $5 .95
+
+REMsoFT , Inc .
+REMsoft proudly announces a more efficient way. using your
+own TRS-80'" . to learn the fundamentals of assembly \anguc19e
+programming - at YOUR pace and at YOUR conven ience.
+Our unique package , " INTRODUCTION TO TRS-80
+ASSEMBLY PROGRAMMIN G." will provide you with th<'
+following:
+*Ten 45 -minute lessons on audio casset te
+*A driver program to make your TRS -80'" video monitor serve
+as a blackboard for the instructor.
+* A textbook on TRS-80'" A ssemb ly Language Programming.
+* Step-by-step dissec tion o f comp lete and useful routines to
+test memory and to gain direct control over the keyboard, video
+monitor , and printer .
+* H ow to access and use powerful routines in you r Level II
+ROM .
+Level II BASI C ....
+. ... . ....... .... ... . .... $69.95
+
+H.W. SAMS&Co.
+In troduce you to more advanced interfacing tec hniques that
+
+56
+
+allow you to do new things with your TRS-80'" comput er. Y o u
+learn how to drive high current and high voltage loads, how to
+generate voltage and current signals used in a variety of control
+applicat ions , how to measure unknown voltages and c urrents
+with your computer, and how to use remo te control circui ts that
+allow you to co ntrol Universal A synchronous
+Receiver/ Transmi tter Chips, ana log-to-d igital and digit al -toanalog converters, and other devices loca ted some distance
+from your computer. Contai ns complete soft wa re examples.
+by Titus. Titu s. and Larson.
+. ..... $10.95+$1.00
+
+Stumped by statistics? Here's the program for you'
+Writt en by a statiscian but designed for use in the real world .
+Helps you c reate files, examine and edit data. and understand
+d<?scrip ti ve sta ti stics. Sophisticated enough for the working
+st;i ti stician. This powerful interac tive statistical package
+features comp lete error diagnostic. missing va lue specification
+,111d sophi sticat ed graphics.
+by Bruce Chalmers
+TRS -80'" Disk 32K & 48K ve rsions on one disk .. . . . . $29.95
+
+b y W . J. Kutlever
+
+The Investor's Ke y to Options Marketing!!
+Make informed trading decisions in minutes with thi s easy to
+use package.
+WHO : Inves tors. Option Writ ers or Purchasers use this
+program .
+WHAT : Analyzes option prices and responds to curre nt
+market prices as soon as you receive them .
+WHY : Assesses the value of a given option. M o nitors th e value
+of your investments. Helps you decide w hen to purchase or to
+c lose o ut your option s.
+HOW: Use TRS-80'" Di sk.
+Next to your broker this program is your best option in
+c rea tive investing. Analyze option prices before risking any
+money . Convenient features are data entry and flexibility in
+handling a wide variety of sit uations .
+A vailable for Level 11, 16K TRS -80'" M icrocompute rs . $29.95
+
+SoftSidc DECEMBER, t980
+
+
