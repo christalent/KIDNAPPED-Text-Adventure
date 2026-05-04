@@ -180,11 +180,11 @@ class KidnappedGame:
         rooms[7] = {"name": "NARROW LEDGE", "desc": "YOU ARE ON A VERY NARROW LEDGE OUTSIDE THE WINDOW.", "exits": {"N": 10}, "items": ["KEY"], "floor": 9}
         rooms[8] = {"name": "VISITOR'S LODGE", "desc": "YOU ARE IN A VISITOR'S LODGE.", "exits": {"W": 13}, "items": [], "floor": 9}
         rooms[9] = {"name": "CLOSET", "desc": "YOU ARE IN A CLOSET.", "exits": {"E": 13}, "items": [], "floor": 9}
-        rooms[10] = {"name": "HALLWAY", "desc": "YOU ARE IN A HALLWAY.", "exits": {"W": 11, "E": 13, "N": 4, "S": 5, "D": 8}, "items": [], "floor": 9}
-        rooms[11] = {"name": "MAIN ROOM", "desc": "YOU ARE IN A MAIN ROOM.", "exits": {"W": 12, "E": 14, "N": 3, "S": 7}, "items": [], "floor": 9}
+        rooms[10] = {"name": "HALLWAY", "desc": "YOU ARE IN A HALLWAY. THE ELEVATOR IS HERE.", "exits": {"W": 11, "E": 13, "N": 4, "S": 5}, "items": [], "floor": 9}
+        rooms[11] = {"name": "MAIN ROOM", "desc": "YOU ARE IN A MAIN ROOM. THERE IS A BROOM HERE.", "exits": {"W": 12, "E": 14, "N": 3, "S": 7}, "items": ["BROOM"], "floor": 9}
         rooms[12] = {"name": "NARROW STAIRWAY", "desc": "YOU ARE IN A NARROW STAIRWAY.", "exits": {"W": 14, "E": 13, "N": 7, "S": 6}, "items": [], "floor": 9}
         rooms[13] = {"name": "CRAWLSPACE", "desc": "YOU ARE IN A CRAWLSPACE ON TOP OF THE ELEVATOR. THERE ARE LIVE ELECTRICAL WIRES HERE.", "exits": {"E": 11}, "items": ["WIRES"], "floor": 9}
-        rooms[14] = {"name": "STORAGE", "desc": "YOU ARE IN A SMALL STORAGE ROOM.", "exits": {"N": 13, "E": 11}, "items": [], "floor": 9}
+        rooms[14] = {"name": "STORAGE", "desc": "YOU ARE IN A SMALL STORAGE ROOM. THERE IS A ROLL OF ELECTRIC TAPE HERE.", "exits": {"N": 13, "E": 11}, "items": ["TAPE"], "floor": 9}
         rooms[15] = {"name": "STAIRS UP", "desc": "YOU ARE ON STAIRS GOING UP.", "exits": {"N": 7}, "items": [], "floor": 9}
         rooms[16] = {"name": "CLIMB UP", "desc": "YOU CLIMB UP INTO THE CRAWLSPACE.", "exits": {"D": 11}, "items": [], "floor": 9}
 
@@ -506,7 +506,7 @@ class KidnappedGame:
                 print("IT'S PAST MIDNIGHT - THE POWER IS OFF!")
 
         if loc == 10 and self.state.tape_used and not self.state.elevator_fixed:
-            print("THE ELEVATOR WAITING FOR REPAIRS...")
+            print("THE ELEVATOR IS WAITING FOR REPAIRS...")
 
     def print_floor7_extras(self):
         """Print Floor 7 vault specific descriptions"""
@@ -737,18 +737,18 @@ class KidnappedGame:
             new_loc = exits[direction]
 
             # Special transitions
-            if self.state.floor == 9 and direction == "D":
-                if new_loc == 8:  # Going down from hallway to floor 8
-                    if not self.state.elevator_fixed:
-                        print("THE ELEVATOR ISN'T WORKING!")
-                        return
-                    else:
-                        print("YOU TAKE THE ELEVATOR DOWN ONE FLOOR...")
-                        self.state.floor = 8
-                        self.state.reset_floor_flags()
-                        self.state.location = 21  # Floor 8 start
-                        self.print_status()
-                        return
+            if self.state.floor == 9 and direction == "D" and self.state.location == 1:
+                # Elevator in room 1 goes down to Floor 8
+                if not self.state.elevator_fixed:
+                    print("THE ELEVATOR ISN'T WORKING!")
+                    return
+                else:
+                    print("YOU TAKE THE ELEVATOR DOWN ONE FLOOR...")
+                    self.state.floor = 8
+                    self.state.reset_floor_flags()
+                    self.state.location = 21  # Floor 8 start
+                    self.print_status()
+                    return
 
             # Floor 8 piranha pool crossing check
             if self.state.floor == 8:
@@ -1017,20 +1017,26 @@ class KidnappedGame:
         room = self.rooms.get(self.state.location, {"items": []})
 
         if item in room.get("items", []):
+            # Special case: KEY on ledge - need BROOM in inventory
+            if item == "KEY" and self.state.location == 7:
+                if "BROOM" not in self.player_inventory:
+                    print("YOUR ARM IS TOO SHORT TO REACH IT!")
+                    print("YOU NEED SOMETHING LONG TO PUSH IT TOWARD YOU...")
+                    return
+                else:
+                    print("YOU USE THE BROOM TO KNOCK THE KEY OFF THE LEDGE!")
+                    room["items"].remove(item)
+                    self.player_inventory.append(item)
+                    self.state.key_taken = True
+                    return
+
             room["items"].remove(item)
             self.player_inventory.append(item)
             print(f"YOU TAKE THE {item}.")
 
-            # Special case: KEY on ledge
-            if item == "KEY" and self.state.location == 7:
-                if not hasattr(self.state, 'has_broom') or not self.state.has_broom:
-                    print("YOUR ARM IS TOO SHORT TO REACH IT!")
-                    print("YOU NEED SOMETHING LONG TO PUSH IT TOWARD YOU...")
-                    # Put key back since we couldn't get it
-                    room["items"].append(item)
-                    self.player_inventory.remove(item)
-                else:
-                    self.state.key_taken = True
+            # Set flag when picking up BROOM
+            if item == "BROOM":
+                self.state.has_broom = True
 
             # Floor 8 specific item tracking
             elif item == "ROPE":
@@ -1099,12 +1105,24 @@ class KidnappedGame:
         if not item:
             print("DROP WHAT?")
             return
-        print(f"YOU DROP THE {item}.")
+        item = item.upper()
+        if item in self.player_inventory:
+            self.player_inventory.remove(item)
+            room = self.rooms.get(self.state.location)
+            if room and "items" in room:
+                room["items"].append(item)
+            print(f"YOU DROP THE {item}.")
+        else:
+            print(f"YOU DON'T HAVE A {item}.")
 
     def process_command(self, cmd):
         """Process a player command"""
         if not cmd:
             return
+
+        # Increment time on Floor 9 (time represents hours, 0-23)
+        if self.state.floor == 9 and self.state.time < 24:
+            self.state.time += 1
 
         cmd = cmd.upper().strip()
         words = cmd.split()
@@ -1331,6 +1349,45 @@ class KidnappedGame:
                     print("USE THE STRING TO DO WHAT?")
             else:
                 print(f"YOU CAN'T USE THE {obj} HERE.")
+        elif self.state.floor == 9:
+            # Floor 9: TAPE on WIRES fixes the elevator
+            if "TAPE" in obj or "WIRES" in obj:
+                if "TAPE" not in self.player_inventory:
+                    print("YOU DON'T HAVE ANY TAPE.")
+                elif self.state.location != 13:
+                    print("THERE ARE NO WIRES HERE TO TAP.")
+                elif self.state.tape_used:
+                    print("THE WIRES ARE ALREADY TAPED.")
+                elif self.state.time < 12:
+                    print("YOU TOUCH THE LIVE WIRES...")
+                    print("ZAP! YOU'RE ELECTROCUTED!")
+                    self.state.dead = True
+                    self.running = False
+                else:
+                    print("YOU WRAP THE ELECTRIC TAPE AROUND THE LIVE WIRES...")
+                    print("SPARK! THE WIRES ARE NOW SAFELY INSULATED.")
+                    print("THE ELEVATOR IS NOW FIXED!")
+                    self.state.tape_used = True
+                    self.state.elevator_fixed = True
+            elif "BROOM" in obj:
+                if self.state.location == 7 and "KEY" in self.rooms[7].get("items", []):
+                    if "BROOM" not in self.player_inventory:
+                        print("YOU DON'T HAVE THE BROOM.")
+                    else:
+                        print("YOU USE THE BROOM TO KNOCK THE KEY OFF THE LEDGE!")
+                        self.state.key_taken = True
+                else:
+                    print("THERE'S NO USE FOR THE BROOM HERE.")
+            elif "FIX" in obj or "REPAIR" in obj or "ELEVATOR" in obj:
+                if self.state.elevator_fixed:
+                    print("THE ELEVATOR IS ALREADY FIXED!")
+                elif not self.state.tape_used:
+                    print("THE ELEVATOR ISN'T WORKING. THE WIRES NEED TO BE FIXED FIRST.")
+                else:
+                    print("THE ELEVATOR IS NOW WORKING!")
+                    self.state.elevator_fixed = True
+            else:
+                print("YOU CAN'T USE THAT HERE.")
         else:
             print("YOU CAN'T USE THAT HERE.")
 
