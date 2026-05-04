@@ -110,20 +110,20 @@ FLOOR_ROOMS = {
     # Floor 9 - Roof level (rooms 1-20)
     9: {
         1: {"name": "ELEVATOR", "desc": "IN AN ELEVATOR.", "exits": {"S": 10}, "items": []},
-        2: {"name": "ROOF", "desc": "ON THE ROOF.", "exits": {"S": 11}, "items": []},
+        2: {"name": "ROOF", "desc": "ON THE ROOF.", "exits": {"N": 10}, "items": []},
         3: {"name": "CLOSET", "desc": "IN A CLOSET.", "exits": {"N": 10, "S": 2}, "items": []},
-        4: {"name": "RESTROOM", "desc": "IN A RESTROOM.", "exits": {"N": 10}, "items": []},
-        5: {"name": "LARGE ROOM", "desc": "IN A LARGE ROOM.", "exits": {"S": 10}, "items": []},
+        4: {"name": "RESTROOM", "desc": "IN A RESTROOM.", "exits": {"S": 10}, "items": []},
+        5: {"name": "LARGE ROOM", "desc": "IN A LARGE ROOM.", "exits": {"N": 10}, "items": []},
         6: {"name": "ELEVATOR SHAFT", "desc": "IN AN ELEVATOR SHAFT.", "exits": {"U": 1, "D": 10}, "items": []},
-        7: {"name": "NARROW LEDGE", "desc": "ON A VERY NARROW LEDGE.", "exits": {"W": 11}, "items": ["KEY"]},
+        7: {"name": "NARROW LEDGE", "desc": "ON A VERY NARROW LEDGE.", "exits": {"S": 10, "W": 11}, "items": ["KEY"]},
         8: {"name": "VISITOR'S LODGE", "desc": "IN A VISITOR'S LODGE.", "exits": {"W": 13}, "items": []},
         9: {"name": "CLOSET", "desc": "IN A CLOSET.", "exits": {"E": 13}, "items": []},
         10: {"name": "HALLWAY", "desc": "IN A HALLWAY.", "exits": {"W": 11, "E": 13, "N": 4, "S": 5}, "items": []},
         11: {"name": "MAIN ROOM", "desc": "IN A MAIN ROOM.", "exits": {"U": 6, "D": 12, "W": 14, "E": 13}, "items": []},
-        12: {"name": "NARROW STAIRWAY", "desc": "IN A NARROW STAIRWAY.", "exits": {"W": 14, "E": 13, "D": 10}, "items": []},
-        13: {"name": "CRAWLSPACE", "desc": "IN A CRAWLSPACE ON TOP OF THE ELEVATOR.", "exits": {"E": 11}, "items": ["LIVE WIRES"]},
+        12: {"name": "NARROW STAIRWAY", "desc": "IN A NARROW STAIRWAY.", "exits": {"D": 10}, "items": []},
+        13: {"name": "CRAWLSPACE", "desc": "IN A CRAWLSPACE ON TOP OF THE ELEVATOR.", "exits": {"E": 11, "W": 8}, "items": ["LIVE WIRES"]},
         14: {"name": "STORAGE", "desc": "IN A SMALL STORAGE ROOM.", "exits": {"N": 13, "E": 11}, "items": []},
-        15: {"name": "STAIRS UP", "desc": "ON STAIRS GOING UP.", "exits": {"N": 7}, "items": []},
+
     },
     # Floor 8 - (placeholder - need full map)
     8: {
@@ -172,21 +172,19 @@ class KidnappedGame:
 
         # ============= FLOOR 9 - ROOF LEVEL =============
         rooms[1] = {"name": "ELEVATOR", "desc": "YOU ARE IN AN ELEVATOR.", "exits": {"S": 10}, "items": [], "floor": 9}
-        rooms[2] = {"name": "ROOF", "desc": "YOU ARE ON THE ROOF.", "exits": {"S": 10}, "items": [], "floor": 9}
+        rooms[2] = {"name": "ROOF", "desc": "YOU ARE ON THE ROOF.", "exits": {"N": 10}, "items": [], "floor": 9}
         rooms[3] = {"name": "CLOSET", "desc": "YOU ARE IN A CLOSET.", "exits": {"N": 10, "S": 2}, "items": [], "floor": 9}
-        rooms[4] = {"name": "RESTROOM", "desc": "YOU ARE IN A RESTROOM.", "exits": {"N": 10}, "items": [], "floor": 9}
-        rooms[5] = {"name": "LARGE ROOM", "desc": "YOU ARE IN A LARGE ROOM.", "exits": {"S": 10}, "items": [], "floor": 9}
+        rooms[4] = {"name": "RESTROOM", "desc": "YOU ARE IN A RESTROOM.", "exits": {"S": 10}, "items": [], "floor": 9}
+        rooms[5] = {"name": "LARGE ROOM", "desc": "YOU ARE IN A LARGE ROOM.", "exits": {"N": 10}, "items": [], "floor": 9}
         rooms[6] = {"name": "ELEVATOR SHAFT", "desc": "YOU ARE IN AN ELEVATOR SHAFT. THERE IS A CRAWLSPACE ABOVE THE ELEVATOR.", "exits": {"U": 1, "D": 10}, "items": [], "floor": 9}
-        rooms[7] = {"name": "NARROW LEDGE", "desc": "YOU ARE ON A VERY NARROW LEDGE OUTSIDE THE WINDOW.", "exits": {"N": 10}, "items": ["KEY"], "floor": 9}
+        rooms[7] = {"name": "NARROW LEDGE", "desc": "YOU ARE ON A VERY NARROW LEDGE OUTSIDE THE WINDOW.", "exits": {"S": 10, "W": 11}, "items": ["KEY"], "floor": 9}
         rooms[8] = {"name": "VISITOR'S LODGE", "desc": "YOU ARE IN A VISITOR'S LODGE.", "exits": {"W": 13}, "items": [], "floor": 9}
         rooms[9] = {"name": "CLOSET", "desc": "YOU ARE IN A CLOSET.", "exits": {"E": 13}, "items": [], "floor": 9}
         rooms[10] = {"name": "HALLWAY", "desc": "YOU ARE IN A HALLWAY. THE ELEVATOR IS HERE.", "exits": {"W": 11, "E": 13, "N": 4, "S": 5}, "items": [], "floor": 9}
         rooms[11] = {"name": "MAIN ROOM", "desc": "YOU ARE IN A MAIN ROOM. THERE IS A BROOM HERE.", "exits": {"U": 6, "D": 12, "W": 14, "E": 13}, "items": ["BROOM"], "floor": 9}
-        rooms[12] = {"name": "NARROW STAIRWAY", "desc": "YOU ARE IN A NARROW STAIRWAY.", "exits": {"W": 14, "E": 13, "D": 10}, "items": [], "floor": 9}
-        rooms[13] = {"name": "CRAWLSPACE", "desc": "YOU ARE IN A CRAWLSPACE ON TOP OF THE ELEVATOR. THERE ARE LIVE ELECTRICAL WIRES HERE.", "exits": {"E": 11}, "items": ["WIRES"], "floor": 9}
+        rooms[12] = {"name": "NARROW STAIRWAY", "desc": "YOU ARE IN A NARROW STAIRWAY.", "exits": {"D": 10}, "items": [], "floor": 9}
+        rooms[13] = {"name": "CRAWLSPACE", "desc": "YOU ARE IN A CRAWLSPACE ON TOP OF THE ELEVATOR. THERE ARE LIVE ELECTRICAL WIRES HERE.", "exits": {"E": 11, "W": 8}, "items": ["WIRES"], "floor": 9}
         rooms[14] = {"name": "STORAGE", "desc": "YOU ARE IN A SMALL STORAGE ROOM. THERE IS A ROLL OF ELECTRIC TAPE HERE.", "exits": {"N": 13, "E": 11}, "items": ["TAPE"], "floor": 9}
-        rooms[15] = {"name": "STAIRS UP", "desc": "YOU ARE ON STAIRS GOING UP.", "exits": {"N": 7}, "items": [], "floor": 9}
-        rooms[16] = {"name": "CLIMB UP", "desc": "YOU CLIMB UP INTO THE CRAWLSPACE.", "exits": {"D": 11}, "items": [], "floor": 9}
 
         # ============= FLOOR 8 - AQUARIUM =============
         # Floor 8 has 9 rooms (21-29) with an aquarium/pool theme
