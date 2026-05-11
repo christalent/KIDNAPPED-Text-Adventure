@@ -1,0 +1,124 @@
+# KIDNAPPED! — Game Analysis & Maps
+# Source: RetroGamesTroove review + clean BASIC source + original play
+
+## GAME OVERVIEW
+- **Author:** Peter Kirsch, 1980
+- **Published:** SoftSide Magazine (type-in adventure)
+- **Platform:** TRS-80 / S-80 (16K machines)
+- **Rooms:** 65 locations across 9 floors
+- **Premise:** Kidnapped, escape floor by floor
+
+## FLOOR THEMES & PUZZLES
+
+### Floor 9 (Roof) — STARTING FLOOR
+**Theme:** Elevator repair, midnight blackout puzzle
+
+**Key Puzzle (from review):**
+> "The exposed wires providing power to the elevator are 'hot' — you're going to need to coordinate your repairs with a building blackout that occurs at midnight."
+
+**Items:** Chair, flashlight, electrical tape
+**Mechanic:** TIME variable. You must wait until after midnight to safely tape the live wires.
+
+**Room Count:** ~20 rooms
+**Difficulty:** Moderate — the midnight timing adds complexity
+
+### Floor 8 (Aquarium)
+**Theme:** Piranhas, guard dog, helium balloon
+
+**Key Puzzle:**
+> "The next level is a relatively short one which involves an aquarium filled with piranhas, a guard dog, and some rope."
+
+**Items:** Super glue, helium tank, balloon, rope, gun
+
+**Room Count:** ~9 rooms (21-29)
+**Difficulty:** Moderate
+
+### Floor 7 (Bank Vault)
+**Theme:** Burglar, dollar, vault
+
+**Key Puzzle:**
+> "The seventh level... might be the most difficult level. It involves trying to wrest a dollar from a burglar."
+
+**Items:** String vending machine, tank of helium, gun, balloon, wood glue, wooden step
+
+**Room Count:** ~9 rooms (31-39) + vault rooms (55-57)
+**Difficulty:** HARDEST floor according to review
+
+### Floor 6 (Office)
+**Theme:** Sexy young office girls, knitting
+
+**Key Puzzle:**
+> "Level six involves some sexy young office girls and having to fashion yourself a new suit. Knitting needles as well as a ball of yarn come into play here."
+
+**Items:** Knitting needles, ball of yarn
+
+**Room Count:** ~9 rooms (41-49)
+**Difficulty:** Moderate
+
+### Floor 5 (Mary Poppins)
+**Theme:** Absurdist, Mary Poppins umbrella
+
+**Key Puzzle:**
+> "There is no greater example of this than finding Mary Poppin's Umbrella on level five."
+
+**Items:** Umbrella, knitting, sponge
+**Difficulty:** Absurdist
+
+### Floor 4 (Jekyll/Hyde)
+**Theme:** Transformation, diving board
+
+**Key Puzzle:**
+> "On the next floor you quite literally have to experiment and turn yourself into Mr. Hyde in order to deal with the steel door."
+
+**Items:** Potion, umbrella
+**Mechanic:** DRINK potion → transform into Hyde
+**Difficulty:** Moderate
+
+### Floor 3 (Greenhouse)
+**Theme:** Plants, trap door, flute
+
+**Key Puzzle:**
+> "The next level involved a small plant, a trap door, a water cooler, paper cup, flute, and rope."
+
+**Items:** Plant, flute, water cooler, cup
+**Mechanic:** Plant transformation, music
+**Difficulty:** Moderate
+
+### Floor 2 (Quicksand)
+**Theme:** Quicksand, piano, book
+
+**Key Puzzle:**
+> "The last level involves a small book, some quicksand, rope, and a piano. It was another challenging level."
+
+**Items:** Book, rope, piano
+**Mechanic:** PLAY piano to stretch rope across quicksand
+**Difficulty:** HARD (3rd hardest)
+
+### Floor 1 (Ground) — ESCAPE!
+**Theme:** Front entrance, alligator, burglar's mask
+
+**Key Puzzle:**
+> "A burglar's mask blocks your way east. He has the remains of the kidnapper in his mouth."
+
+**Items:** Alligator, stairs
+**Mechanic:** Navigate past final obstacles to escape
+**WIN CONDITION:** Reach front door
+
+## DIFFICULTY RANKING (from review)
+1. 🔴 Floor 7 (Bank Vault) — HARDEST
+2. 🔴 Floor 2 (Quicksand)
+3. 🟡 Floor 9 (Roof) — had midnight blackout complexity
+4. 🟡 Others — varying difficulty
+
+## ORIGINALITY NOTE
+> "The originality here from one floor to the next once again really stands out."
+> "The puzzles and levels are borderline absurd but they work quite well logically."
+
+## KEY INSIGHT: Midnight Blackout
+The Floor 9 elevator puzzle requires coordinating with a building blackout at midnight:
+- Wires are LIVE until after 11 PM
+- Must WAIT (TIME passes) before safely taping wires
+- This is the key detail the OCR missed
+
+## PLAYER MEMORY
+Chris played this in the early 80s on his TRS-80 — the midnight blackout mechanic is authentic to the original game design.

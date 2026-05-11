@@ -33,8 +33,25 @@ class GameState:
         self.tape_used = False
         self.elevator_fixed = False
 
+        # Player inventory
+        self.inventory = []
+
         # Floor-specific flags will be reset each floor
         self.reset_floor_flags()
+
+    def add_item(self, item):
+        """Add an item to the player's inventory."""
+        if item not in self.inventory:
+            self.inventory.append(item)
+
+    def remove_item(self, item):
+        """Remove an item from the player's inventory."""
+        if item in self.inventory:
+            self.inventory.remove(item)
+
+    def has_item(self, item):
+        """Check if player has an item."""
+        return item in self.inventory
 
     def reset_floor_flags(self):
         """Reset all flags when changing floors"""
@@ -164,7 +181,18 @@ class KidnappedGame:
         self.state = GameState()
         self.running = True
         self.rooms = self.build_rooms()
-        self.player_inventory = []  # Items player is carrying
+        # Inventory is accessed via state.inventory (property below)
+        self._player_inventory = []
+
+    @property
+    def player_inventory(self):
+        """Redirect all inventory access to state.inventory for consistency."""
+        return self.state.inventory
+
+    @player_inventory.setter
+    def player_inventory(self, value):
+        """Setter redirects to state.inventory."""
+        self.state.inventory = value
 
     def build_rooms(self):
         """Build complete room database"""

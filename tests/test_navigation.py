@@ -18,6 +18,9 @@ def test_floor(floor_num):
         for direction, target in exits.items():
             if target == 0 or target is None:
                 continue
+            # Skip inter-floor transitions (string markers like "floor_9", "floor_7", etc.)
+            if isinstance(target, str):
+                continue
             if target not in rooms:
                 errors.append(f"Room {room_id} → {direction} = {target} (target room doesn't exist)")
                 continue
