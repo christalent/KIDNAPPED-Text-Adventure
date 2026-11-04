@@ -28,25 +28,26 @@ Use 1-2 word commands like `LOOK`, `GET KEY`, `OPEN DOOR`, `N`, `S`, `E`, `W`, `
 
 ## Floor Status (2026-11-04)
 
-All 9 floors are playable and pass bidirectional navigation tests, but only floors 9
-and 8 have been audited against the scanned source. Floors 7-1 still carry stale room
-numbering and are being rewritten floor-by-floor (floor 6 is next).
+All 9 floors are playable and pass bidirectional navigation tests, but only floors 9,
+8 and 6 have been audited against the scanned source. Floors 7 and 1-5 still carry
+stale room numbering and are being rewritten floor-by-floor (floor 7 is next).
 
 | Floor | Theme | Rooms | Status |
 |-------|-------|-------|--------|
 | 9 | Roof — elevator & midnight blackout | 11 | ✅ Audited vs source 2026-11-03 |
 | 8 | Aquarium — piranhas & balloon | 5 | ✅ Audited vs source 2026-11-03 |
 | 7 | Bank Vault — combination locks | 10 | ⚠️ Stale room IDs — rewrite next |
-| 6 | Office — balloon/vending puzzles | 9 | ⚠️ Stale room IDs — rewrite next |
+| 6 | Office complex — ledges & the vault | 11 | ✅ Audited vs source 2026-11-04 |
 | 5 | Weird (Mary Poppins) — knitting, umbrellas | 9 | ⚠️ Stale room IDs |
 | 4 | Jekyll/Hyde Lab — transformation | 8 | ⚠️ Stale room IDs |
 | 3 | Greenhouse — plants and traps | 5 | ⚠️ Stale room IDs |
 | 2 | Quicksand — piano puzzle | 5 | ⚠️ Stale room IDs |
 | 1 | Ground — escape! | 4 | ⚠️ Stale room IDs |
 
-**Source: 65 rooms** (global room numbers 1-65). This port currently ships 66 room entries,
-because floors 7-1 are still on stale room numbering; floors 9 and 8 match the source
-exactly (rooms 1-11 and 13-17). The count lands on 65 as floors 7-1 are rewritten.
+**Source: 65 rooms** (global room numbers 1-65). This port currently ships 68 room entries,
+because floors 7 and 1-5 are still on stale room numbering; floors 9, 8 and 6 match the
+source exactly (rooms 1-11, 13-17 and 26-36). The count lands on 65 as the remaining
+floors are rewritten.
 
 ## Project Structure
 

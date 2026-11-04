@@ -189,7 +189,7 @@ SPECIAL_ROOMS = {
     # the authoritative global rooms 13-17 and its arrival room is 13.
     # The old landing room 28 belonged to the discarded, wrong floor 8.
     "floor_8":  {"target": "floor_8",  "landing_room": 13},
-    "floor_6":  {"target": "floor_6",  "landing_room": 41},
+    "floor_6":  {"target": "floor_6",  "landing_room": 26},
 }
 
 
@@ -309,7 +309,7 @@ class Floor7Engine:
             if next_target == "floor_8":
                 return f"TRANSITION:{next_target}:13", True
             if next_target == "floor_6":
-                return f"TRANSITION:{next_target}:41", True
+                return f"TRANSITION:{next_target}:26", True
         # Vault door gate: only enter 55 from 37 when vault is unlocked
         if loc == 37 and direction == "N" and not self.vault_unlocked:
             return (
@@ -444,7 +444,7 @@ class Floor7Engine:
         # USE SLIDE / RIDE / GO (descend to floor 6)
         if "SLIDE" in noun:
             if loc == 55:
-                return f"TRANSITION:floor_6:41"
+                return f"TRANSITION:floor_6:26"
             return "There's no slide here."
 
         # USE YELLOW SOLUTION / FLUID (no-op for floor 7)

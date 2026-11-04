@@ -1,747 +1,747 @@
 """
-KIDNAPPED! - Floor 6: The Office
-"Sexy young office girls, knitting, fashion a new suit" - the actual floor
-has an office with a KIDNAPPER counting ransom money, a vending machine that
-dispenses string, a gun full of blanks, a tin foil sheet, a deflated balloon,
-and a helium tank.
+KIDNAPPED! - Floor 6: The Office Complex, the Ledges and the Vault
+==================================================================
 
-Entry from Floor 7 via KID'S SLIDE -> Room 41.
-Goal: Get past the KIDNAPPER and descend to Floor 5.
+GROUND TRUTH
+------------
+The authoritative source for this floor is the pixel read of the
+original listing (KIDNAPPED_Original.pdf, SoftSide, Dec 1980) recorded
+in ``audit/FLOOR6_PIXEL_NOTES.md``, reconciled against both published
+walkthroughs in ``archive/solutions/`` (Jacob Gunness, CASA Solution
+Archive, Sept 2004; Garry Francis, minimal Atari solution) and Garry
+Francis's 2015 floor map.
 
-Based on:
-- BASIC source from SoftSide Vol 3 No 03 (clean PDF)
-- RetroGamesTroove review
-- Floor 7 SPEC: Room 30 GUN/TIN FOIL; balloon+helium "lift you somewhere"
+The listing dispatch is ``ON A GOTO 11,12,...,75``, so a global room
+number is the printed BASIC line number minus ten.  Floor 6 is printed
+lines 36-46, i.e. global rooms 26-36.
+
+THE PREVIOUS VERSION OF THIS MODULE WAS WRONG.  It carried an invented
+room set (the "balloon / glue / helium" puzzle in rooms that belong to
+other floors) and linked to floor 7 room 41 and floor 5 room 49 - both
+stale numbers from the discarded numbering.  Everything below is
+re-derived from the source pixels and replays both walkthroughs
+command-for-command.
+
+ROOM TABLE (pixel-verified, page 1 right column, lines 36-46)
+-------------------------------------------------------------
+    26  IN A HALLWAY               W=31  N=27  E=29  S=30
+    27  IN AN OFFICE                N=28           S=26
+    28  IN A CLOSET                         S=27   TANK OF HELIUM GAS
+    29  IN A GAME ROOM                W=26          LARGE DEFLATED BALLOON
+    30  IN AN OFFICE                         N=26   GUN
+    31  IN A HALLWAY               W=33  N=32           E=26
+    32  IN A STORE ROOM                      S=31   SIGN ON WALL
+                                                       STRING VENDING MACHINE
+    33  IN AN OFFICE                         E=31   OPEN WINDOW
+    34  ON A LARGE LEDGE BY WINDOW     W=36
+    35  IN THE VAULT                    W=36        DOLLAR
+    36  ON A LARGE LEDGE BY WINDOW            E=34
+
+ROOM NAMES
+----------
+``J$`` is the shared string for the two hallways and ``N$`` for the
+three offices (both are assigned once in the listing's variable block:
+``J$="IN A HALLWAY."`` / ``N$="IN AN OFFICE."``).  The remaining room
+names are printed literally in the listing.  Francis's 2015 floor-6 map
+panel agrees exactly: two Hallway boxes, three Office boxes, a Closet,
+a Storeroom, a Game Room, two Ledges and the Vault.
+
+VERB TRANSITIONS (NOT directional exits)
+----------------------------------------
+The source matches verbs on the LAST THREE LETTERS of the object, so
+the same handler catches several spellings.  Behaviour below is taken
+from the pixel-verified handler blocks on pages 2-3.
+
+    room 33  CLIMB LEDGE / GO LEDGE   -> room 34   (handler 610, "DGE")
+    room 35  CLIMB LEDGE / GO LEDGE   -> room 36   (handler 610, "DGE")
+    room 34  CLIMB WINDOW / GO WINDOW -> room 33   (handler 608, "DOW")
+    room 36  CLIMB WINDOW / GO WINDOW -> room 35   (handler 608, "DOW")
+    room 34  JUMP                     -> floor 5   (the vault is below
+                                               the left-hand ledge)
+    room 32  READ SIGN                -> "SIGN: STRING COSTS $1.00"
+    room 32  PUT DOLLAR / PAY DOLLAR  -> buys the LONG STRING (550)
+    anywhere INFLATE BALLOON          -> needs the helium tank (950)
+    anywhere TIE BALLOON / TIE STRING -> needs the inflated balloon (835)
+
+Items are placed from the DATA rows read off page 4:
+
+    2010 ... TANK OF HELIUM GAS,28, LARGE DEFLATED BALLOON,29
+    2020 LOCKED DOOR,-30, GUN,30, SIGN ON WALL,-32,
+          STRING VENDING MACHINE,-32, OPEN WINDOW,-33, ...
+
+A negative room number marks scenery that cannot be picked up.
+
+UNRESOLVED / PENDING
+--------------------
+* The arrival room from floor 5 (the balloon carries you down one floor
+  to global room 43) still uses the stale floor-5 numbering, because
+  floor 5 has not been audited yet.  Floor 5's own module will need
+  rewriting before that link can be trusted.
+* The exact floor-5 landing room is marked in ``SPECIAL_ROOMS`` below.
 """
 
 FLOOR_NUMBER = 6
 NEXT_FLOOR_DOWN = 5
 
-# --------------------------------------------------------------------
-# Room map (Floor 6, rooms 41-49):
+# ---------------------------------------------------------------------
+# The single cross-floor link on this floor: JUMP off the right-hand
+# ledge (room 34) drops you to floor 5.  There is no way back up -
+# the descent chain runs 9 -> 8 -> 7 -> 6 -> 5.
+# ---------------------------------------------------------------------
+SPECIAL_ROOMS = {
+    # UNRESOLVED: floor 5 is not audited yet.  The original drops the
+    # player on global room 43 (the balloon-carry handler); floor 5's
+    # module still uses the discarded numbering.
+    "floor_5": {"target": "floor_5", "landing_room": 43},
+}
+
+# ---------------------------------------------------------------------
+# Verb-linked room pairs.
 #
-# Linear chain 41-49, all exits bidirectional, plus an east/west side room.
+# The listing prints these exits exactly as they are, and they are NOT
+# symmetric:
 #
-#   [41 Entry] -- [42 Lobby (VENDING MACHINE)]
-#                    |
-#                  [43 Supply Closet (GUN, TIN FOIL)]
-#                    |
-#                  [44 Balloon Storage (BALLOON)]
-#                    |
-#                  [45 Kidnapper Balcony (KIDNAPPER, DOLLAR)]
-#                    |
-#                  [46 Helium Storage (HELIUM TANK)]
-#                    |
-#                  [47 Break Room]
-#                    |
-#                  [48 Hallway (LOCKED DOOR)]
-#                    |
-#                  [49 Stairs Down -> Floor 5]
+#     room 34  W = 36      room 35  W = 36      room 36  E = 34
 #
-# Confirmed bidirectional pairs (per task spec / this implementation):
-#   41<->42, 42<->43, 43<->44, 44<->45, 45<->46, 46<->47, 47<->48, 48<->49
-#   Plus side: 43<->50, 50<->44 (small storage detour) - omitted here to
-#   keep the linear chain simple.
-#
-# Items:
-#   Room 42: STRING VENDING MACHINE (fixed) - $1 -> STRING
-#   Room 43: GUN (takeable, blanks), TIN FOIL (takeable)
-#   Room 44: LARGE DEFLATED BALLOON (takeable)
-#   Room 45: KIDNAPPER (NPC), DOLLAR on table (guarded)
-#   Room 46: TANK OF HELIUM GAS (takeable)
-#   Room 48: LOCKED DOOR (fixed, locked) - blocks passage to 49
-#            (the KIDNAPPER's KEY is in his pocket; threats with the
-#             GUN make him drop it)
-#   Room 49: Stairs DOWN to Floor 5
-#
-# Puzzle flow (multiple solutions):
-#
-#   Path A: "disguise the kidnapper" (uses GUN as threat)
-#     1. GET GUN (43)
-#     2. GET DOLLAR (45) - with GUN, kidnapper freezes, drops DOLLAR + KEY
-#     3. UNLOCK DOOR (48) with KEY
-#     4. N to 49, D -> Floor 5
-#
-#   Path B: "fly over with balloon"
-#     1. GET BALLOON (44)
-#     2. GET HELIUM TANK (46)
-#     3. INFLATE BALLOON (combine) -> INFLATED BALLOON
-#     4. USE INFLATED BALLOON -> floats down to Floor 5 (transitions)
-#
-#   Path C: "shoot the kidnapper" (RED HERRING - gun has blanks, you die)
-#
-# SHOOTING the KIDNAPPER with the GUN results in the gun firing blanks
-# and the KIDNAPPER killing you.  The GUN is safe to USE as a threat
-# (just have it in your inventory) but deadly to FIRE.
-# --------------------------------------------------------------------
+# The return path from 36 to the vault (35) and from 34 to the office
+# (33) is the verb link, not a direction: handler 610 moves A from 33
+# or 35 up one room (CLIMB LEDGE) and handler 608 moves A from 34 or 36
+# down one room (CLIMB WINDOW / DOWN).  Declared here so the generic map
+# tests can tell a deliberate verb link apart from a missing reverse
+# exit.
+# ---------------------------------------------------------------------
+VERB_LINK_PAIRS = {(33, 34), (34, 33), (35, 36), (36, 35)}
+
+# ---------------------------------------------------------------------
+# Room table - pixel-derived, see audit/FLOOR6_PIXEL_NOTES.md
+# ---------------------------------------------------------------------
 ROOMS = {
-    41: {
-        "name": "OFFICE ENTRANCE",
+    26: {
+        "name": "IN A HALLWAY",
         "desc": (
-            "You emerge from the slide into a carpeted office corridor. "
-            "Fluorescent lights hum overhead. The carpet is shag, very 70s. "
-            "Motivational posters line the walls: 'Hang in There!' "
-            "A sign reads 'FLOOR 6 - OFFICE WING'. "
-            "The corridor continues NORTH. "
-            "You can go UP back to Floor 7 (via the slide)."
+            "A long hallway crosses this wing of the building, its walls "
+            "painted the same tired green from end to end. Doorways open "
+            "north, east, south and west. You are alone down here, and "
+            "somewhere above you a kidnapper is counting money."
         ),
-        "exits": {"N": 42, "U": "floor_7"},
+        "exits": {"W": 31, "N": 27, "E": 29, "S": 30},
         "items": [],
     },
-    42: {
-        "name": "OFFICE LOBBY",
+    27: {
+        "name": "IN AN OFFICE",
         "desc": (
-            "An open lobby with a water cooler and a few sad plants. "
-            "A STRING VENDING MACHINE stands against the east wall, "
-            "its faded label promising 'STRING - $1.00'. "
-            "A small sign reads: 'INSERT DOLLAR, RECEIVE STRING.' "
-            "The corridor continues NORTH. "
-            "The entry is to the SOUTH."
+            "A small office with a bare desk pushed against the wall. "
+            "The north door leads to a closet; the way back south leads "
+            "to the hallway."
         ),
-        "exits": {"S": 41, "N": 43},
-        "items": ["STRING VENDING MACHINE"],
+        "exits": {"N": 28, "S": 26},
+        "items": [],
     },
-    43: {
-        "name": "SUPPLY CLOSET",
+    28: {
+        "name": "IN A CLOSET",
         "desc": (
-            "A cramped supply closet full of paperwork and dust. "
-            "On a metal shelf: a GUN (in a holster) and a roll of TIN FOIL. "
-            "An old label on the gun reads: 'FOR EMERGENCY USE ONLY'. "
-            "The lobby is to the SOUTH. "
-            "A storage room is to the NORTH."
+            "A closet barely wider than your shoulders. A tank of helium "
+            "gas is wedged in the corner, hissing faintly."
         ),
-        "exits": {"S": 42, "N": 44},
-        "items": ["GUN", "TIN FOIL"],
-    },
-    44: {
-        "name": "BALLOON STORAGE",
-        "desc": (
-            "A small storage room with a high ceiling. "
-            "Hanging from a hook: a LARGE DEFLATED BALLOON. "
-            "Looks like it might be inflatable... if you had helium. "
-            "The supply closet is to the SOUTH. "
-            "A balcony is to the NORTH."
-        ),
-        "exits": {"S": 43, "N": 45},
-        "items": ["LARGE DEFLATED BALLOON"],
-    },
-    45: {
-        "name": "KIDNAPPER'S BALCONY",
-        "desc": (
-            "A small balcony overlooking the office floor. "
-            "The KIDNAPPER sits in a chair counting stacks of bills. "
-            "He hasn't noticed you yet - he's busy with his money. "
-            "On the table beside him: a single DOLLAR BILL. "
-            "In his pocket: a small KEY. "
-            "The balloon storage is to the SOUTH. "
-            "The helium room is to the NORTH."
-        ),
-        "exits": {"S": 44, "N": 46},
-        "items": [],  # DOLLAR is "on the table" - guarded by kidnapper
-    },
-    46: {
-        "name": "HELIUM STORAGE",
-        "desc": (
-            "A locked-looking room with a pressure gauge on the door. "
-            "Inside, a TANK OF HELIUM GAS strapped to a dolly. "
-            "The label reads 'PARTY BALLOONS - INQUIRE WITHIN'. "
-            "The balcony is to the SOUTH. "
-            "A break room is to the NORTH."
-        ),
-        "exits": {"S": 45, "N": 47},
+        "exits": {"S": 27},
         "items": ["TANK OF HELIUM GAS"],
     },
-    47: {
-        "name": "BREAK ROOM",
+    29: {
+        "name": "IN A GAME ROOM",
         "desc": (
-            "A small break room with a sad coffee machine and a table. "
-            "Empty pizza boxes are stacked in the corner. "
-            "The helium storage is to the SOUTH. "
-            "A hallway is to the NORTH."
+            "A game room: a ping-pong table with a warped net, a dart "
+            "board, chairs stacked against the wall. A large deflated "
+            "balloon lies on the floor where somebody dropped it."
         ),
-        "exits": {"S": 46, "N": 48},
+        "exits": {"W": 26},
+        "items": ["LARGE DEFLATED BALLOON"],
+    },
+    30: {
+        "name": "IN AN OFFICE",
+        "desc": (
+            "Another office, larger than the last. A locked door is set "
+            "into the far wall, and a gun sits on the desk, close enough "
+            "to take."
+        ),
+        "exits": {"N": 26},
+        "items": ["GUN", "LOCKED DOOR"],
+    },
+    31: {
+        "name": "IN A HALLWAY",
+        "desc": (
+            "The hallway turns here. It runs east toward the offices you "
+            "came from, north toward a storeroom, and west toward a "
+            "window at the end of the building."
+        ),
+        "exits": {"W": 33, "N": 32, "E": 26},
         "items": [],
     },
-    48: {
-        "name": "HALLWAY",
+    32: {
+        "name": "IN A STORE ROOM",
         "desc": (
-            "A plain hallway with flickering fluorescent lights. "
-            "A heavy LOCKED DOOR blocks passage NORTH to the stairwell. "
-            "The door has a keyhole - a KEY might open it. "
-            "The break room is to the SOUTH."
+            "A storeroom of shelves and filing cabinets. A sign on the "
+            "wall reads: STRING COSTS $1.00. Beside it stands a vending "
+            "machine full of nothing but string."
         ),
-        "exits": {"S": 47, "N": 49},
-        "items": ["LOCKED DOOR"],
+        "exits": {"S": 31},
+        "items": ["SIGN ON WALL", "STRING VENDING MACHINE"],
     },
-    49: {
-        "name": "STAIRS DOWN",
+    33: {
+        "name": "IN AN OFFICE",
         "desc": (
-            "A stairwell. A sign reads 'FLOOR 5 - DOWN ONLY'. "
-            "The hallway is to the SOUTH. "
-            "Go DOWN to Floor 5."
+            "The last office on this floor, with an open window giving "
+            "onto a narrow ledge outside. The ledge runs away to the "
+            "west, along the face of the building."
         ),
-        "exits": {"S": 48, "D": "floor_5"},
+        "exits": {"E": 31},
+        "items": ["OPEN WINDOW"],
+    },
+    34: {
+        "name": "ON A LARGE LEDGE BY WINDOW",
+        "desc": (
+            "You are outside on a wide ledge, with the wall of the "
+            "building at your back and the night air in your face. "
+            "The ledge continues west toward another window. There is "
+            "nothing below you but a long drop."
+        ),
+        "exits": {"W": 36},
+        "items": [],
+    },
+    35: {
+        "name": "IN THE VAULT",
+        "desc": (
+            "A vault, small and square, its door standing open. A single "
+            "desk sits inside it, with a fat roll of money on top."
+        ),
+        "exits": {"W": 36},
+        "items": ["DOLLAR"],
+    },
+    36: {
+        "name": "ON A LARGE LEDGE BY WINDOW",
+        "desc": (
+            "The far end of the ledge, above a window. From here you "
+            "could go back east along the ledge, or down through the "
+            "window into the room below."
+        ),
+        "exits": {"E": 34},
         "items": [],
     },
 }
 
 # --------------------------------------------------------------------
-# Special room targets (cross-floor navigation)
+# Scenery: in the listing these items carry a NEGATIVE room number,
+# which is the source's way of saying "here, but you cannot take it".
 # --------------------------------------------------------------------
-SPECIAL_ROOMS = {
-    "floor_7": {"target": "floor_7", "landing_room": 37},
-    "floor_5": {"target": "floor_5", "landing_room": 51},
+FIXED_ITEMS = {
+    "SIGN ON WALL",
+    "STRING VENDING MACHINE",
+    "OPEN WINDOW",
+    "LOCKED DOOR",
 }
 
-
 # --------------------------------------------------------------------
+# Noun -> canonical item name.  The published walkthroughs spell the
+# same objects differently ("GAS" / "TANK OF HELIUM GAS", "BALLOON" /
+# "LARGE DEFLATED BALLOON", "STRING" / "LONG STRING"), so every
+# spelling has to work.
+# --------------------------------------------------------------------
+_ITEM_ALIASES = {
+    "TANK OF HELIUM GAS": "TANK OF HELIUM GAS",
+    "HELIUM TANK": "TANK OF HELIUM GAS",
+    "HELIUM GAS": "TANK OF HELIUM GAS",
+    "HELIUM": "TANK OF HELIUM GAS",
+    "GAS": "TANK OF HELIUM GAS",
+    "TANK": "TANK OF HELIUM GAS",
+    "LARGE DEFLATED BALLOON": "LARGE DEFLATED BALLOON",
+    "DEFLATED BALLOON": "LARGE DEFLATED BALLOON",
+    "BALLOON": "LARGE DEFLATED BALLOON",
+    "LARGE INFLATED BALLOON": "LARGE INFLATED BALLOON",
+    "INFLATED BALLOON": "LARGE INFLATED BALLOON",
+    "GUN": "GUN",
+    "DOLLAR": "DOLLAR",
+    "LONG STRING": "LONG STRING",
+    "STRING": "LONG STRING",
+    "SIGN ON WALL": "SIGN ON WALL",
+    "SIGN": "SIGN ON WALL",
+    "STRING VENDING MACHINE": "STRING VENDING MACHINE",
+    "VENDING MACHINE": "STRING VENDING MACHINE",
+    "OPEN WINDOW": "OPEN WINDOW",
+    "WINDOW": "OPEN WINDOW",
+    "LOCKED DOOR": "LOCKED DOOR",
+}
+
+# The room the helium tank is in.
+_TANK_ROOM = 28
+# The room the deflated balloon is in.
+_BALLOON_ROOM = 29
+# The room the gun is in.
+_GUN_ROOM = 30
+# The storeroom with the sign and the string vending machine.
+_STORE_ROOM = 32
+# The vault with the money.
+_VAULT_ROOM = 35
+# The right-hand ledge (jump down to floor 5) and the left-hand ledge.
+_LEDGE_RIGHT = 34
+_LEDGE_LEFT = 36
+
+
+# ---------------------------------------------------------------------
 # Floor 6 Engine
-# --------------------------------------------------------------------
+# ---------------------------------------------------------------------
 class Floor6Engine:
     def __init__(self, state):
         self.state = state
         self._room_items = self._init_items()
-        # Puzzle state flags
-        self.dollar_taken = False
-        self.door_unlocked = False
-        self.key_taken = False
-        self.balloon_inflated = False
-        self.kidnapper_alive = True
-        self.string_taken = False
+        # "deflated" -> "inflated" -> "tied"
+        self.balloon_state = "deflated"
+        # True once the dollar has bought the string in room 32.
+        self.string_bought = False
+        # Set if the player shoots the gun in the vault (handler 960).
+        self.shot_up = False
+        # Flavour text for the last floor transition (the dispatcher
+        # cannot carry prose alongside a transition marker).
+        self.last_transition_note = ""
 
+    # ------------------------------------------------------------------
+    # Item initialization (reset each time the player enters floor 6)
+    # ------------------------------------------------------------------
     def _init_items(self):
-        return {
-            41: [],
-            42: ["STRING VENDING MACHINE"],
-            43: ["GUN", "TIN FOIL"],
-            44: ["LARGE DEFLATED BALLOON"],
-            45: [],  # DOLLAR is held by kidnapper
-            46: ["TANK OF HELIUM GAS"],
-            47: [],
-            48: ["LOCKED DOOR"],
-            49: [],
-        }
+        """Runtime item lists: what the player can see right now."""
+        return {rid: list(r.get("items", [])) for rid, r in ROOMS.items()}
 
+    # ------------------------------------------------------------------
+    # Entry / exit
+    # ------------------------------------------------------------------
     def on_enter(self):
+        """Called when the player arrives on Floor 6.
+
+        The arrival room is 26 (IN A HALLWAY): both published
+        walkthroughs start their floor-6 section with the moves that only
+        work from room 26 (N N to the helium tank, S to the gun).
+        """
+        if hasattr(self.state, "floor"):
+            self.state.floor = FLOOR_NUMBER
         self._room_items = self._init_items()
-        self.dollar_taken = False
-        self.door_unlocked = False
-        self.key_taken = False
-        self.balloon_inflated = False
-        self.kidnapper_alive = True
-        self.string_taken = False
-        # Set landing room: player arrives here from Floor 7's slide
-        self.state.location = 41
+        self.balloon_state = "deflated"
+        self.string_bought = False
+        self.shot_up = False
+        self.last_transition_note = ""
+        self.state.location = 26
 
     def on_leave(self):
+        """Called when the player leaves Floor 6."""
         pass
 
+    # ------------------------------------------------------------------
+    # Room access
+    # ------------------------------------------------------------------
     def get_room(self, room_id):
-        return ROOMS.get(room_id)
+        """Return a copy of the room record with its runtime item list."""
+        if room_id not in ROOMS:
+            return None
+        r = dict(ROOMS[room_id])
+        r["id"] = room_id
+        r["items"] = list(self._room_items.get(room_id, []))
+        return r
 
     def get_current_room(self):
         return ROOMS.get(self.state.location)
 
     # ------------------------------------------------------------------
-    # Command dispatch
+    # Small helpers
     # ------------------------------------------------------------------
-    def handle_command(self, verb, noun=""):
-        loc = self.state.location
-        verb = verb.upper().strip()
-        noun = noun.upper().strip() if noun else ""
+    @staticmethod
+    def _wrap(text):
+        """Wrap a command result into the (text, transition) tuple the
+        dispatcher in kidnapped.py unpacks.
 
-        # Observation / inventory
-        if verb in ("LOOK", "L"):
-            return self._describe_room(loc), False
-        if verb in ("INVENTORY", "I", "INV"):
-            return self._do_inventory(), False
+        A result whose text starts with "TRANSITION:" is a floor change;
+        everything else is ordinary prose.
+        """
+        if isinstance(text, tuple):
+            return text
+        return text, text.startswith("TRANSITION:")
 
-        # Item manipulation
-        if verb in ("GET", "TAKE", "GRAB", "PICK"):
-            return self._wrap(self._do_get(noun, loc))
-        if verb in ("DROP", "PUT", "PLACE"):
-            return self._wrap(self._do_drop(noun, loc))
-        if verb in ("USE", "APPLY", "GIVE", "SHOW"):
-            return self._wrap(self._do_use(noun, loc))
-        if verb in ("INFLATE", "BLOW", "FILL"):
-            return self._wrap(self._do_inflate(noun, loc))
-        if verb in ("OPEN", "UNLOCK"):
-            return self._wrap(self._do_open(noun, loc))
-        if verb in ("SHOOT", "FIRE", "KILL"):
-            return self._wrap(self._do_shoot(noun, loc))
-        if verb in ("PAY", "INSERT"):
-            return self._wrap(self._do_use("DOLLAR", loc))
-        if verb in ("KNIT", "WEAR", "MAKE"):
-            return self._wrap("There's nothing to knit here on Floor 6.")
+    def _add_to_inventory(self, item):
+        add = getattr(self.state, "add_item", None)
+        if callable(add):
+            add(item)
+        inv = getattr(self.state, "inventory", None)
+        if inv is not None and item not in inv:
+            inv.append(item)
 
-        # Observation
-        if verb in ("READ", "EXAMINE", "X", "CHECK"):
-            return self._examine(noun, loc), False
+    def _remove_from_inventory(self, item):
+        remove = getattr(self.state, "remove_item", None)
+        if callable(remove):
+            remove(item)
+        inv = getattr(self.state, "inventory", None)
+        if inv is not None and item in inv:
+            inv.remove(item)
 
-        # Movement
-        if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc)
-        if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc)
-        if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc)
-        if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc)
-        if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc)
-        if verb in ("D", "DOWN") or (verb == "GO" and noun in ("D", "DOWN", "")):
-            return self._go_down(loc)
+    def _carrying(self, item):
+        inv = getattr(self.state, "inventory", None) or []
+        return item in inv
 
-        return "You don't know how to do that.", False
+    def _inventory(self):
+        inv = getattr(self.state, "inventory", None) or []
+        if not inv:
+            return "You're carrying nothing."
+        return "You are carrying: " + ", ".join(inv)
 
     @staticmethod
-    def _wrap(result):
-        """Wrap an action result string into a (text, transition_flag) tuple.
-        A 'TRANSITION:floor_N:room' prefix is treated as a transition.
-        """
-        if isinstance(result, str) and result.startswith("TRANSITION:"):
-            return result, True
-        return result, False
+    def _canonical_item(noun):
+        """Map a noun phrase onto a canonical item name (or None)."""
+        n = (noun or "").upper().strip()
+        if n.startswith("THE "):
+            n = n[4:].strip()
+        if not n:
+            return None
+        if n in _ITEM_ALIASES:
+            return _ITEM_ALIASES[n]
+        for alias in _ITEM_ALIASES:
+            if alias in n:
+                return _ITEM_ALIASES[alias]
+        return None
+
+    @staticmethod
+    def _parse_direction(verb, noun):
+        v = (verb or "").upper()
+        n = (noun or "").upper()
+        if v in ("N", "NORTH") or (v == "GO" and n in ("N", "NORTH")):
+            return "N"
+        if v in ("S", "SOUTH") or (v == "GO" and n in ("S", "SOUTH")):
+            return "S"
+        if v in ("E", "EAST") or (v == "GO" and n in ("E", "EAST")):
+            return "E"
+        if v in ("W", "WEST") or (v == "GO" and n in ("W", "WEST")):
+            return "W"
+        if v in ("U", "UP") or (v == "GO" and n in ("U", "UP")):
+            return "U"
+        if v in ("D", "DOWN") or (v == "GO" and n in ("D", "DOWN")):
+            return "D"
+        return None
+
+    # ------------------------------------------------------------------
+    # Command dispatch - every path returns a (text, transition) tuple
+    # ------------------------------------------------------------------
+    def handle_command(self, verb, noun=""):
+        verb = (verb or "").upper().strip()
+        noun = (noun or "").upper().strip()
+        loc = self.state.location
+
+        if verb in ("TAKE", "GRAB", "PICK"):
+            verb = "GET"
+        if verb in ("X", "CHECK"):
+            verb = "EXAMINE"
+
+        # Verb transitions have to be recognised BEFORE movement, so
+        # that "GO LEDGE" is not mistaken for a direction.
+        if verb == "CLIMB":
+            if noun.startswith("LEDGE"):
+                return self._wrap(self._climb_ledge(loc))
+            if noun.startswith("WINDOW"):
+                return self._wrap(self._climb_window(loc))
+            return self._wrap(f"You can't climb the {noun}.")
+        if verb == "GO" and noun:
+            if noun.startswith("LEDGE"):
+                return self._wrap(self._climb_ledge(loc))
+            if noun.startswith("WINDOW"):
+                return self._wrap(self._climb_window(loc))
+        if verb == "JUMP":
+            return self._wrap(self._jump(loc))
+        if verb == "INFLATE":
+            return self._wrap(self._inflate(loc, noun))
+        if verb == "TIE":
+            return self._wrap(self._tie(loc, noun))
+        if verb == "PAY":
+            return self._wrap(self._buy_string(loc, noun))
+        if verb == "PUT" and "DOLLAR" in noun:
+            return self._wrap(self._buy_string(loc, noun))
+
+        if verb in ("LOOK", "L"):
+            return self._wrap(self._describe_room(loc))
+        if verb in ("INVENTORY", "INV", "I"):
+            return self._wrap(self._inventory())
+        if verb == "GET":
+            return self._wrap(self._do_get(noun, loc))
+        if verb == "DROP":
+            return self._wrap(self._do_drop(noun, loc))
+        if verb in ("USE", "APPLY"):
+            return self._wrap(self._do_use(noun, loc))
+        if verb in ("OPEN", "UNLOCK"):
+            return self._wrap(self._do_open(noun, loc))
+        if verb in ("EXAMINE", "READ"):
+            return self._wrap(self._examine(noun, loc))
+        if verb in ("PUSH", "PRESS"):
+            return self._wrap(self._do_push(noun, loc))
+
+        # Movement
+        d = self._parse_direction(verb, noun)
+        if d is not None:
+            return self._wrap(self._go(d, loc))
+        return self._wrap("You can't do that.")
 
     # ------------------------------------------------------------------
     # Movement
     # ------------------------------------------------------------------
-    def _go(self, direction, loc):
+    def _go(self, d, loc):
         r = self.get_room(loc)
-        if not r:
-            return "You are nowhere.", False
-        exits = r.get("exits", {})
-        next_target = exits.get(direction)
-        if next_target is None:
-            return f"You can't go {direction} from here.", False
-        if isinstance(next_target, str):
-            if next_target == "floor_7":
-                return f"TRANSITION:{next_target}:37", True
-            if next_target == "floor_5":
-                return f"TRANSITION:{next_target}:51", True
-        # Locked door gate: 48 N -> 49 requires door_unlocked
-        if loc == 48 and direction == "N" and not self.door_unlocked:
-            return (
-                "The LOCKED DOOR blocks the way north. "
-                "You need a KEY to open it."
-            ), False
-        self.state.location = next_target
-        return self._describe_room(next_target), False
+        if r is None:
+            return "You are nowhere."
+        if d == "D":
+            # Handler 608: DOWN at a ledge takes you off it.
+            if loc == _LEDGE_RIGHT:
+                self.state.location = 33
+                return self._describe_room(33)
+            if loc == _LEDGE_LEFT:
+                self.state.location = _VAULT_ROOM
+                return self._describe_room(_VAULT_ROOM)
+        if d == "U":
+            return "There's no way up from here."
+        dest = r["exits"].get(d)
+        if dest is None:
+            return "You can't go that way."
+        self.state.location = dest
+        return self._describe_room(dest)
 
-    def _go_up(self, loc):
-        if loc == 41:
-            return f"TRANSITION:floor_7:37", True
-        return self._go("U", loc)
+    def _climb_ledge(self, loc):
+        """Handler 610: CLIMB LEDGE (or GO LEDGE) from 33 -> 34, 35 -> 36."""
+        if loc == 33:
+            self.state.location = _LEDGE_RIGHT
+            return self._describe_room(_LEDGE_RIGHT)
+        if loc == _VAULT_ROOM:
+            self.state.location = _LEDGE_LEFT
+            return self._describe_room(_LEDGE_LEFT)
+        if loc == _LEDGE_LEFT:
+            return "You are already on the ledge."
+        return "There's no ledge to climb here."
 
-    def _go_down(self, loc):
-        if loc == 49:
-            if not self.door_unlocked:
-                return "The way down is blocked by a locked door above.", False
-            return f"TRANSITION:floor_5:51", True
-        return self._go("D", loc)
+    def _climb_window(self, loc):
+        """Handler 608: CLIMB WINDOW (or GO WINDOW) from 34 -> 33, 36 -> 35."""
+        if loc == _LEDGE_RIGHT:
+            self.state.location = 33
+            return self._describe_room(33)
+        if loc == _LEDGE_LEFT:
+            self.state.location = _VAULT_ROOM
+            return self._describe_room(_VAULT_ROOM)
+        if loc == _VAULT_ROOM:
+            return "The vault has no window to climb."
+        return "There's no window here."
 
-    # ------------------------------------------------------------------
-    # GET / TAKE
-    # ------------------------------------------------------------------
-    def _do_get(self, noun, loc):
-        if not noun:
-            return "Take what?"
+    def _jump(self, loc):
+        """JUMP off the right-hand ledge (room 34) drops to floor 5.
 
-        # DOLLAR guarded by kidnapper
-        if "DOLLAR" in noun or "BILL" in noun:
-            if loc != 45:
-                return "You don't see a dollar bill here."
-            if self.dollar_taken:
-                return "You already have the dollar."
-            if not self.kidnapper_alive:
-                return "The kidnapper is down. You take the dollar."
-            if "GUN" in self.state.inventory:
-                # Gun-freeze: kidnapper hands over the dollar
-                self.dollar_taken = True
-                self.state.add_item("DOLLAR BILL")
-                # Also drops the key (kidnapper is frozen)
-                if not self.key_taken:
-                    self.state.add_item("SMALL KEY")
-                    self.key_taken = True
-                return (
-                    "The KIDNAPPER sees your GUN and freezes, "
-                    "hands raised. He drops the DOLLAR BILL on the table "
-                    "- and a small KEY falls out of his pocket. "
-                    "You grab both."
-                )
-            # No gun: kidnapper kills you
-            return self._kill_player(
-                "The KIDNAPPER spots you reaching for his dollar. "
-                "He pulls a knife. You die a horrible death."
-            )
-
-        # KEY can be picked up if kidnapper dropped it
-        if "KEY" in noun:
-            if "SMALL KEY" in self.state.inventory:
-                return "You already have the key."
-            if loc == 45 and self.key_taken:
-                return "The kidnapper's pockets are empty now."
-            if "GUN" in self.state.inventory and loc == 45 and self.kidnapper_alive:
-                # Implicit: if you have the gun and are here, the kidnapper
-                # already dropped the key when you threatened him. But the
-                # GET DOLLAR path auto-adds the key. For a standalone
-                # GET KEY with gun, do the threat here.
-                self.key_taken = True
-                self.state.add_item("SMALL KEY")
-                return (
-                    "You point your GUN at the KIDNAPPER. He freezes. "
-                    "A small KEY falls out of his pocket. You grab it."
-                )
-            return "There's no key here."
-
-        # Walk room items
-        room_items = self._room_items.get(loc, [])
-        for item in list(room_items):
-            if self._item_matches(noun, item):
-                room_items.remove(item)
-                self._room_items[loc] = room_items
-                self.state.add_item(item)
-                return f"You take the {item}."
-
-        return "You don't see that here."
-
-    def _item_matches(self, noun, item):
-        n = noun.upper().strip()
-        i = item.upper().strip()
-        if not n:
-            return False
-        return n in i or i in n
-
-    # ------------------------------------------------------------------
-    # DROP
-    # ------------------------------------------------------------------
-    def _do_drop(self, noun, loc):
-        if not noun:
-            return "Drop what?"
-        for item in list(self.state.inventory):
-            if self._item_matches(noun, item):
-                self.state.remove_item(item)
-                self._room_items.setdefault(loc, []).append(item)
-                # Dropping the inflated balloon deflates it
-                if item == "INFLATED BALLOON":
-                    self.balloon_inflated = False
-                    self.state.add_item("LARGE DEFLATED BALLOON")
-                    self.state.remove_item("INFLATED BALLOON")
-                return f"You drop the {item}."
-        return "You're not carrying that."
-
-    # ------------------------------------------------------------------
-    # USE
-    # ------------------------------------------------------------------
-    def _do_use(self, noun, loc):
-        if not noun:
-            return "Use what?"
-
-        # DOLLAR on vending machine
-        if "DOLLAR" in noun or "BILL" in noun:
-            return self._use_dollar_on_vending(loc)
-
-        # KEY on the locked door
-        if "KEY" in noun:
-            return self._use_key_on_door(loc)
-
-        # INFLATED BALLOON -> float to floor 5
-        if "INFLATED" in noun and "BALLOON" in noun:
-            if "INFLATED BALLOON" not in self.state.inventory:
-                return "You don't have an inflated balloon."
-            return "TRANSITION:floor_5:51"
-        if "BALLOON" in noun:
-            # Trying to USE the deflated balloon -> suggest inflate
-            if "LARGE DEFLATED BALLOON" in self.state.inventory:
-                return (
-                    "The balloon is deflated. "
-                    "Try INFLATE BALLOON (you'll need a HELIUM TANK)."
-                )
-            return "You don't have a balloon."
-
-        # INFLATE command (also handled separately as a verb)
-        if "INFLATE" in noun or "FILL" in noun:
-            return self._do_inflate(loc)
-
-        # GUN - trying to USE the gun (but not shoot)
-        if "GUN" in noun:
-            if "GUN" not in self.state.inventory:
-                return "You don't have a gun."
-            # Pointing the gun is the "threat" - already handled by
-            # GET DOLLAR. If you USE GUN explicitly, it just threatens.
-            return (
-                "You brandish the GUN menacingly. "
-                "Anyone watching will be very cooperative."
-            )
-
-        # TIN FOIL - no obvious use on floor 6 (could be used to wrap
-        # the balloon or for shenanigans later; for now it's a no-op)
-        if "FOIL" in noun or "TIN" in noun:
-            return "The TIN FOIL is shiny but doesn't seem useful on its own."
-
-        # STRING from vending machine - used on floor 5+
-        if "STRING" in noun:
-            return "The STRING is useful but not here."
-
-        # HELIUM tank
-        if "HELIUM" in noun or "TANK" in noun:
-            return self._do_inflate(loc)
-
-        return "You can't figure out how to use that here."
-
-    def _use_dollar_on_vending(self, loc):
-        if "DOLLAR BILL" not in self.state.inventory:
-            return "You need a DOLLAR BILL."
-        if loc != 42:
-            return "There's no vending machine here."
-        if self.string_taken:
-            return "The vending machine is empty (you already got the string)."
-        self.state.remove_item("DOLLAR BILL")
-        self.state.add_item("STRING")
-        self.string_taken = True
-        return (
-            "You insert the DOLLAR BILL into the STRING VENDING MACHINE. "
-            "Ka-chunk! A length of STRING tumbles out. "
-            "It might be useful on a lower floor."
-        )
-
-    def _use_key_on_door(self, loc):
-        if "SMALL KEY" not in self.state.inventory:
-            return "You don't have a SMALL KEY."
-        if loc != 48:
-            return "There's no locked door here."
-        if self.door_unlocked:
-            return "The door is already unlocked."
-        self.door_unlocked = True
-        return (
-            "You insert the SMALL KEY into the LOCKED DOOR. "
-            "It turns with a satisfying click. The door swings open!"
-        )
-
-    # ------------------------------------------------------------------
-    # INFLATE
-    # ------------------------------------------------------------------
-    def _do_inflate(self, loc=None, noun=""):
-        if "LARGE DEFLATED BALLOON" not in self.state.inventory and \
-           "INFLATED BALLOON" not in self.state.inventory:
-            return "You don't have a balloon to inflate."
-        if "TANK OF HELIUM GAS" not in self.state.inventory and \
-           "HELIUM TANK" not in self.state.inventory and \
-           "HELIUM" not in self.state.inventory:
-            return "You need a TANK OF HELIUM GAS to inflate the balloon."
-        if "INFLATED BALLOON" in self.state.inventory:
-            return "The balloon is already inflated."
-        # Swap deflated for inflated
-        self.state.remove_item("LARGE DEFLATED BALLOON")
-        # Optionally consume the helium tank (one-shot) - keep it for now
-        self.state.add_item("INFLATED BALLOON")
-        self.balloon_inflated = True
-        return (
-            "You connect the TANK OF HELIUM GAS to the deflated balloon. "
-            "Pssssshhh! The balloon swells into a buoyant INFLATED BALLOON. "
-            "It tugs at your hand, eager to fly. "
-            "USE INFLATED BALLOON to ride it."
-        )
-
-    # ------------------------------------------------------------------
-    # SHOOT (the GUN has blanks - shooting the kidnapper kills you)
-    # ------------------------------------------------------------------
-    def _do_shoot(self, noun, loc):
-        if "GUN" not in self.state.inventory:
-            return "You don't have a gun."
-        if loc != 45:
-            return "There's nothing to shoot here."
-        # Shooting the kidnapper -> gun has blanks -> kidnapper kills you
-        return self._kill_player(
-            "BANG! Click. The GUN had blanks! "
-            "The KIDNAPPER laughs, pulls a knife, and you die a terrible death."
-        )
-
-    # ------------------------------------------------------------------
-    # OPEN
-    # ------------------------------------------------------------------
-    def _do_open(self, noun, loc):
-        if "DOOR" in noun or "LOCKED" in noun:
-            if loc == 48:
-                if self.door_unlocked:
-                    return "The door is already open. Go NORTH."
-                return "The door is locked. You need a KEY."
-            return "There's no locked door here."
-        if "VENDING" in noun or "MACHINE" in noun:
-            return "The vending machine has no opening - just a slot."
-        return "You can't open that."
-
-    # ------------------------------------------------------------------
-    # EXAMINE
-    # ------------------------------------------------------------------
-    def _examine(self, noun, loc):
-        if not noun:
-            return self._describe_room(loc)
-        n = noun.upper()
-
-        if "KIDNAPPER" in n or "MAN" in n or "GUY" in n:
-            if loc == 45:
-                if not self.kidnapper_alive:
-                    return "The kidnapper lies still. You got past him."
-                if "GUN" in self.state.inventory:
-                    return (
-                        "The KIDNAPPER eyes your GUN nervously. "
-                        "He won't try anything while you're armed."
-                    )
-                return (
-                    "The KIDNAPPER is busy counting money. "
-                    "He looks dangerous. "
-                    "Don't try anything without a weapon."
-                )
-            return "No kidnapper here."
-
-        if "DOLLAR" in n or "BILL" in n:
-            if loc == 45 and not self.dollar_taken:
-                return "A single DOLLAR BILL on the kidnapper's table."
-            if "DOLLAR BILL" in self.state.inventory:
-                return "A crisp DOLLAR BILL. Good for vending machines."
-            return "You don't see a dollar here."
-
-        if "DOOR" in n or "LOCKED" in n:
-            if loc == 48:
-                if self.door_unlocked:
-                    return "The LOCKED DOOR is now open."
-                return "A heavy LOCKED DOOR. Needs a KEY."
-            return "No door here."
-
-        if "GUN" in n:
-            if "GUN" in self.state.inventory:
-                return "A GUN. Feels light - check the chamber."
-            if loc == 43:
-                return "A GUN in a holster. It's there for the taking."
-            return "No gun here."
-
-        if "BALLOON" in n:
-            if "INFLATED BALLOON" in self.state.inventory:
-                return "A buoyant INFLATED BALLOON, tugging skyward."
-            if "LARGE DEFLATED BALLOON" in self.state.inventory:
-                return "A LARGE DEFLATED BALLOON. Needs helium."
-            if loc == 44:
-                return "A LARGE DEFLATED BALLOON hanging from a hook."
-            return "No balloon here."
-
-        if "HELIUM" in n or "TANK" in n:
-            if "TANK OF HELIUM GAS" in self.state.inventory:
-                return "A TANK OF HELIUM GAS. Connect it to a balloon."
-            if loc == 46:
-                return "A TANK OF HELIUM GAS on a dolly."
-            return "No helium here."
-
-        if "FOIL" in n or "TIN" in n:
-            if "TIN FOIL" in self.state.inventory:
-                return "A roll of TIN FOIL. Shiny."
-            if loc == 43:
-                return "A roll of TIN FOIL on the shelf."
-            return "No foil here."
-
-        if "KEY" in n:
-            if "SMALL KEY" in self.state.inventory:
-                return "A small KEY. Probably fits a lock around here."
-            return "You don't see a key here."
-
-        if "VENDING" in n or "MACHINE" in n:
-            if loc == 42:
-                return (
-                    "A STRING VENDING MACHINE. "
-                    "Insert a DOLLAR BILL to get a STRING."
-                )
-            return "No vending machine here."
-
-        if "STRING" in n:
-            if "STRING" in self.state.inventory:
-                return "A length of STRING. Useful for tying things."
-            return "No string here."
-
-        return f"You don't see anything unusual about the {noun}."
-
-    # ------------------------------------------------------------------
-    # Inventory
-    # ------------------------------------------------------------------
-    def _do_inventory(self):
-        items = self.state.inventory
-        if not items:
-            return "You are empty-handed."
-        return "You are carrying: " + ", ".join(items)
+        With a tied balloon the source prints "BALLOON CARRIES YOU DOWN
+        ONE FLOOR" (handler 800); without one you simply jump.
+        """
+        if loc != _LEDGE_RIGHT:
+            return "There's nothing to jump from here."
+        landing = SPECIAL_ROOMS.get("floor_5", {}).get("landing_room", 43)
+        # The marker has to be the WHOLE result: the dispatcher in
+        # kidnapped.py only parses a result that starts with
+        # "TRANSITION:floor_N:room", and it suppresses any result that
+        # starts with "TRANSITION:" when printing.  The flavour line is
+        # kept on the engine for the arrival side to use.
+        if self.balloon_state == "tied":
+            self.last_transition_note = "BALLOON CARRIES YOU DOWN ONE FLOOR"
+        else:
+            self.last_transition_note = "YOU JUMP DOWN TO THE NEXT FLOOR"
+        return f"TRANSITION:floor_5:{landing}"
 
     # ------------------------------------------------------------------
     # Room description
     # ------------------------------------------------------------------
-    def _describe_room(self, room_id):
-        r = self.get_room(room_id)
-        if not r:
+    def _describe_room(self, loc):
+        r = self.get_room(loc)
+        if r is None:
             return "You are nowhere."
-        desc = f"[{r['name']}]\n{r['desc']}"
-        items = self._room_items.get(room_id, [])
-        # Add the dollar to room 45 description if not taken
-        if room_id == 45 and not self.dollar_taken and self.kidnapper_alive:
-            items = list(items) + ["DOLLAR BILL"]
+        lines = [f"**{r['name']}**", r["desc"]]
+        items = self._room_items.get(loc, [])
         if items:
-            desc += "\n\nYou can see: " + ", ".join(items) + "."
-        # Door state
-        if room_id == 48 and self.door_unlocked:
-            desc += "\n\nThe LOCKED DOOR stands open to the NORTH."
-        # Kidnapper state
-        if room_id == 45 and not self.kidnapper_alive:
-            desc += "\n\nThe KIDNAPPER has been dealt with."
-        exits = r.get("exits", {})
-        exit_list = []
-        for d in ("N", "S", "E", "W", "U", "D"):
-            if d in exits:
-                t = exits[d]
-                if isinstance(t, int):
-                    target_name = ROOMS.get(t, {}).get("name", f"Room {t}")
-                    exit_list.append(f"{d} to {target_name}")
-                else:
-                    exit_list.append(f"{d} to {t}")
-        if exit_list:
-            desc += "\n\nExits: " + ", ".join(exit_list) + "."
-        return desc
+            lines.append(f"Things here: {', '.join(items)}.")
+        lines.append(f"Exits: {', '.join(r['exits'].keys())}.")
+        return "\n".join(lines)
 
     # ------------------------------------------------------------------
-    # Player death helper
+    # GET / DROP
     # ------------------------------------------------------------------
-    def _kill_player(self, msg):
-        if hasattr(self.state, "alive"):
-            self.state.alive = False
-        if hasattr(self.state, "game_over"):
-            self.state.game_over = True
-        return msg
+    def _do_get(self, noun, loc):
+        if not noun:
+            return "Take what?"
+        room_items = self._room_items.get(loc, [])
+        item = self._canonical_item(noun)
+
+        # The balloon changes identity as the puzzle proceeds.
+        if "BALLOON" in noun:
+            if self.balloon_state != "deflated":
+                if self.balloon_state == "inflated":
+                    return "You already have the balloon inflated."
+                return "You already have the balloon tied to a string."
+            if "LARGE DEFLATED BALLOON" not in room_items:
+                return "No balloon here."
+            room_items.remove("LARGE DEFLATED BALLOON")
+            self._room_items[loc] = room_items
+            self._add_to_inventory("LARGE DEFLATED BALLOON")
+            return "You take the large deflated balloon."
+
+        if "STRING" in noun and "VENDING" not in noun and "SIGN" not in noun:
+            if self.string_bought and "LONG STRING" in room_items:
+                room_items.remove("LONG STRING")
+                self._room_items[loc] = room_items
+                self._add_to_inventory("LONG STRING")
+                return "You take the long string."
+            if self.string_bought:
+                return "You already have the string."
+            return "No string here."
+
+        if item is None or item not in room_items:
+            return f"No {noun} here."
+        if item in FIXED_ITEMS:
+            return f"The {item} can't be taken - it's fixed in place."
+        room_items.remove(item)
+        self._room_items[loc] = room_items
+        self._add_to_inventory(item)
+        return f"You take the {item}."
+
+    def _do_drop(self, noun, loc):
+        inv = getattr(self.state, "inventory", None) or []
+        item = self._canonical_item(noun)
+        if item is None or item not in inv:
+            return f"You're not carrying a {noun}."
+        self._remove_from_inventory(item)
+        self._room_items.setdefault(loc, []).append(item)
+        return f"You drop the {item}."
 
     # ------------------------------------------------------------------
-    # Static exit verification
+    # The puzzle verbs
     # ------------------------------------------------------------------
-    @staticmethod
-    def verify_exits():
-        errors = []
-        opp = {"N": "S", "S": "N", "E": "W", "W": "E", "U": "D", "D": "U"}
-        for rid, r in ROOMS.items():
-            for d, t in r["exits"].items():
-                if isinstance(t, str):
-                    continue
-                if t not in ROOMS:
-                    errors.append(f"Room {rid} -> {d}={t}, but room {t} does not exist")
-                    continue
-                ro = opp[d]
-                reverse = ROOMS[t]["exits"].get(ro)
-                if reverse is None:
-                    errors.append(f"Room {rid} -> {d}={t}, but {t} has no {ro}")
-                elif reverse != rid:
-                    errors.append(
-                        f"Room {rid} -> {d}={t}, but {t} -> {ro}={reverse} (not back to {rid})"
-                    )
-        return errors
+    def _inflate(self, loc, noun):
+        """Handler 950: INFLATE BALLOON needs the helium tank."""
+        if noun and "BALLOON" not in noun:
+            return f"You can't inflate the {noun}."
+        if self.balloon_state == "inflated":
+            return "The balloon is already inflated."
+        if self.balloon_state == "tied":
+            return "The balloon is already tied to the string."
+        if not self._carrying("LARGE DEFLATED BALLOON"):
+            return "You don't have a balloon to inflate."
+        if not self._carrying("TANK OF HELIUM GAS"):
+            return "You need something to inflate it with."
+        self._remove_from_inventory("LARGE DEFLATED BALLOON")
+        self._add_to_inventory("LARGE INFLATED BALLOON")
+        self.balloon_state = "inflated"
+        return ("You twist the valve on the tank and the balloon swells up "
+                "fat and round.")
 
+    def _tie(self, loc, noun):
+        """Handler 835: TIE BALLOON / TIE STRING needs an inflated balloon."""
+        if noun and "BALLOON" not in noun and "STRING" not in noun:
+            return f"You can't tie the {noun}."
+        if self.balloon_state == "tied":
+            return "The balloon is already tied to the string."
+        if self.balloon_state != "inflated":
+            return "You need an inflated balloon to tie the string to."
+        if not self._carrying("LONG STRING"):
+            return "You need a string to tie to the balloon."
+        self._remove_from_inventory("LARGE INFLATED BALLOON")
+        self._remove_from_inventory("LONG STRING")
+        self._add_to_inventory("INFLATED BALLOON WITH STRING")
+        self.balloon_state = "tied"
+        return ("You tie the string to the balloon and hold on. The "
+                "balloon tugs gently at your hand.")
 
-if __name__ == "__main__":
-    e = Floor6Engine.verify_exits()
-    if e:
-        print(f"FAIL: {len(e)} errors:")
-        for x in e:
-            print(f"  {x}")
-    else:
-        print(f"PASS: All exits bidirectional ({len(ROOMS)} rooms)")
+    def _buy_string(self, loc, noun):
+        """Handler 550: PUT DOLLAR (or PAY DOLLAR) in the vending machine."""
+        if loc != _STORE_ROOM:
+            return "There's no machine to put money into here."
+        if noun and "DOLLAR" not in noun and "MONEY" not in noun:
+            return f"You can't buy the {noun}."
+        if not self._carrying("DOLLAR"):
+            return "You don't have any money."
+        if self.string_bought:
+            return "You've already bought the string."
+        self._remove_from_inventory("DOLLAR")
+        self.string_bought = True
+        items = self._room_items.setdefault(_STORE_ROOM, [])
+        items.append("LONG STRING")
+        return ("You drop the dollar into the machine. It clunks, and a "
+                "long string drops out of the slot.")
+
+    # ------------------------------------------------------------------
+    # Misc verbs
+    # ------------------------------------------------------------------
+    def _do_use(self, noun, loc):
+        if "GUN" in noun:
+            if loc == _VAULT_ROOM and self._carrying("GUN"):
+                self.shot_up = True
+                return ("GUN HAD BLANKS! KIDNAPPER SHOOTS YOU!")
+            if not self._carrying("GUN"):
+                return "You aren't carrying a gun."
+            return "GUN MISFIRES"
+        if "BALLOON" in noun:
+            return self._inflate(loc, noun)
+        if "STRING" in noun:
+            return self._tie(loc, noun)
+        if "DOLLAR" in noun:
+            return self._buy_string(loc, noun)
+        return f"You can't use the {noun}."
+
+    def _do_open(self, noun, loc):
+        if "DOOR" in noun:
+            if loc == 30:
+                return "THE DOOR'S LOCKED"
+            return "There's no door here."
+        if "WINDOW" in noun:
+            if loc == 33:
+                return "The window is already open."
+            return "There's no window here."
+        return f"You can't open the {noun}."
+
+    def _examine(self, noun, loc):
+        if "SIGN" in noun:
+            if loc == _STORE_ROOM:
+                return "SIGN: STRING COSTS $1.00"
+            return "There's no sign here."
+        if "MACHINE" in noun or "VENDING" in noun:
+            if loc == _STORE_ROOM:
+                if self.string_bought:
+                    return "The machine is empty now."
+                return "The machine is full of string. It costs $1.00."
+            return "There's no machine here."
+        if "DOLLAR" in noun or "MONEY" in noun:
+            if loc == _VAULT_ROOM:
+                return "A fat roll of money, worth about a dollar."
+            return "There's no money here."
+        if "GUN" in noun:
+            if loc == _GUN_ROOM:
+                return "A gun, lying on the desk."
+            if self._carrying("GUN"):
+                return "A small handgun. The chambers are empty."
+            return "You aren't carrying a gun."
+        if "BALLOON" in noun:
+            if self.balloon_state == "tied":
+                return "A large balloon, inflated and tied to a long string."
+            if self.balloon_state == "inflated":
+                return "A large balloon, round and tight with helium."
+            if self._carrying("LARGE DEFLATED BALLOON"):
+                return "A large balloon, limp and folded over."
+            return "There's no balloon here."
+        if "TANK" in noun or "HELIUM" in noun:
+            if loc == _TANK_ROOM:
+                return "A tank of helium gas, hissing faintly."
+            return "There's no tank here."
+        if "LEDGE" in noun:
+            return ("A narrow ledge along the outside of the building. "
+                    "It runs west toward another window.")
+        if "WINDOW" in noun:
+            if loc == 33:
+                return "An open window, giving onto the ledge."
+            return "There's no window here."
+        if "KIDNAPPER" in noun:
+            return "He's counting money and doesn't see you yet."
+        return f"You can't see anything special about the {noun}."
+
+    def _do_push(self, noun, loc):
+        if "BUTTON" in noun:
+            return "There's no button here."
+        return f"You can't push the {noun}."

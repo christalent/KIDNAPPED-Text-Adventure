@@ -4,7 +4,7 @@ Tests for KIDNAPPED! Floor 5 (Mary Poppins / weird floor).
 
 Floor 5 fixes:
   1. All 9 rooms (51-59) load and have bidirectional exits.
-  2. Entry: room 51 U -> floor_6:49
+  2. Entry: room 51 U -> floor_6:26
   3. Exit:  room 59 D -> floor_4:61
   4. SIGN ON WALL is fixed (cannot be taken).
   5. GRAFFITI ON WALL is fixed.
@@ -95,7 +95,7 @@ def test_exits_bidirectional():
 
 
 def test_entry_51_up_to_floor6():
-    """Room 51 U exit should transition to floor_6 landing room 49."""
+    """Room 51 U exit should transition to floor_6 landing room 26."""
     r51 = ROOMS[51]
     assert "U" in r51["exits"], "Room 51 missing U exit"
     assert r51["exits"]["U"] == "floor_6", \
@@ -104,13 +104,13 @@ def test_entry_51_up_to_floor6():
 
 
 def test_entry_51_up_actually_transitions():
-    """U from 51 returns TRANSITION:floor_6:49 with transition=True."""
+    """U from 51 returns TRANSITION:floor_6:26 with transition=True."""
     state, engine = fresh_engine(location=51)
     result, transition = engine.handle_command("U", "")
     assert transition, "U from 51 should set transition=True"
-    assert result == "TRANSITION:floor_6:49", \
-        f"Expected TRANSITION:floor_6:49, got {result}"
-    print("✅ U from 51 emits TRANSITION:floor_6:49 with transition=True")
+    assert result == "TRANSITION:floor_6:26", \
+        f"Expected TRANSITION:floor_6:26, got {result}"
+    print("✅ U from 51 emits TRANSITION:floor_6:26 with transition=True")
 
 
 def test_exit_59_down_to_floor4():

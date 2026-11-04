@@ -19,12 +19,12 @@ TRUST RULES (this project failed before because these were ignored):
   * Listing dispatch is ON A GOTO 11,12,...,75, so global room number
     = BASIC line number - 10.
 
-Floors 1-7 have NOT been audited yet. Their room tables in the tests
+Floors 1-5 and 7 have NOT been audited yet. Their room tables in the tests
 are still guesses, so the source-pair validation for them is skipped
 rather than validating a guess against itself (see
 tests/test_all_floors_map.py).
 
-Floors 8 and 9 ARE audited: their tables below are the pixel-derived
+Floors 6, 8 and 9 ARE audited: their tables below are the pixel-derived
 corrected ones and are compared against the floor modules.
 """
 
@@ -133,6 +133,95 @@ FLOOR8_ROOMS = {
 }
 
 # ---------------------------------------------------------------------
+# FLOOR 6 - global rooms 26..36 (audited 2026-11-04)
+#
+# Pixel read of the original listing (page 1, right column, printed
+# lines 36-46; global room = printed line - 10), reconciled against
+# both published walkthroughs and Francis's 2015 floor-6 map panel.
+#
+# Verb transitions (NOT directional exits):
+#   room 33  CLIMB LEDGE / GO LEDGE   -> room 34
+#   room 35  CLIMB LEDGE / GO LEDGE   -> room 36
+#   room 34  CLIMB WINDOW / GO WINDOW -> room 33
+#   room 36  CLIMB WINDOW / GO WINDOW -> room 35
+#   room 34  JUMP                     -> floor 5
+#   room 32  READ SIGN                -> "SIGN: STRING COSTS $1.00"
+#   room 32  PUT DOLLAR / PAY DOLLAR  -> buys the LONG STRING
+# ---------------------------------------------------------------------
+FLOOR6_ROOMS = {
+    26: {
+        "name": "IN A HALLWAY",
+        "exits": {"W": 31, "N": 27, "E": 29, "S": 30},
+        "items": [],
+    },
+    27: {
+        "name": "IN AN OFFICE",
+        "exits": {"N": 28, "S": 26},
+        "items": [],
+    },
+    28: {
+        "name": "IN A CLOSET",
+        "exits": {"S": 27},
+        "items": ["TANK OF HELIUM GAS"],
+    },
+    29: {
+        "name": "IN A GAME ROOM",
+        "exits": {"W": 26},
+        "items": ["LARGE DEFLATED BALLOON"],
+    },
+    30: {
+        "name": "IN AN OFFICE",
+        "exits": {"N": 26},
+        "items": ["GUN", "LOCKED DOOR"],
+    },
+    31: {
+        "name": "IN A HALLWAY",
+        "exits": {"W": 33, "N": 32, "E": 26},
+        "items": [],
+    },
+    32: {
+        "name": "IN A STORE ROOM",
+        "exits": {"S": 31},
+        "items": ["SIGN ON WALL", "STRING VENDING MACHINE"],
+    },
+    33: {
+        "name": "IN AN OFFICE",
+        "exits": {"E": 31},
+        "items": ["OPEN WINDOW"],
+    },
+    34: {
+        "name": "ON A LARGE LEDGE BY WINDOW",
+        "exits": {"W": 36},
+        "items": [],
+    },
+    35: {
+        "name": "IN THE VAULT",
+        "exits": {"W": 36},
+        "items": ["DOLLAR"],
+    },
+    36: {
+        "name": "ON A LARGE LEDGE BY WINDOW",
+        "exits": {"E": 34},
+        "items": [],
+    },
+}
+
+# Items that are visible on floor 6, by room.  Scenery (the sign, the
+# vending machine, the open window, the locked door) carries a NEGATIVE
+# room number in the source DATA rows and cannot be picked up.
+FLOOR6_ITEMS = {
+    28: ["TANK OF HELIUM GAS"],
+    29: ["LARGE DEFLATED BALLOON"],
+    30: ["GUN", "LOCKED DOOR"],
+    32: ["SIGN ON WALL", "STRING VENDING MACHINE"],
+    33: ["OPEN WINDOW"],
+    35: ["DOLLAR"],
+}
+
+# Rooms that must NOT exist on floor 6.  Floor 6 owns exactly 26-36.
+FLOOR6_FORBIDDEN_ROOMS = (set(range(1, 26)) | set(range(37, 66)))
+
+# ---------------------------------------------------------------------
 # Floors whose room tables have NOT been pixel-audited yet.
 # The all-floors map test skips source-pair validation for these
 # instead of grading a guess against itself.
@@ -141,10 +230,11 @@ FLOOR8_ROOMS = {
 # floors/floor_8.py now carries the authoritative 13-17 table and the
 # map test compares the two.
 # ---------------------------------------------------------------------
-UNAUDITED_FLOORS = {1, 2, 3, 4, 5, 6, 7}
+UNAUDITED_FLOORS = {1, 2, 3, 4, 5, 7}
 
 # Audited floors, keyed by floor number.
 AUDITED_ROOMS = {
+    6: FLOOR6_ROOMS,
     8: FLOOR8_ROOMS,
     9: FLOOR9_ROOMS,
 }

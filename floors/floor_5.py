@@ -161,7 +161,7 @@ FIXED_ITEMS = {
 }
 
 SPECIAL_ROOMS = {
-    "floor_6": {"target": "floor_6", "landing_room": 49},
+    "floor_6": {"target": "floor_6", "landing_room": 26},
     "floor_4": {"target": "floor_4", "landing_room": 61},
 }
 
@@ -269,7 +269,7 @@ class Floor5Engine:
             return f"You can't go {direction} from here.", False
         if isinstance(next_target, str):
             if next_target == "floor_6":
-                return f"TRANSITION:{next_target}:49", True
+                return f"TRANSITION:{next_target}:26", True
             if next_target == "floor_4":
                 return f"TRANSITION:{next_target}:61", True
         # Magical barrier in room 58 N -> 59 requires machine_activated
@@ -285,7 +285,7 @@ class Floor5Engine:
 
     def _go_up(self, loc):
         if loc == 51:
-            return f"TRANSITION:floor_6:49", True
+            return f"TRANSITION:floor_6:26", True
         return self._go("U", loc)
 
     def _go_down(self, loc):

@@ -12,7 +12,7 @@ Floor 7 fixes:
   7. KID'S SLIDE in room 55 actually transitions to floor 6
   8. KNIT/SWEATER mechanic: USE YARN + NEEDLES -> SUIT (auto-worn)
   9. BURGLAR in 39: dollar accessible only with disguise/gun
- 10. USE SLIDE/GO DOWN in 55 -> TRANSITION:floor_6:41
+ 10. USE SLIDE/GO DOWN in 55 -> TRANSITION:floor_6:26
 
 Floor 6 fixes:
   1. New layout: 9 rooms (41-49) with all bidirectional exits
@@ -109,8 +109,8 @@ def test_floor7_kid_slide_transitions_to_floor_6():
     state.location = 55
     result, transition = engine.handle_command("USE", "SLIDE")
     assert transition, f"USE SLIDE should transition, got: {result[:80]}"
-    assert result.startswith("TRANSITION:floor_6:41"), \
-        f"Expected TRANSITION:floor_6:41, got: {result}"
+    assert result.startswith("TRANSITION:floor_6:26"), \
+        f"Expected TRANSITION:floor_6:26, got: {result}"
     print("✅ Floor 7: USE SLIDE in 55 transitions to floor 6 (room 41)")
 
 
@@ -237,149 +237,24 @@ def test_floor7_full_puzzle_solve():
 # ======================================================================
 # Floor 6 tests
 # ======================================================================
-def test_floor6_exits_bidirectional():
-    """All exits are bidirectional."""
-    errors = Floor6Engine.verify_exits()
-    assert not errors, f"Exit errors: {errors}"
-    print(f"✅ Floor 6: all {len(ROOMS6)} rooms have bidirectional exits")
 
 
-def test_floor6_items_in_correct_rooms():
-    """Items are in the rooms specified by the task."""
-    assert "GUN" in ROOMS6[43]["items"]
-    assert "TIN FOIL" in ROOMS6[43]["items"]
-    assert "LARGE DEFLATED BALLOON" in ROOMS6[44]["items"]
-    assert "TANK OF HELIUM GAS" in ROOMS6[46]["items"]
-    assert "STRING VENDING MACHINE" in ROOMS6[42]["items"]
-    assert "LOCKED DOOR" in ROOMS6[48]["items"]
-    print("✅ Floor 6: items are in correct rooms")
 
 
-def test_floor6_door_blocks_49():
-    """N from 48 is blocked by the LOCKED DOOR."""
-    state, engine = fresh_engine(6)
-    state.location = 48
-    result, transition = engine.handle_command("N", "")
-    assert not transition
-    assert "locked" in result.lower() or "key" in result.lower(), \
-        f"Expected locked message, got: {result}"
-    assert state.location == 48
-    print("✅ Floor 6: locked door blocks 48->49")
 
 
-def test_floor6_gun_path_solves_puzzle():
-    """Path A: gun + key unlocks door and reaches floor 5."""
-    state, engine = fresh_engine(6)
-    cmds = [
-        ("N", ""),                  # 41 -> 42
-        ("N", ""),                  # 42 -> 43
-        ("GET", "GUN"),
-        ("N", ""),                  # 43 -> 44
-        ("N", ""),                  # 44 -> 45 (kidnapper balcony)
-        ("GET", "DOLLAR"),          # kidnapper freezes, drops dollar+key
-        ("N", ""),                  # 45 -> 46
-        ("N", ""),                  # 46 -> 47
-        ("N", ""),                  # 47 -> 48
-        ("USE", "KEY"),             # unlock door
-        ("N", ""),                  # 48 -> 49
-        ("D", ""),                  # 49 -> floor 5
-    ]
-    for verb, noun in cmds:
-        result, transition = engine.handle_command(verb, noun)
-        if verb == "D":
-            assert transition, f"D from 49 should transition; got: {result[:80]}"
-    assert state.location == 49
-    print("✅ Floor 6 Path A: gun + key + unlock -> floor 5 transition")
 
 
-def test_floor6_balloon_path_solves_puzzle():
-    """Path B: balloon + helium floats to floor 5."""
-    state, engine = fresh_engine(6)
-    cmds = [
-        ("N", ""),                  # 41 -> 42
-        ("N", ""),                  # 42 -> 43
-        ("N", ""),                  # 43 -> 44
-        ("GET", "BALLOON"),
-        ("N", ""),                  # 44 -> 45
-        ("N", ""),                  # 45 -> 46
-        ("GET", "HELIUM"),
-        ("INFLATE", "BALLOON"),
-        ("USE", "INFLATED BALLOON"),
-    ]
-    for verb, noun in cmds:
-        result, transition = engine.handle_command(verb, noun)
-        if verb == "USE" and noun == "INFLATED BALLOON":
-            assert transition, f"USE INFLATED BALLOON should transition; got: {result[:80]}"
-    assert "INFLATED BALLOON" in state.inventory
-    print("✅ Floor 6 Path B: balloon + helium -> floor 5 transition")
 
 
-def test_floor6_shoot_kidnapper_kills_player():
-    """SHOOT KIDNAPPER with gun -> blanks -> death."""
-    state, engine = fresh_engine(6)
-    state.inventory = ["GUN"]
-    state.location = 45
-    result, _ = engine.handle_command("SHOOT", "KIDNAPPER")
-    assert "die" in result.lower() or "blanks" in result.lower() or "death" in result.lower(), \
-        f"Expected death message, got: {result}"
-    assert not state.alive, "Player should be dead"
-    print("✅ Floor 6: SHOOT KIDNAPPER -> gun has blanks -> death")
 
 
-def test_floor6_get_dollar_no_gun_kills_player():
-    """GET DOLLAR without gun -> kidnapper kills you."""
-    state, engine = fresh_engine(6)
-    state.location = 45
-    result, _ = engine.handle_command("GET", "DOLLAR")
-    assert "die" in result.lower() or "death" in result.lower(), \
-        f"Expected death message, got: {result}"
-    assert not state.alive
-    print("✅ Floor 6: GET DOLLAR (no gun) -> death")
 
 
-def test_floor6_vending_machine_works():
-    """USE DOLLAR at vending machine -> STRING."""
-    state, engine = fresh_engine(6)
-    state.inventory = ["DOLLAR BILL"]
-    state.location = 42
-    result, _ = engine.handle_command("USE", "DOLLAR")
-    assert "STRING" in state.inventory, \
-        f"Expected STRING in inventory, got: {state.inventory}"
-    assert "DOLLAR BILL" not in state.inventory
-    print("✅ Floor 6: vending machine gives STRING for $1")
 
 
-def test_floor6_up_to_floor_7():
-    """UP from 41 transitions to floor 7."""
-    state, engine = fresh_engine(6)
-    state.location = 41
-    result, transition = engine.handle_command("U", "")
-    assert transition
-    assert "floor_7" in result
-    print("✅ Floor 6: UP from 41 transitions to floor 7")
 
 
-def test_floor7_to_floor_6_full_flow():
-    """Walk through floor 7 to reach floor 6, then solve floor 6."""
-    state, engine = fresh_engine(7)
-    # Floor 7: get key, unlock vault, go to 55
-    engine.handle_command("W", "")   # 31 -> 33
-    engine.handle_command("GET", "SMALL KEY")
-    engine.handle_command("E", "")   # 33 -> 31
-    engine.handle_command("N", "")   # 31 -> 32
-    engine.handle_command("N", "")   # 32 -> 37
-    engine.handle_command("USE", "SMALL KEY")
-    engine.handle_command("N", "")   # 37 -> 55
-    # Slide to floor 6
-    result, transition = engine.handle_command("USE", "SLIDE")
-    assert transition
-    # Simulate engine swap (the runner does this)
-    state.floor = 6
-    state.location = 41
-    engine = Floor6Engine(state)
-    engine.on_enter()
-    assert state.location == 41
-    print("✅ Floor 7 -> Floor 6: slide transition works, on_enter sets landing room")
 
 
 def main():
@@ -404,25 +279,44 @@ def main():
     test_floor7_full_puzzle_solve()
     print()
 
-    print("[FLOOR 6]")
-    test_floor6_exits_bidirectional()
-    test_floor6_items_in_correct_rooms()
-    test_floor6_door_blocks_49()
-    test_floor6_gun_path_solves_puzzle()
-    test_floor6_balloon_path_solves_puzzle()
-    test_floor6_shoot_kidnapper_kills_player()
-    test_floor6_get_dollar_no_gun_kills_player()
-    test_floor6_vending_machine_works()
-    test_floor6_up_to_floor_7()
     print()
 
     print("[CROSS-FLOOR]")
-    test_floor7_to_floor_6_full_flow()
     print()
 
     print("=" * 60)
     print("ALL TESTS PASSED ✅")
     print("=" * 60)
+
+
+def test_floor7_to_floor_6_full_flow():
+    """Floor 7's slide lands on the audited Floor 6 arrival room (26),
+    and Floor 6 is playable from there.
+
+    The old version of this test drove the STALE floor 6 (rooms 41-49,
+    a kidnapper standing in the vault, an UP exit back to floor 7).  All
+    of that was guesswork; Floor 6 is now audited from the source
+    pixels and is covered by tests/test_floor6.py, which replays both
+    published walkthroughs command-for-command.
+    """
+    from floors.floor_6 import Floor6Engine as _F6
+
+    f7 = Floor7Engine(FakeState())
+    f7.on_enter()
+    f7.state.location = 55
+    result, transition = f7.handle_command("USE", "SLIDE")
+    assert transition is True, result
+    assert result == "TRANSITION:floor_6:26", result
+
+    f6 = _F6(FakeState())
+    f6.on_enter()
+    assert f6.state.location == 26, f6.state.location
+    text, _ = f6.handle_command("N", "")
+    assert "OFFICE" in text, text
+    text, _ = f6.handle_command("N", "")
+    assert "CLOSET" in text, text
+    text, _ = f6.handle_command("GET", "TANK OF HELIUM GAS")
+    assert "TANK OF HELIUM GAS" in f6.state.inventory
 
 
 if __name__ == "__main__":

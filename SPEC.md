@@ -33,7 +33,7 @@ The TIME variable (TI) controls this:
 - Player must WAIT until after midnight to safely tape wires
 - The CLOCK in room 5 is frozen at midnight
 
-## Audited Room Layout -- Floors 9 and 8 (source-verified 2026-11-03)
+## Audited Room Layout -- Floors 9, 8 and 6 (source-verified 2026-11-03 / 2026-11-04)
 Replaces the old "Correct Floor 9 Room Layout" block, which was hand-patched
 from the corrupted OCR layer (see FLOOR9_GROUND_TRUTH.md -- the invented
 reciprocal `E=14`/`W=11` pairs made the bad map look symmetric).
@@ -62,7 +62,27 @@ Room 16:  IN AN OFFICE                              N=13 E=17                   
 Room 17:  IN AN OFFICE                              W=16                        OPEN WINDOW, DESK
 ```
 
-## Audited Items -- Floors 9 and 8
+### Floor 6 -- rooms 26-36
+```
+Room 26:  IN A HALLWAY                          W=31 N=27 E=29 S=30   
+Room 27:  IN AN OFFICE                          N=28 S=26             
+Room 28:  IN A CLOSET                           S=27                  TANK OF HELIUM GAS
+Room 29:  IN A GAME ROOM                        W=26                  LARGE DEFLATED BALLOON
+Room 30:  IN AN OFFICE                          N=26                  GUN, LOCKED DOOR
+Room 31:  IN A HALLWAY                          W=33 N=32 E=26        
+Room 32:  IN A STORE ROOM                       S=31                  SIGN ON WALL, STRING VENDING MACHINE
+Room 33:  IN AN OFFICE                          E=31                  OPEN WINDOW
+Room 34:  ON A LARGE LEDGE BY WINDOW            W=36                  
+Room 35:  IN THE VAULT                          W=36                  DOLLAR
+Room 36:  ON A LARGE LEDGE BY WINDOW            E=34                  
+```
+
+Verb links (not directional exits): `CLIMB LEDGE` 33->34 and 35->36;
+`CLIMB WINDOW` 34->33 and 36->35; `JUMP` off room 34 descends to floor 5;
+`PUT DOLLAR` at room 32 buys the LONG STRING; `INFLATE` needs the helium tank;
+`TIE` needs the long string.
+
+## Audited Items -- Floors 9, 8 and 6
 ```
 Floor 9:
   Room  2: PAPER NOTE (take), DESK (fixed), CHAIR (take)
@@ -82,6 +102,15 @@ Floor 8:
 
 Corrected source DATA rows and the OCR-vs-pixels evidence:
 `KIDNAPPED_SOURCE_CORRECTED.txt`, `OCR_CORRECTIONS_2026-11-04.md`.
+
+Floor 6:
+  Room 28: TANK OF HELIUM GAS (take)
+  Room 29: LARGE DEFLATED BALLOON (take)
+  Room 30: GUN (take), LOCKED DOOR (fixed)
+  Room 32: SIGN ON WALL (fixed), STRING VENDING MACHINE (fixed)
+  Room 33: OPEN WINDOW (fixed)
+  Room 35: DOLLAR (take)
+```
 
 ## Floor Themes & Difficulty
 | Floor | Theme | Key Puzzles | Difficulty |
@@ -106,7 +135,10 @@ KIDNAPPED_Original.pdf   — Clean source PDF (use this!)
 PARSED_BASIC_SOURCE.txt   — Parsed room/item data from clean PDF
 GAME_ANALYSIS.txt        — Game analysis from review + player memory
 SPEC.md                   — This file
-floors/floor_9.py        — Floor 9 (verified bidirectional)
+floors/floor_9.py        — Floor 9 (verified bidirectional, audited)
+floors/floor_8.py        — Floor 8 (audited)
+floors/floor_6.py        — Floor 6 (audited 2026-11-04)
+audit/FLOOR6_PIXEL_NOTES.md — Floor 6 source-pixel evidence
 floors/floor_7.py        — Floor 7 (has bidir errors)
 floors/floor_1.py        — Floor 1 (has bidir errors)
 v1_legacy/              — Archived original Python port
