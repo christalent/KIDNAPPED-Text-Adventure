@@ -40,7 +40,14 @@ The same repair is required in the DATA rows, where it changes e.g.
 | 13 | `TIN FOIL`,-33 (BAS) | TIN FOIL | `OPEN WINDOW`,-33 | **FIXED** in transcription file |
 | 14 | `GOLD'S SLIDE` (BAS) | GOLD'S | `CHILD'S SLIDE` | **FIXED** in transcription file |
 | 15 | `EVERY PUPIL'S LAMP`,50 (BAS) | EVERY PUPIL'S LAMP | `MARY POPPIN'S UMBRELLA`,50 | **FIXED** in transcription file |
-| 16 | DATA 2010 row, `LOCKED DOOR` room | -21 | second listing: -24 | **UNRESOLVED** -- left as UNRESOLVED, not guessed |
+| 16 | DATA 2010 row, `LOCKED DOOR` room | -21 | Jul-1981 re-listing: `LOCKED DOOR, -24` | **RESOLVED -24** -- second listing agrees with the 4->1 repair |
+
+## Still open (marked UNRESOLVED, not guessed)
+- The item lists for source rooms 18-25 (floor 7) and 45-52 (floor 4) are UNRESOLVED here:
+  floors 7 and 4 are still on stale room IDs in this repo, so their DATA rows have not
+  been reconciled yet.
+- The 2010-row "LOCKED DOOR" room is now resolved to -24 (row 16 above); the remaining
+  2000/2010 items are confirmed by the audited floor 8/9 modules.
 
 ## What was NOT changed
 - The broom stays on floor 9 room 3 (source `LONG BROOM`,3; both listings agree; user

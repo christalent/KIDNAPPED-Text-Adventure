@@ -27,8 +27,9 @@ DATA ROWS (printed form, item names and room numbers)
        "GRAFFITI ON WALL",-6,"OPEN WINDOW",-7,"TRAP DOOR IN CEILING",-9,"DOWN BUTTON",-9,
        "CABINET",-10,"ENDS OF 2 'LIVE' WIRES",-11,"AQUARIUM",-14,"ROPE",15,
        "SLEEPING PILL",16,"OPEN WINDOW",-17
-       [OCR2 for the text; the numeric repairs -11->-14 (AQUARIUM), 4->N in "DOWN BUTTON"
-        and -14->-13 are corroborated by the audited floor 8/9 modules in this repo]
+       [OCR2 for the text; the numeric repair -11->-14 (AQUARIUM) is corroborated by the
+        audited floor 8 room 14 module, and "DOWN BUTTON" by the audited floor 9 room 9
+        module -- both from this repo]
   OCR2 2010 DATA"DESK",-17,"KEY MAKING MACHINE",-19,"SUPER GLUE",20,"WOODEN STAIR STEP",20,
        "THICK COPPER SHEET",23,"LOCKED DOOR",-24,"WOODEN STAIRS",-25,
        "TANK OF HELIUM GAS",28,"LARGE DEFLATED BALLOON",29
@@ -66,12 +67,11 @@ ITEM-NAME CORRECTIONS vs KIDNAPPED.BAS (the BAS rows are hand-transcribed and wr
   BAS  10040 DATA"",0 (empty)    -> the real 2040 row is:
        "WATER COOLER",-58,"PAPER CUP",58,"SMALL-SIZED PLANT",-59,"FLUTE",61,
        "STAIRS",-62,"SMALL BOOK",64,"PIANO",-63,"LONG ROPE",63,"FRONT DOOR",-65
-  BAS  the whole row "LOCKED DOOR",-30 / "GUN",30 ... "STAIRS",-44 is present but the
-       row-2010 "LOCKED DOOR" room is still open: see [UNRES] above.
+  BAS  "LOCKED DOOR",-21               -> "LOCKED DOOR",-24   (Jul-1981 re-listing agrees)
 
 STILL OPEN (not silently guessed)
-  [UNRES] the room number of the "LOCKED DOOR" item in the 2010 row
-          (candidate -24; needs a fresh pixel crop of that row)
+  [UNRES] nothing in the 2000/2010 rows is left open: the 2010-row "LOCKED DOOR" room was
+          resolved to -24 by the Jul-1981 re-listing, which agrees with the 4->1 repair rule
   [UNRES] the item list for source rooms 18-25 (floor 7) and 45-52 (floor 4)
           -- floors 7 and 4 are still on stale room numbering in this repo
   [PEND] the source's room 53 literal is "DO YOU HAVE A SPLIT PERSONALITY?", but this
