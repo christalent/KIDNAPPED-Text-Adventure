@@ -1,114 +1,130 @@
 """
-KIDNAPPED! - Floor 9: The Roof
-Starting floor — must escape down through the building.
+KIDNAPPED! - Floor 9: The Elevator Hallway (starting floor)
 
-All exits are verified bidirectional per PARSED_BASIC_SOURCE.txt
-(ground truth extracted from the clean PDF of the original 1980
-SoftSide magazine BASIC source).
+Ground truth: FLOOR9_AUDIT_2026-11-03.md - pixel-derived room and item
+tables read from KIDNAPPED_Original.pdf (SoftSide, Dec 1980), reconciled
+against two published walkthroughs (sol_gunness.txt, sol_atari.txt) and
+Garry Francis's 2015 floor map. Every move of both walkthroughs replays
+cleanly on the table below. Do not trust KIDNAPPED.BAS, PARSED_BASIC_SOURCE.txt,
+SPEC.md or the earlier version of this file - the PDF OCR layer reads a
+printed 4 as a 1, and the old port had rooms 13-17 filed here.
 
-The Floor 9 puzzle (midnight blackout):
-  1. Get BROOM (room 3, the supply closet with ceiling hatch).
-  2. Take BROOM to room 7 (executive office) and fish the
-     KEY ON A KEY CHAIN off the ledge outside the window.
-  3. Return to room 1 (the elevator) and USE KEY on the locked
-     CABINET — it pops open to reveal a FLASHLIGHT and TAPE.
-  4. Travel to the elevator shaft (room 11) via rooms 1→E→8→N→9→U→11.
-  5. Wait until after midnight, when the building's power goes out
-     for a few turns. During that brief outage the live WIRES in
-     the shaft are de-energized.
-  6. USE TAPE on WIRES to fix the elevator.
-  7. PUSH BUTTON (in room 9) to descend to floor 8.
+Floor 9 = global rooms 1-11 ONLY.
 
-Exits are confirmed bidirectional pairs from PARSED_BASIC_SOURCE:
-  1↔2, 1↔7, 1↔8, 4↔5, 4↔6, 8↔9, 9↔11, 11↔13, 13↔16, 14↔15, 16↔17
-plus 1↔4 (added so the roof connects back to the elevator hub).
+  room  description                                  exits
+    1   J$ "IN A HALLWAY."                    W=4  N=2  E=8  S=7
+    2   N$ "IN AN OFFICE."                    N=3           S=1
+    3      "IN A CLOSET."                                  S=2
+    4   J$ "IN A HALLWAY."                    N=5  E=1     S=6
+    5   N$ "IN AN OFFICE."                                S=4
+    6      "IN A RESTROOM."                       N=4
+    7   N$ "IN AN OFFICE."                                N=1
+    8   J$ "IN A HALLWAY."                    W=1  N=9     S=10
+    9      "IN AN ELEVATOR."                              S=8
+   10      "IN A MAINTENANCE ROOM."             N=8
+   11      "IN A CRAWLSPACE ON TOP OF THE ELEVATOR."    D=9
+
+Items:
+    room 2   PAPER NOTE, DESK(scenery), CHAIR
+    room 3   LONG BROOM
+    room 5   TV SET(scenery), CLOCK(scenery)
+    room 6   GRAFFITI ON WALL(scenery)
+    room 7   OPEN WINDOW(scenery), KEY ON KEY CHAIN (fish it down with the BROOM)
+    room 9   TRAP DOOR IN CEILING(scenery), DOWN BUTTON(scenery)
+    room 10  CABINET(scenery) hiding FLASHLIGHT and TAPE
+    room 11  ENDS OF 2 LIVE WIRES(scenery)
+
+What this floor is actually about (all port prose, the room and item
+names are the magazine's):
+  1. GET CHAIR (room 2) and GET LONG BROOM (room 3).
+  2. Fish the KEY ON KEY CHAIN off the ledge outside the window in room 7
+     with the LONG BROOM.
+  3. Unlock the CABINET in room 10 with that key; take the FLASHLIGHT
+     and the TAPE.
+  4. Carry the CHAIR into the elevator (room 9), DROP it under the
+     TRAP DOOR IN CEILING and CLIMB CHAIR to reach the crawlspace (room 11).
+  5. The ends of two LIVE WIRES are live until 11 PM; after that the
+     power is out and TAPE WIRES repairs the elevator.
+  6. Press the DOWN BUTTON in room 9 to descend to floor 8, room 13.
+
+Room 1 is a HALLWAY, not the elevator - the elevator is room 9.
+The CABINET is in room 10 (the maintenance room), not in room 1.
+The BROOM is in room 3 (the closet).
+
+Note: room 12 ("ON A VERY NARROW LEDGE.") is deliberately NOT here. It is
+a verb-only special room: it is on no map and in neither walkthrough.
 """
 
 FLOOR_NUMBER = 9
 NEXT_FLOOR_DOWN = 8
 
 # --------------------------------------------------------------------
-# Room map (verified bidirectional per PARSED_BASIC_SOURCE.txt)
-#
-#  1: N=2, E=8, S=7, W=4               (ELEVATOR with locked cabinet)
-#  2: N=3, S=1                         (OFFICE — chair)
-#  3: S=2, U=4                         (CLOSET — broom, ceiling hatch)
-#  4: W=5, E=1, S=6, D=3               (ROOF)
-#  5: E=4                              (LARGE ROOM — TV/CLOCK/LOCKED DOOR)
-#  6: N=4                              (RESTROOM — graffiti)
-#  7: N=1                              (OFFICE — key on ledge outside)
-#  8: N=9, W=1, S=10                   (ELEVATOR)
-#  9: S=8, U=11, D=10                  (ELEVATOR — push button + trap door)
-# 10: N=8, U=9                         (CRAWLSPACE above the elevator)
-# 11: D=9, E=13, W=15                  (ELEVATOR SHAFT — live wires)
-# 13: W=11, S=16, E=14                 (VISITOR'S LOUNGE)
-# 14: W=13, E=15                       (SMALL ROOM)
-# 15: W=14, E=11                       (CLOSET — rope)
-# 16: N=13, E=17                       (NURSERY — small key)
-# 17: W=16                             (STORAGE)
-#
-# Layout note: the original PARSED_BASIC_SOURCE.txt had a typo for
-# the 11-13-14-15 cluster (e.g. "15: E=14, W=11" which would put two
-# different rooms in the same compass slot). The cleanest fix that
-# preserves every confirmed pair (11↔13, 13↔14, 14↔15, 15↔11) is a
-# 4-cycle ring: 11 - 13 - 14 - 15 - 11.
+# Verb-linked room pairs. The up-link from the elevator (9) to the
+# crawlspace (11) is a verb transition (CLIMB CHAIR), not a directional
+# exit, so room 11 carries D=9 while room 9 carries no matching U.
+# Declared here so the generic map tests can tell a deliberate
+# verb link apart from a missing reverse exit.
 # --------------------------------------------------------------------
+VERB_LINK_PAIRS = {(9, 11), (11, 9)}
 
+# Items that sit behind the CABINET in room 10 until it is unlocked.
+CABINET_CONTENTS = ("FLASHLIGHT", "TAPE")
+
+# --------------------------------------------------------------------
+# Room table - pixel-derived, see FLOOR9_AUDIT_2026-11-03.md sec. 2/3
+# --------------------------------------------------------------------
 ROOMS = {
     1: {
-        "name": "IN AN ELEVATOR",
+        "name": "IN A HALLWAY",
         "desc": (
-            "You stand inside an old elevator car. The walls are "
-            "scratched and graffitied. The elevator is dead — the "
-            "lights flicker weakly. A small metal CABINET is "
-            "mounted on the wall."
+            "A bare corridor, office carpet gone tacky with age. Four "
+            "doorways open off it and the ceiling is a low grey grid. "
+            "Nobody has dusted this hallway in years."
         ),
-        "exits": {"N": 2, "E": 8, "S": 7, "W": 4},
+        "exits": {"W": 4, "N": 2, "E": 8, "S": 7},
         "items": [],
     },
     2: {
         "name": "IN AN OFFICE",
         "desc": (
-            "A dusty office. Papers scattered on a desk. A sturdy "
-            "wooden CHAIR sits in the corner."
+            "A small office. A DESK with a pad of paper on it, a CHAIR "
+            "pushed back from the desk, and a stale smell of old coffee."
         ),
         "exits": {"N": 3, "S": 1},
-        "items": ["CHAIR"],
+        "items": ["PAPER NOTE", "DESK", "CHAIR"],
     },
     3: {
         "name": "IN A CLOSET",
         "desc": (
-            "A cramped supply closet. A LONG BROOM leans against "
-            "the wall. A CEILING HATCH above leads up to the roof."
+            "A narrow janitor's closet. Coats hang from a rail, a shelf "
+            "holds a bucket, and a LONG BROOM leans in the corner."
         ),
-        "exits": {"S": 2, "U": 4},
-        "items": ["BROOM"],
+        "exits": {"S": 2},
+        "items": ["LONG BROOM"],
     },
     4: {
-        "name": "ON THE ROOF",
+        "name": "IN A HALLWAY",
         "desc": (
-            "On the flat roof. Night wind cuts through your clothes. "
-            "A ventilation unit hums nearby. A hatch leads back down "
-            "into the building."
+            "Another corridor, older than the first. The lights here are "
+            "frozen on and buzz faintly. Doors lead north, east and south."
         ),
-        "exits": {"W": 5, "E": 1, "S": 6, "D": 3},
+        "exits": {"N": 5, "E": 1, "S": 6},
         "items": [],
     },
     5: {
-        "name": "IN A LARGE ROOM",
+        "name": "IN AN OFFICE",
         "desc": (
-            "A large room with a high ceiling. A broken TV SET, a "
-            "CLOCK on the wall (frozen at midnight), and a LOCKED "
-            "DOOR barred shut."
+            "An office with the lights off. A TV SET sits on a stand, its "
+            "screen dark, and a CLOCK on the wall has stopped at midnight."
         ),
-        "exits": {"E": 4},
-        "items": ["TV SET", "CLOCK", "LOCKED DOOR"],
+        "exits": {"S": 4},
+        "items": ["TV SET", "CLOCK"],
     },
     6: {
         "name": "IN A RESTROOM",
         "desc": (
-            "A foul-smelling restroom. Someone scratched GRAFFITI "
-            "ON WALL into the tile."
+            "A restroom. Two stalls, a row of sinks, and something "
+            "scratched into the tile: GRAFFITI ON WALL."
         ),
         "exits": {"N": 4},
         "items": ["GRAFFITI ON WALL"],
@@ -116,104 +132,78 @@ ROOMS = {
     7: {
         "name": "IN AN OFFICE",
         "desc": (
-            "A small executive office. Through the window you can "
-            "see a small LEDGE outside, just out of reach."
+            "An office whose OPEN WINDOW has been forced. Cold night air "
+            "comes through it, and just outside, on a narrow ledge, a key "
+            "on a chain catches the light."
         ),
         "exits": {"N": 1},
-        "items": [],
-        "special_desc": "A KEY ON A KEY CHAIN rests on the ledge outside.",
+        "items": ["OPEN WINDOW", "KEY ON KEY CHAIN"],
+        "special_desc": (
+            "A KEY ON KEY CHAIN glints on the ledge outside the window, "
+            "just out of reach."
+        ),
     },
     8: {
-        "name": "IN AN ELEVATOR",
-        "desc": "Another dead elevator car. The doors are jammed shut.",
-        "exits": {"N": 9, "W": 1, "S": 10},
+        "name": "IN A HALLWAY",
+        "desc": (
+            "A service hallway ending in a dead end of damp concrete. "
+            "One way leads back west, one north, one south."
+        ),
+        "exits": {"W": 1, "N": 9, "S": 10},
         "items": [],
     },
     9: {
         "name": "IN AN ELEVATOR",
         "desc": (
-            "A third dead elevator car. A PUSH BUTTON is on the wall. "
-            "A TRAP DOOR in the ceiling leads up to the shaft."
+            "The elevator car, dead and dark. A DOWN BUTTON is set into "
+            "the wall panel, and there is a TRAP DOOR IN CEILING above "
+            "the light fixture."
         ),
-        "exits": {"S": 8, "U": 11, "D": 10},
-        "items": ["PUSH BUTTON"],
+        "exits": {"S": 8},
+        "items": ["TRAP DOOR IN CEILING", "DOWN BUTTON"],
     },
     10: {
-        "name": "IN A CRAWLSPACE",
+        "name": "IN A MAINTENANCE ROOM",
         "desc": (
-            "A tight crawlspace above the elevator shaft. Pipes and "
-            "conduits. Very dark."
+            "A maintenance room of shelves, pipe and paint cans. A CABINET "
+            "is bolted to the wall, its door shut tight."
         ),
-        "exits": {"N": 8, "U": 9},
-        "items": [],
+        "exits": {"N": 8},
+        "items": ["CABINET", "FLASHLIGHT", "TAPE"],
     },
     11: {
-        "name": "IN AN ELEVATOR SHAFT",
+        "name": "IN A CRAWLSPACE ON TOP OF THE ELEVATOR",
         "desc": (
-            "Inside the elevator shaft. Twisted, sparking WIRES "
-            "hang from a junction box. A sign on the wall reads "
-            "'ADMISSION.'"
+            "A crawlspace on top of the elevator car. Dust, dead cabling "
+            "and the ends of two WIRES sticking out of a junction box, "
+            "sparking."
         ),
-        "exits": {"D": 9, "E": 13, "W": 15},
-        "items": ["WIRES", "ADMISSION"],
-    },
-    13: {
-        "name": "IN A VISITOR'S LOUNGE",
-        "desc": "A dingy lounge. Worn couches and a coffee table.",
-        "exits": {"W": 11, "S": 16, "E": 14},
-        "items": [],
-    },
-    14: {
-        "name": "IN A SMALL ROOM",
-        "desc": "A small, bare room. Nothing of interest.",
-        "exits": {"W": 13, "E": 15},
-        "items": [],
-    },
-    15: {
-        "name": "IN A CLOSET",
-        "desc": "A storage closet. A coil of ROPE sits on a shelf.",
-        "exits": {"W": 14, "E": 11},
-        "items": ["ROPE"],
-    },
-    16: {
-        "name": "IN A NURSERY",
-        "desc": (
-            "An old nursery. A tiny crib with rusted bars. A SMALL "
-            "KEY lies on the floor."
-        ),
-        "exits": {"N": 13, "E": 17},
-        "items": ["SMALL KEY"],
-    },
-    17: {
-        "name": "IN A STORAGE ROOM",
-        "desc": "A cramped storage room. Old boxes and cobwebs.",
-        "exits": {"W": 16},
-        "items": [],
+        "exits": {"D": 9},
+        "items": ["ENDS OF 2 LIVE WIRES"],
     },
 }
 
 
 class Floor9Engine:
-    """Engine for Floor 9 — The Roof (starting floor)."""
+    """Engine for Floor 9 - the elevator hallway (starting floor)."""
 
     # ------------------------------------------------------------------
     # Time / midnight mechanic.
     #
-    # In the original BASIC the variable TI tracks the in-game hour.
-    # The wires in the elevator shaft (room 11) carry live current
-    # and will electrocute the player — line 830 reads:
+    # In the original BASIC the variable TH tracks the in-game hour.
+    # The ends of the two live wires in room 11 carry current, and the
+    # magazine's check reads:
     #   IF A=11 IF E$="RES" IF TH<23 THEN PRINT "YOU'RE ELECTROCUTED!"
-    # So the wires are live whenever the in-game hour is less than
-    # 23 (i.e. before 11 PM). Once the clock reaches 11 PM or later,
-    # the wires are safe to tape. We model this by starting the
-    # clock at 10:00 PM and advancing a fixed number of minutes per
-    # turn, then simply checking the current hour on USE TAPE.
+    # So the wires are live while the hour is below 23 (before 11 PM).
+    # Once the clock reaches 23:00 the power is out and they can be
+    # taped. We model this by starting the clock at 10:00 PM and
+    # advancing a fixed number of minutes per turn.
     # ------------------------------------------------------------------
     TIME_START_HOUR = 22        # 10:00 PM
     TIME_START_MIN = 0
     MINUTES_PER_TURN = 10       # 6 turns to 23:00 (wires become safe)
     # A brief thematic "midnight" announcement fires when the clock
-    # first crosses 00:00 — purely flavor, not required for the
+    # first crosses 00:00 - purely flavor, not required for the
     # puzzle (the wires are already safe from 23:00 onward).
     MIDNIGHT_TOTAL_MIN = 24 * 60
 
@@ -221,46 +211,48 @@ class Floor9Engine:
     # Item aliases for fuzzy verb/noun matching
     # ------------------------------------------------------------------
     _NOUN_ALIASES = {
-        "FLASHLIGHT": "FLASHLIGHT",
-        "LAMP": "FLASHLIGHT",
-        "LIGHT": "FLASHLIGHT",
+        "PAPER NOTE": "PAPER NOTE",
+        "NOTE": "PAPER NOTE",
+        "DESK": "DESK",
         "CHAIR": "CHAIR",
-        "BROOM": "BROOM",
-        "LONG BROOM": "BROOM",
+        "LONG BROOM": "LONG BROOM",
+        "BROOM": "LONG BROOM",
         "TV": "TV SET",
         "TV SET": "TV SET",
         "CLOCK": "CLOCK",
-        "LOCKED DOOR": "LOCKED DOOR",
-        "DOOR": "LOCKED DOOR",
         "GRAFFITI": "GRAFFITI ON WALL",
         "GRAFFITI ON WALL": "GRAFFITI ON WALL",
         "WALL": "GRAFFITI ON WALL",
-        "WIRES": "WIRES",
-        "WIRE": "WIRES",
-        "LIVE WIRES": "WIRES",
-        "ADMISSION": "ADMISSION",
-        "SIGN": "ADMISSION",
-        "TAPE": "TAPE",
-        "ELECTRIC TAPE": "TAPE",
-        "ELECTRICAL TAPE": "TAPE",
-        "SMALL KEY": "SMALL KEY",
-        "KEY": "KEY ON KEY CHAIN",  # bare "KEY" defaults to ledge key
+        "OPEN WINDOW": "OPEN WINDOW",
+        "WINDOW": "OPEN WINDOW",
+        "KEY": "KEY ON KEY CHAIN",
         "KEY ON KEY CHAIN": "KEY ON KEY CHAIN",
         "KEY ON A KEY CHAIN": "KEY ON KEY CHAIN",
         "KEYCHAIN": "KEY ON KEY CHAIN",
-        "PUSH BUTTON": "PUSH BUTTON",
-        "BUTTON": "PUSH BUTTON",
-        "TRAP DOOR": "TRAP DOOR",
-        "ROPE": "ROPE",
-        "CEILING HATCH": "CEILING HATCH",
-        "HATCH": "CEILING HATCH",
+        "DOWN BUTTON": "DOWN BUTTON",
+        "BUTTON": "DOWN BUTTON",
+        "PUSH BUTTON": "DOWN BUTTON",
+        "TRAP DOOR": "TRAP DOOR IN CEILING",
+        "TRAP DOOR IN CEILING": "TRAP DOOR IN CEILING",
         "CABINET": "CABINET",
+        "FLASHLIGHT": "FLASHLIGHT",
+        "LAMP": "FLASHLIGHT",
+        "LIGHT": "FLASHLIGHT",
+        "TAPE": "TAPE",
+        "ELECTRIC TAPE": "TAPE",
+        "ELECTRICAL TAPE": "TAPE",
+        "SLEEPING PILL": "SLEEPING PILL",
+        "PILL": "SLEEPING PILL",
+        "ENDS OF 2 LIVE WIRES": "ENDS OF 2 LIVE WIRES",
+        "WIRES": "ENDS OF 2 LIVE WIRES",
+        "WIRE": "ENDS OF 2 LIVE WIRES",
+        "LIVE WIRES": "ENDS OF 2 LIVE WIRES",
     }
 
     _NON_TAKEABLE = {
-        "GRAFFITI ON WALL", "ADMISSION", "LOCKED DOOR", "WIRES",
-        "PUSH BUTTON", "TV SET", "CLOCK", "TRAP DOOR",
-        "CEILING HATCH", "CABINET",
+        "DESK", "TV SET", "CLOCK", "GRAFFITI ON WALL", "OPEN WINDOW",
+        "TRAP DOOR IN CEILING", "DOWN BUTTON", "CABINET",
+        "ENDS OF 2 LIVE WIRES",
     }
 
     def __init__(self, state):
@@ -271,11 +263,35 @@ class Floor9Engine:
         self.elevator_fixed = False
         self._key_on_ledge = True
         self._broom_used_for_key = False
-        # Per-room mutable items (start with ROOMS items)
-        self._room_items = {rid: list(r["items"]) for rid, r in ROOMS.items()}
+        # Per-room mutable items (start from the room table)
+        self._room_items = self._init_room_items()
         # Time state
         self._turn = 0
         self._midnight_announced = False
+
+    # ------------------------------------------------------------------
+    # Item initialization
+    # ------------------------------------------------------------------
+    def _init_room_items(self):
+        """Runtime item lists: what the player can actually see right now.
+
+        Two items are held back from the static table:
+          - FLASHLIGHT and TAPE are behind the CABINET in room 10 until
+            the cabinet is unlocked with the key.
+          - the KEY ON KEY CHAIN is in room 7 but out of reach until the
+            LONG BROOM is used to fish it down.
+        """
+        items = {}
+        for rid, r in ROOMS.items():
+            lst = list(r["items"])
+            if rid == 10:
+                for it in CABINET_CONTENTS:
+                    if it in lst:
+                        lst.remove(it)
+            if rid == 7 and "KEY ON KEY CHAIN" in lst:
+                lst.remove("KEY ON KEY CHAIN")
+            items[rid] = lst
+        return items
 
     # ------------------------------------------------------------------
     # Time / midnight helpers
@@ -349,17 +365,19 @@ class Floor9Engine:
     # ------------------------------------------------------------------
     # Command dispatcher
     # ------------------------------------------------------------------
-    def handle_command(self, verb, noun):
-        verb = (verb or "").upper()
+    def handle_command(self, verb, noun=""):
+        verb = (verb or "").upper().strip()
         noun = (noun or "").upper().strip()
         if verb in ("TAKE", "GRAB", "PICK"):
             verb = "GET"
         if verb in ("PUT", "PLACE"):
             verb = "DROP"
+        if verb in ("WATCH", "VIEW"):
+            verb = "EXAMINE"
 
         loc = self.state.location
 
-        # WAIT — advance the in-game clock without doing anything else
+        # WAIT - advance the in-game clock without doing anything else
         if verb in ("WAIT", "Z"):
             self._advance_time()
             extra = ""
@@ -372,12 +390,17 @@ class Floor9Engine:
         # Every other action also advances time
         self._advance_time()
 
-        # Movement — handle bare direction, full word, and "GO <dir>"
+        # Movement - handle bare direction, full word, and "GO <dir>"
         d = self._parse_direction(verb, noun)
         if d is not None:
             if d == "D":
                 return self._go_down()
             return self._go(d), False
+
+        # Verb transitions
+        if verb == "CLIMB" or (verb == "GO" and noun in (
+                "CHAIR", "TRAP DOOR", "TRAP DOOR IN CEILING")):
+            return self._climb(noun)
 
         if verb in ("LOOK", "L"):
             return self._look(), False
@@ -423,32 +446,55 @@ class Floor9Engine:
     def _go(self, d):
         r = self.get_room(self.state.location)
         if d not in r["exits"]:
-            return "You can't go that way."
+            return self._blocked(d)
         dest = r["exits"][d]
         self.state.location = dest
         return self._look()
 
+    def _blocked(self, d):
+        """Message for a direction that does not exist from here."""
+        if self.state.location == 9 and d == "U":
+            return ("The TRAP DOOR IN CEILING is above your head, out of "
+                    "reach. You'd need something to climb on.")
+        return "You can't go that way."
+
     def _go_down(self):
-        """Handle 'D' / 'DOWN'. Transitions to Floor 8 only from the
-        elevator car (room 9) once the elevator has been fixed."""
-        loc = self.state.location
-        r = self.get_room(loc)
-        # From the elevator car (room 9), going DOWN descends the
-        # building only after the elevator has been repaired.
-        if loc == 9 and self.elevator_fixed:
-            return self._descend_to_floor_8()
+        """Handle 'D' / 'DOWN'."""
+        r = self.get_room(self.state.location)
         if "D" not in r["exits"]:
-            return "You can't go that way.", False
+            return self._blocked("D"), False
         self.state.location = r["exits"]["D"]
         return self._look(), False
 
+    def _climb(self, noun):
+        """Verb transition: CLIMB CHAIR in the elevator (room 9) -> room 11.
+
+        The only way up is the trap door in the ceiling of the elevator
+        car, and the only way to reach it is to stand on the CHAIR.
+        """
+        loc = self.state.location
+        n = (noun or "").upper().strip()
+        if n and n not in ("CHAIR", "TRAP DOOR", "TRAP DOOR IN CEILING"):
+            return f"You can't climb the {n}.", False
+        if loc != 9:
+            return "There's nothing here to climb.", False
+        chair_here = "CHAIR" in self._room_items.get(9, [])
+        chair_carried = "CHAIR" in self.state.inventory
+        if not (chair_here or chair_carried):
+            return ("The TRAP DOOR IN CEILING is too high to reach. You'd "
+                    "need something to stand on - a chair, perhaps."), False
+        self.state.location = 11
+        return self._look(), False
+
     def _descend_to_floor_8(self):
-        self.state.floor = NEXT_FLOOR_DOWN
-        return (
-            "The elevator shudders, drops a foot, then catches.\n"
-            "Ding! Floor 8.\n\n"
-            "A damp, fishy smell seeps in as the doors creak open..."
-        ), True
+        """PRESS BUTTON in the elevator (room 9) -> floor 8, room 13.
+
+        Uses the codebase's cross-floor convention: a
+        'TRANSITION:floor_N:room' marker with transition=True. The
+        main engine drops to the next floor and calls its on_enter(),
+        which puts the player in the landing room.
+        """
+        return "TRANSITION:floor_8:13", True
 
     # ------------------------------------------------------------------
     # Look / inventory
@@ -483,38 +529,35 @@ class Floor9Engine:
         if not t:
             return f"No '{noun}' here."
 
-        # Items that can't be taken at all — even if their noun was
-        # recognised by the alias map (e.g. CABINET, CEILING HATCH,
-        # TRAP DOOR, plus the obvious scenery items).
+        # Items that can't be taken at all - even if their noun was
+        # recognised by the alias map (CABINET, TRAP DOOR, scenery...).
         if t in self._NON_TAKEABLE:
-            return f"The {t} can't be taken — it's fixed in place."
+            return f"The {t} can't be taken - it's fixed in place."
 
-        # KEY ON KEY CHAIN on the ledge in room 7
-        if t == "KEY ON KEY CHAIN" and loc == 7:
+        # KEY ON KEY CHAIN on the ledge outside the window in room 7
+        if t == "KEY ON KEY CHAIN":
+            if loc != 7:
+                return f"No {t} here."
             if not self._key_on_ledge:
                 return "The key is gone."
-            if "BROOM" not in self.state.inventory and not self._broom_used_for_key:
-                return ("The key is out of reach. You'd need something long "
-                        "to snag it off the ledge.")
+            has_broom = "LONG BROOM" in self.state.inventory
+            if not has_broom and not self._broom_used_for_key:
+                return ("The key is out of reach on the ledge. You'd need "
+                        "something long to hook it down.")
             self._key_on_ledge = False
             self._broom_used_for_key = True
             self.state.add_item("KEY ON KEY CHAIN")
-            if "BROOM" in self.state.inventory:
-                return ("You lean out the window and use the BROOM to fish\n"
-                        "the key chain off the ledge. It clatters into your hand!")
-            return "You snag the key chain off the ledge."
-
-        # CABINET in room 1 — not a takeable item (give the player a
-        # useful hint that it is locked and needs a key)
-        if t == "CABINET" and loc == 1:
-            if self.cabinet_open:
-                return "The cabinet is already open. You see a FLASHLIGHT and TAPE inside."
-            return ("The CABINET can't be taken. It is locked — you need a key.")
+            if has_broom:
+                return ("You lean out the window and use the LONG BROOM to "
+                        "hook the key chain off the ledge. It clatters into "
+                        "your hand!")
+            return "You hook the key chain off the ledge and pocket it."
 
         items = self._room_items.get(loc, [])
         if t not in items:
             return f"No {t} here."
         items.remove(t)
+        self._room_items[loc] = items
         self.state.add_item(t)
         return f"You take the {t}."
 
@@ -525,7 +568,15 @@ class Floor9Engine:
             return f"You're not carrying a {noun}."
         self.state.remove_item(t)
         self._room_items.setdefault(self.state.location, []).append(t)
-        return f"You drop the {t}."
+        msg = f"You drop the {t}."
+        # Setting the chair down in the maintenance room uncovers
+        # something that was lying under it.
+        if (t == "CHAIR" and self.state.location == 10
+                and "SLEEPING PILL" not in self._room_items[10]):
+            self._room_items[10].append("SLEEPING PILL")
+            msg += (" As the chair settles, a SLEEPING PILL rolls out from "
+                    "underneath it.")
+        return msg
 
     # ------------------------------------------------------------------
     # USE
@@ -535,8 +586,9 @@ class Floor9Engine:
         inv = self.state.inventory
         norm = self._NOUN_ALIASES.get(noun, noun)
 
-        # TAPE on WIRES (room 11) — the midnight puzzle core
-        if norm in ("TAPE",) or noun in ("WIRES", "WIRE", "TAPE ON WIRES"):
+        # TAPE on the live wires (room 11) - the midnight puzzle core
+        if norm == "TAPE" or noun in ("WIRES", "WIRE", "LIVE WIRES",
+                                      "ENDS OF 2 LIVE WIRES"):
             if "TAPE" not in inv:
                 return "You don't have any tape."
             if loc != 11:
@@ -545,23 +597,20 @@ class Floor9Engine:
                 return "The wires are already taped."
             if self.wires_live:
                 return ("The wires are live! You can't tape them safely.\n"
-                        "Wait for the power outage at midnight.")
+                        "Wait for the power to go out after 11 PM.")
             self.tape_used = True
             self.elevator_fixed = True
             if hasattr(self.state, "elevator_fixed"):
                 self.state.elevator_fixed = True
-            return ("You carefully wrap the electric tape around the severed\n"
-                    "wires. The sparking stops. The elevator hums to life — FIXED!")
+            return ("You carefully wrap the electrical tape around the two "
+                    "severed wires. The sparking stops. The elevator hums "
+                    "to life - FIXED!")
 
-        # KEY on CABINET (room 1)
-        if norm in ("KEY ON KEY CHAIN", "SMALL KEY"):
-            if loc == 1 and "KEY ON KEY CHAIN" in inv:
-                if self.cabinet_open:
-                    return "The cabinet is already open."
-                self.cabinet_open = True
-                self._add_cabinet_items()
-                return "You unlock the cabinet. A FLASHLIGHT and TAPE are inside!"
-            return "Nothing to unlock here."
+        # KEY on the CABINET (room 10)
+        if norm == "KEY ON KEY CHAIN":
+            if loc == 10:
+                return self._open_cabinet()
+            return "Nothing here needs that key."
 
         # FLASHLIGHT toggle
         if norm == "FLASHLIGHT":
@@ -572,48 +621,60 @@ class Floor9Engine:
                 return "Click. The flashlight cuts the darkness."
             return "Click. The flashlight clicks off."
 
-        # BROOM — primary use is fishing the key off the ledge
-        if norm == "BROOM":
-            if "BROOM" not in inv and loc != 3:
+        # LONG BROOM - its main use is fishing the key off the ledge
+        if norm == "LONG BROOM":
+            if "LONG BROOM" not in inv and loc != 3:
                 return "You don't have a broom."
             if loc == 7:
                 self._broom_used_for_key = True
-                return ("You fish the broom out the window and snag the key\n"
-                        "chain off the ledge. It's now within reach — try\n"
-                        "GET KEY to take it.")
-            return "You wave the broom around. It doesn't help here."
+                return ("You fish the LONG BROOM out the window and hook "
+                        "the key chain toward you. It's within reach now - "
+                        "try GET KEY.")
+            return "You wave the LONG BROOM around. It doesn't help here."
+
+        if norm == "CHAIR":
+            return ("You set the CHAIR down. From here the TRAP DOOR IN "
+                    "CEILING is just about within reach.")
 
         return f"Can't use the {noun}."
 
+    def _open_cabinet(self):
+        """Unlock the CABINET in room 10 and reveal its contents."""
+        if "KEY ON KEY CHAIN" not in self.state.inventory:
+            return "The cabinet is locked. You need a key."
+        if self.cabinet_open:
+            return "The cabinet is already open."
+        self.cabinet_open = True
+        self._add_cabinet_items()
+        return ("You unlock the cabinet with the KEY ON KEY CHAIN. Inside: "
+                "a FLASHLIGHT and a roll of TAPE.")
+
     def _add_cabinet_items(self):
-        """Reveal FLASHLIGHT and TAPE inside the cabinet in room 1."""
-        room1 = self._room_items.setdefault(1, [])
-        if "FLASHLIGHT" not in room1:
-            room1.append("FLASHLIGHT")
-        if "TAPE" not in room1:
-            room1.append("TAPE")
+        """Reveal FLASHLIGHT and TAPE inside the cabinet in room 10."""
+        room10 = self._room_items.setdefault(10, [])
+        for it in CABINET_CONTENTS:
+            if it not in room10:
+                room10.append(it)
 
     # ------------------------------------------------------------------
     # OPEN
     # ------------------------------------------------------------------
     def _open(self, noun):
         loc = self.state.location
-        if noun in ("CABINET",):
-            if loc != 1:
+        t = self._NOUN_ALIASES.get(noun, noun)
+        if t == "CABINET":
+            if loc != 10:
                 return "No cabinet here."
             if self.cabinet_open:
                 return "It's already open."
-            if "KEY ON KEY CHAIN" not in self.state.inventory:
-                return "The cabinet is locked. You need a key."
-            self.cabinet_open = True
-            self._add_cabinet_items()
-            return "You unlock the cabinet. A FLASHLIGHT and TAPE are inside!"
-        if noun in ("LOCKED DOOR", "DOOR") and loc == 5:
-            return "It's barred shut. No way through."
-        if noun in ("CEILING HATCH", "HATCH") and loc == 3:
-            return "The hatch is open. You can go UP to the roof."
-        if noun in ("TRAP DOOR",) and loc == 9:
-            return "The trap door is open above. Go U to climb up."
+            return self._open_cabinet()
+        if t == "OPEN WINDOW" and loc == 7:
+            return "The window is already open."
+        if t == "TRAP DOOR IN CEILING" and loc == 9:
+            return ("The trap door is in the ceiling, above your head. "
+                    "You'd need something to climb on.")
+        if t == "OPEN WINDOW" and loc == 17:
+            return "The window is already open."
         return "You can't open that."
 
     # ------------------------------------------------------------------
@@ -621,64 +682,79 @@ class Floor9Engine:
     # ------------------------------------------------------------------
     def _examine(self, noun):
         loc = self.state.location
-        if noun in ("GRAFFITI", "GRAFFITI ON WALL", "WALL") and loc == 6:
+        t = self._NOUN_ALIASES.get(noun, noun)
+        if t == "PAPER NOTE" and loc == 2:
+            return ("The note is scrawled on a pad left on the desk:\n"
+                    "  'THE LIFT IS DEAD. THE WIRES UP IN THE CRAWLSPACE "
+                    "OVER THE CAR ARE STILL LIVE.\n"
+                    "   TAPE THEM BEFORE YOU RIDE IT DOWN.'")
+        if t == "GRAFFITI ON WALL" and loc == 6:
             return "'MATCH WIT FOR LIVE WIRES.'"
-        if noun in ("WIRES", "LIVE WIRES", "WIRE") and loc == 11:
+        if t == "ENDS OF 2 LIVE WIRES" and loc == 11:
             if self.tape_used:
                 return "The wires are wrapped in tape, no longer sparking."
             if self.wires_live:
                 return ("Live wires, sparking dangerously. Don't touch them "
                         "while the power is on!")
-            return "The wires are de-energized — the power is out. Safe to tape now."
-        if noun in ("ADMISSION", "SIGN") and loc == 11:
-            return "'ADMISSION: $1.00.' Old prices."
-        if noun == "CLOCK" and loc == 5:
-            return f"Frozen at midnight. The in-game clock says {self._current_time_str()}."
-        if noun in ("TV", "TV SET") and loc == 5:
-            return "Cracked screen. Dead."
-        if noun in ("KEY", "KEY ON KEY CHAIN", "KEY ON A KEY CHAIN") and loc == 7 and self._key_on_ledge:
+            return "The wires are de-energized - the power is out. Safe to tape now."
+        if t == "CLOCK" and loc == 5:
+            return (f"Frozen at midnight. The in-game clock says "
+                    f"{self._current_time_str()}.")
+        if t == "TV SET" and loc == 5:
+            return ("The screen is dark and snowy. Whatever this building "
+                    "broadcasts, it isn't tonight.")
+        if t == "KEY ON KEY CHAIN" and loc == 7 and self._key_on_ledge:
             return "A key on a key chain rests on the ledge outside the window."
-        if noun == "CABINET" and loc == 1:
-            base = "A small metal cabinet mounted on the wall."
+        if t == "CABINET" and loc == 10:
+            base = "A metal cabinet bolted to the wall."
             if self.cabinet_open:
-                return base + " It is open, revealing a FLASHLIGHT and TAPE."
+                return base + " It is open, showing a FLASHLIGHT and TAPE."
             return base + " It is locked."
-        if noun in ("BROOM",) and loc == 3:
-            return "A long broom. Could reach things outside a window."
-        if noun in ("PUSH BUTTON", "BUTTON") and loc == 9:
-            return ("Controls the elevator. Pressing it now will only work "
-                    "if the elevator is fixed.")
-        if noun == "TIME" or (noun == "CLOCK" and loc != 5):
-            return f"It is {self._current_time_str()}."
-        if noun in ("ROPE",) and loc == 15:
-            return "A coil of sturdy rope."
-        if noun in ("SMALL KEY",) and loc == 16:
-            return "A small key. Could open a small lock."
-        if noun in ("CHAIR",) and loc == 2:
+        if t == "LONG BROOM" and loc == 3:
+            return "A long broom. Long enough to hook things out of windows."
+        if t == "CHAIR" and loc == 2:
             return "A sturdy wooden chair."
-        if noun in ("FLASHLIGHT",):
+        if t == "TRAP DOOR IN CEILING" and loc == 9:
+            return ("A square hatch in the ceiling of the elevator car, "
+                    "shut but not latched. Too high to reach on foot.")
+        if t == "DOWN BUTTON" and loc == 9:
+            return ("The elevator's DOWN BUTTON. Pressing it now will only "
+                    "work if the elevator is repaired.")
+        if t == "OPEN WINDOW" and loc == 7:
+            return ("The window stands open onto the night. A narrow ledge "
+                    "runs just outside it.")
+        if t == "FLASHLIGHT":
             if "FLASHLIGHT" in self.state.inventory:
                 on = getattr(self.state, "flashlight_on", False)
                 return "A small flashlight. " + ("Currently on." if on else "Currently off.")
             return "You don't have a flashlight."
-        if noun in ("TAPE",) and "TAPE" in self.state.inventory:
+        if t == "TAPE" and "TAPE" in self.state.inventory:
             return "A roll of electrical tape."
+        if t == "DESK" and loc == 2:
+            return "A desk with a pad of paper on it."
         return f"You examine the {noun}."
 
     # ------------------------------------------------------------------
     # PUSH
     # ------------------------------------------------------------------
     def _push(self, noun):
-        if noun in ("BUTTON", "PUSH BUTTON"):
-            if self.state.location == 9 and self.elevator_fixed:
+        loc = self.state.location
+        t = self._NOUN_ALIASES.get(noun, noun)
+        if t == "DOWN BUTTON":
+            if loc != 9:
+                return "There's no button to push here.", False
+            if self.elevator_fixed:
                 return self._descend_to_floor_8()
-            if self.state.location == 9:
-                return "The button does nothing. The elevator is dead — wires need to be repaired first.", False
-            return "There's no button to push here.", False
+            return ("The button does nothing. The elevator is dead - the "
+                    "wires need to be repaired first."), False
         return f"You can't push the {noun}.", False
 
     # ------------------------------------------------------------------
-    # Bidirectional exit verification (static — used by tests)
+    # Bidirectional exit verification (static - used by tests)
+    #
+    # Directional exits must be bidirectionally consistent, with one
+    # documented exception: room 11 -> room 9 (D) has no reverse U in
+    # room 9, because the up-link is the CLIMB CHAIR verb transition.
     # ------------------------------------------------------------------
     @staticmethod
     def verify_exits():
@@ -686,16 +762,21 @@ class Floor9Engine:
         opp = {"N": "S", "S": "N", "E": "W", "W": "E", "U": "D", "D": "U"}
         for rid, r in ROOMS.items():
             for d, t in r["exits"].items():
-                ro = opp[d]
-                if t not in ROOMS:
-                    errors.append(f"Room {rid} → {d}={t}, but room {t} does not exist")
+                if not isinstance(t, int):
                     continue
-                reverse = ROOMS[t]["exits"].get(ro)
+                if t not in ROOMS:
+                    errors.append(f"Room {rid} -> {d}={t}, but room {t} does not exist")
+                    continue
+                if (rid, t) in VERB_LINK_PAIRS:
+                    # Verb-linked pair: the reverse direction is a verb
+                    # transition, not a directional exit.
+                    continue
+                reverse = ROOMS[t]["exits"].get(opp[d])
                 if reverse is None:
-                    errors.append(f"Room {rid} → {d}={t}, but {t} has no {ro}")
+                    errors.append(f"Room {rid} -> {d}={t}, but {t} has no {opp[d]}")
                 elif reverse != rid:
                     errors.append(
-                        f"Room {rid} → {d}={t}, but {t} → {ro}={reverse} "
+                        f"Room {rid} -> {d}={t}, but {t} -> {opp[d]}={reverse} "
                         f"(expected {rid})"
                     )
         return errors
@@ -708,4 +789,4 @@ if __name__ == "__main__":
         for e in errs:
             print(f"  {e}")
     else:
-        print(f"✅ All exits bidirectional ({len(ROOMS)} rooms)")
+        print(f"✅ All exits consistent ({len(ROOMS)} rooms)")
