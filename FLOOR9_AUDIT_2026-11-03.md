@@ -40,8 +40,23 @@ arrive in from above (via the elevator button / stairs / slide / jump).
 | 2 | **58–61** | 58 | alligator, plant, flute |
 | 1 | **62–65** | 64 | piano keys, rope, tightrope, entrance hall |
 
-Rooms 1–51 verified by clean walkthrough replay (both solutions, all six floors).
+Rooms 1–11 verified by clean walkthrough replay (both solutions, all six floors).
+Rooms 12–17 verified for 13–17 only (floor-8 walkthrough replays exactly on 13–17).
+Room 12 is assigned to floor 9 by contiguity alone — no walkthrough visits it either way.
 Rooms 52–65 consistent with the handlers (`A=56` = laboratory/bottles) but not yet walked.
+
+### Walkthrough evidence per floor (rooms actually visited)
+
+- **Floor 9** — 1,2,3,4,5,6,7,8,9,10,11. Both solutions replay move-for-move.
+- **Floor 8** — 13,14,15,16,17. Replay: `S(16) GET PILL · N(13) · W(14) aquarium · W(15) rope ·
+  E(14) DROP PILL GET PIRANHA · E(13) · S(16) DROP PIRANHA · E(17) TIE ROPE CLIMB ROPE`. Exact.
+- **Floor 7** — 18–25. Replay from 18.
+- **Floor 6** — 26–36, and the *ledge* is here: `W(31) W(33) **CLIMB LEDGE**(34) W(36) **CLIMB
+  WINDOW**(35 VAULT) GET DOLLAR W(36) E(34) **CLIMB WINDOW**(33) E(31) N(32) READ SIGN PUT DOLLAR
+  GET STRING INFLATE TIE S(31) W(33) **CLIMB LEDGE**(34) JUMP`. `CLIMB LEDGE` and `CLIMB WINDOW`
+  are *verb* transitions, not directional exits — a direction-only simulator will report them illegal.
+- **Floor 5** — 37–44, arrival room 43.
+- **Floor 4** — 45–51, arrival room 45.
 
 ## 2. Corrected FLOOR 9 room table (rooms 1–12)
 
