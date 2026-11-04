@@ -1,133 +1,165 @@
 """
-KIDNAPPED! - Floor 8: The Aquarium
-Piranha pool, guard dog, helium balloon puzzle.
+KIDNAPPED! - Floor 8: The Visitors' Lounge and the Aquarium
+==============================================================
 
-Entry from Floor 9 via elevator DOWN -> Room 21.
-Goal: Get past the piranha pool and descend via stairs to Floor 7.
+GROUND TRUTH
+------------
+The authoritative description of this floor is
+``FLOOR9_AUDIT_2026-11-03.md`` - the pixel-derived audit of the original
+listing, reconciled against the two published walkthroughs in
+``archive/solutions/`` and Garry Francis's 2015 floor plan.  That file
+is the ground truth.  ``KIDNAPPED.BAS``, ``PARSED_BASIC_SOURCE.txt``,
+``SPEC.md`` and the *previous* version of this module are guesses, not
+evidence.
 
-Based on:
-- BASIC source from SoftSide Vol 3 No 03 (clean PDF)
-- RetroGamesTroove map: https://www.retrogamestrove.com/game-149-kidnapped-1980/
-- Confirmed bidirectional pairs from BASIC analysis
+THE PREVIOUS VERSION OF THIS MODULE WAS WRONG.  It used an invented
+room set - 21 "ELEVATOR LANDING", 22 "PIRANHA POOL - MAIN HALL",
+24 "AQUARIUM STORAGE", 25 "MAINTENANCE CORRIDOR", 27 "POOL VIEWING
+GALLERY", 28 "STAIRS DOWN" - together with a balloon / glue / helium
+puzzle that belongs to floor 6.  The audit proves that rooms 13-17 are
+floor 8, that both published walkthroughs replay exactly on them, and
+that the old rooms are not in the game at all.  They are gone now.
+
+CORRECTED GEOGRAPHY (global room numbers 13-17)
+------------------------------------------------
+    13  IN A HALLWAY          W->14  S->16
+    14  IN A VISITORS LOUNGE  W->15  E->13      AQUARIUM
+    15  IN A CLOSET           E->14               ROPE
+    16  IN AN OFFICE          N->13  E->17       SLEEPING PILL
+    17  IN AN OFFICE          W->16               OPEN WINDOW, DESK
+
+Room 13 is the arrival room: floor 9's PRESS BUTTON lands the player
+here (marker ``"TRANSITION:floor_8:13"``).
+
+THE PUZZLE (published walkthrough route)
+----------------------------------------
+    S(16) GET PILL . N(13) . W(14) . W(15) GET ROPE . E(14)
+    DROP PILL GET PIRANHA . E(13) . S(16) DROP PIRANHA . E(17)
+    TIE ROPE CLIMB ROPE
+
+  * The AQUARIUM in the visitors' lounge (14) is scenery until the
+    SLEEPING PILL is dropped into the tank; then a PIRANHA can be
+    fished out.  The pill is gone for good once it goes into the tank.
+  * DROP PIRANHA in the office (16) disposes of the fish.
+  * In 17 the rope is tied to the open window frame: TIE ROPE, then
+    CLIMB ROPE (GO ROPE / USE ROPE also work) -> floor 7.
+
+The rope crossing is a VERB transition, not a directional exit: room 17
+has no "D" exit and there is no up-exit to floor 9 (the descent chain
+is one way: floor 9 -> floor 8 -> floor 7).  The marker string
+``"TRANSITION:floor_7:31"`` follows the codebase convention; the
+dispatcher in ``kidnapped.py`` prints it and lets floor 7's
+``on_enter()`` place the player (room 31, the foyer whose up-exit leads
+back here).  Because floor 7 is not audited yet and its ``on_enter()``
+does not set a location, floor 8 sets the landing room itself just
+before it hands the player over.
+
+Cross-floor convention used here (identical to floors 6, 7 and 9):
+  * ``handle_command()`` ALWAYS returns a ``(text, transition)`` tuple.
+  * A transition is a text that starts with ``"TRANSITION:floor_N:room"``.
 """
 
 FLOOR_NUMBER = 8
 NEXT_FLOOR_DOWN = 7
 
 # --------------------------------------------------------------------
-# Room map (Floor 8, rooms 21-28):
-# Based on RetroGamesTroove + BASIC item data
-#
-# Layout:
-#   [28] Stairs DOWN to Floor 7
-#    |
-#   [24] Storage (balloon)
-#    |
-# [27]--[22] Pool Hall (piranhas)---[25] Maintenance (glue)
-#          |
-#         [21] Elevator from Floor 9
-#
-# Items (from BASIC DATA statements):
-# Room 20 (Floor 9): THICK CURTAIN SHEET, SUPER GLUE, WOODEN STAIR STEP
-#   NOTE: These items appear in Floor 9's DATA but are referenced for Floor 8 puzzles
-# Room 24: LARGE DEFLATED BALLOON (from BASIC DATA room 29)
-# Room 28: HELIUM TANK (from BASIC DATA room 28)
+# The single cross-floor link on this floor: the rope crossing down to
+# floor 7.  There is deliberately NO "floor_9" entry - the descent chain
+# is one way (floor 9 -> floor 8 -> floor 7), so floor 8 can never be
+# climbed back into floor 9.
+# --------------------------------------------------------------------
+SPECIAL_ROOMS = {
+    "floor_7": {"target": "floor_7", "landing_room": 31},
+}
+
+# --------------------------------------------------------------------
+# Room table - pixel-derived, see FLOOR9_AUDIT_2026-11-03.md
 # --------------------------------------------------------------------
 ROOMS = {
-    21: {
-        "name": "ELEVATOR LANDING",
+    13: {
+        "name": "IN A HALLWAY",
         "desc": (
-            "You step out of the elevator into a wide, humid corridor. "
-            "The air is thick with the smell of fish food and chlorine. "
-            "Blue LED strips flicker overhead, casting rippling light on the walls "
-            "- like being underwater. A sign reads 'AQUARIUM WING.' "
-            "The elevator doors stand open behind you - you came from Floor 9. "
-            "The main aquarium corridor lies to the NORTH."
+            "The lift doors have just shut behind you, leaving you on the "
+            "eighth floor of a building you have no business being in. "
+            "The hallway is narrow, the carpet worn thin, and a door "
+            "stands open to the west."
         ),
-        "exits": {"N": 22, "U": "floor_9"},  # Elevator back up to floor 9
+        "exits": {"W": 14, "S": 16},
         "items": [],
     },
-    22: {
-        "name": "PIRANHA POOL - MAIN HALL",
+    14: {
+        "name": "IN A VISITORS LOUNGE",
         "desc": (
-            "You stand in the heart of the aquarium wing. A massive "
-            "rectangular pool dominates the room, its water murky and "
-            "dark. Glinting scales. A row of needle-sharp teeth. "
-            "PIRANHAS. Dozens of them, circling just below the surface. "
-            "A heavy THICK CURTAIN SHEET hangs on the south wall - "
-            "someone's emergency supply. "
-            "To the SOUTH, the elevator landing. "
-            "To the NORTH, the aquarium storage area. "
-            "To the EAST, a maintenance corridor. "
-            "To the WEST, a pool viewing gallery."
+            "A visitors' lounge: a rank of mouldy armchairs, a low table "
+            "with a dead potted plant, and along the wall a big AQUARIUM "
+            "full of green water. Small fish drift at the top of the "
+            "tank."
         ),
-        "exits": {"S": 21, "N": 24, "E": 25, "W": 27},
-        "items": ["THICK CURTAIN SHEET"],
+        "exits": {"W": 15, "E": 13},
+        "items": ["AQUARIUM"],
     },
-    24: {
-        "name": "AQUARIUM STORAGE",
+    15: {
+        "name": "IN A CLOSET",
         "desc": (
-            "A cramped storage room lined with shelving units. "
-            "Bags of fish food, water testing kits, replacement filters. "
-            "A LARGE DEFLATED BALLOON is wedged in the corner - "
-            "left behind by some long-gone party. "
-            "The main pool hall is to the SOUTH. "
-            "A stairway is to the NORTH."
+            "A janitor's closet, deep enough to be a room of its own. "
+            "Mops, buckets, a shelf of dusty bottles. A coil of ROPE hangs "
+            "on a hook by the door."
         ),
-        "exits": {"S": 22, "N": 28},
-        "items": ["LARGE DEFLATED BALLOON"],
+        "exits": {"E": 14},
+        "items": ["ROPE"],
     },
-    25: {
-        "name": "MAINTENANCE CORRIDOR",
+    16: {
+        "name": "IN AN OFFICE",
         "desc": (
-            "A narrow side corridor running east from the main hall. "
-            "Tanks of exotic fish line the walls - jellyfish, seahorses, "
-            "a grumpy octopus. A faded sign reads: "
-            "'HELIUM FILLS - BALLOON RENTALS AVAILABLE.' "
-            "A cluttered WORKBENCH holds cleaning supplies and spare parts. "
-            "On the workbench, a tube of SUPER GLUE - still usable. "
-            "The main pool hall is to the WEST."
+            "A small office. A DESK under a dead lamp, a swivel chair "
+            "pushed back from it, and a SLEEPING PILL lying on the desk "
+            "among a scatter of paper clips."
         ),
-        "exits": {"W": 22},
-        "items": ["SUPER GLUE"],
+        "exits": {"N": 13, "E": 17},
+        "items": ["SLEEPING PILL"],
     },
-    27: {
-        "name": "POOL VIEWING GALLERY",
+    17: {
+        "name": "IN AN OFFICE",
         "desc": (
-            "A wide gallery with reinforced glass panels overlooking the "
-            "piranha pool from the west side. The fish circle in dark, "
-            "synchronous patterns below. A small MAINTENANCE HATCH is "
-            "set into the floor near the wall. "
-            "The main hall is to the EAST."
+            "Another office, larger and much emptier. A DESK stands in the "
+            "middle of the floor with nothing on it. In the far wall the "
+            "OPEN WINDOW gives onto a dark shaft of stairs going down and "
+            "down into the building."
         ),
-        "exits": {"E": 22},
-        "items": [],
-    },
-    28: {
-        "name": "STAIRS DOWN",
-        "desc": (
-            "A narrow concrete stairway at the north end of the storage "
-            "area leads DOWN into darkness. A sign reads: 'FLOOR 7 - "
-            "BANK OF DESCENT.' "
-            "One of the wooden steps is CRACKED AND BROKEN - "
-            "the glue joint gave way. You could use SUPER GLUE "
-            "to fix it before descending. "
-            "A TANK OF HELIUM GAS sits strapped to a cart in the corner, "
-            "labeled 'AQUARIUM EVENTS ONLY.' "
-            "The storage area is to the SOUTH."
-        ),
-        "exits": {"S": 24, "D": "floor_7"},
-        "items": ["TANK OF HELIUM GAS"],
+        "exits": {"W": 16},
+        "items": ["OPEN WINDOW", "DESK"],
     },
 }
 
 # --------------------------------------------------------------------
-# Special room targets (cross-floor navigation)
+# Items that are scenery: they can be examined, never picked up.
 # --------------------------------------------------------------------
-SPECIAL_ROOMS = {
-    "floor_9":  {"target": "floor_9",  "landing_room": 9},
-    "floor_7":  {"target": "floor_7",  "landing_room": 31},
+_SCENERY = {"AQUARIUM", "OPEN WINDOW", "DESK"}
+
+# --------------------------------------------------------------------
+# Noun -> canonical item name.  The published walkthroughs spell the
+# same objects differently ("PILL" / "SLEEPING PILL", "PIRANHA" /
+# "SLEEPING PIRANHA"), so every spelling has to work.
+# --------------------------------------------------------------------
+_ITEM_ALIASES = {
+    "SLEEPING PILL": "SLEEPING PILL",
+    "PILL": "SLEEPING PILL",
+    "PIRANHA": "PIRANHA",
+    "SLEEPING PIRANHA": "PIRANHA",
+    "ROPE": "ROPE",
+    "AQUARIUM": "AQUARIUM",
+    "TANK": "AQUARIUM",
+    "FISH TANK": "AQUARIUM",
+    "OPEN WINDOW": "OPEN WINDOW",
+    "WINDOW": "OPEN WINDOW",
+    "DESK": "DESK",
 }
+
+# The room the rope is tied in (the office with the open window).
+_ROPE_ROOM = 17
+
+# The room the aquarium is in (the visitors' lounge).
+_TANK_ROOM = 14
 
 
 # --------------------------------------------------------------------
@@ -137,88 +169,184 @@ class Floor8Engine:
     def __init__(self, state):
         self.state = state
         self._room_items = self._init_items()
-        self.balloon_inflated = False
-        self.stairs_fixed = False
+        # Puzzle state
+        self.pill_in_tank = False
+        self.piranha_asleep = False
+        self.rope_tied = False
 
     # ------------------------------------------------------------------
-    # Item initialization (reset each time player enters floor 8)
+    # Item initialization (reset each time the player enters floor 8)
     # ------------------------------------------------------------------
     def _init_items(self):
-        return {
-            22: ["THICK CURTAIN SHEET"],
-            24: ["LARGE DEFLATED BALLOON"],
-            25: ["SUPER GLUE"],
-            28: ["TANK OF HELIUM GAS"],
-        }
+        """Runtime item lists: what the player can see right now."""
+        return {rid: list(r.get("items", [])) for rid, r in ROOMS.items()}
 
     # ------------------------------------------------------------------
-    # Entry point from engine
+    # Entry / exit
     # ------------------------------------------------------------------
     def on_enter(self):
-        """Called when player arrives on Floor 8."""
+        """Called when the player arrives on Floor 8.
+
+        The arrival room is 13 (IN A HALLWAY): floor 9's PRESS BUTTON
+        produces the marker "TRANSITION:floor_8:13" and this method
+        puts the player there.
+        """
+        if hasattr(self.state, "floor"):
+            self.state.floor = FLOOR_NUMBER
         self._room_items = self._init_items()
-        self.balloon_inflated = False
-        self.stairs_fixed = False
-        # Set landing room: player arrives here from Floor 9's elevator
-        self.state.location = 21
+        self.pill_in_tank = False
+        self.piranha_asleep = False
+        self.rope_tied = False
+        self.state.location = 13
 
     def on_leave(self):
-        """Called when player leaves Floor 8."""
+        """Called when the player leaves Floor 8."""
         pass
 
     # ------------------------------------------------------------------
     # Room access
     # ------------------------------------------------------------------
     def get_room(self, room_id):
-        return ROOMS.get(room_id)
+        """Return a copy of the room record with its runtime item list."""
+        if room_id not in ROOMS:
+            return None
+        r = dict(ROOMS[room_id])
+        r["id"] = room_id
+        r["items"] = list(self._room_items.get(room_id, []))
+        return r
 
     def get_current_room(self):
         return ROOMS.get(self.state.location)
 
     # ------------------------------------------------------------------
-    # Command handling
+    # Command dispatch - every path returns a (text, transition) tuple
     # ------------------------------------------------------------------
     def handle_command(self, verb, noun=""):
+        verb = (verb or "").upper().strip()
+        noun = (noun or "").upper().strip()
         loc = self.state.location
 
-        # Normalize verb
-        verb = verb.upper().strip()
-        noun = noun.upper().strip() if noun else ""
+        # Verb spellings that mean the same thing.
+        if verb in ("TAKE", "GRAB", "PICK"):
+            verb = "GET"
+        if verb in ("PUT", "PLACE"):
+            verb = "DROP"
+        if verb in ("X", "CHECK", "READ"):
+            verb = "EXAMINE"
+
+        # Verb transitions have to be recognised BEFORE movement, so
+        # that "GO ROPE" is not mistaken for a direction.
+        if verb == "TIE":
+            return self._wrap(self._tie_rope(noun, loc))
+        if verb == "CLIMB":
+            return self._wrap(self._climb_rope(noun, loc))
+        if verb == "GO" and noun and self._is_rope(noun):
+            return self._wrap(self._climb_rope(noun, loc))
 
         if verb in ("LOOK", "L"):
-            return self._describe_room(loc), False
-        if verb in ("INVENTORY", "I"):
-            return self._do_inventory(), False
-        if verb in ("GET", "TAKE", "GRAB"):
-            return self._do_get(noun, loc), False
-        if verb in ("DROP", "PUT", "PLACE"):
-            return self._do_drop(noun, loc), False
+            return self._wrap(self._describe_room(loc))
+        if verb in ("INVENTORY", "INV", "I"):
+            return self._wrap(self._do_inventory())
+        if verb == "GET":
+            return self._wrap(self._do_get(noun, loc))
+        if verb == "DROP":
+            return self._wrap(self._do_drop(noun, loc))
         if verb in ("USE", "APPLY"):
-            return self._do_use(noun, loc), False
-        if verb in ("READ", "EXAMINE", "X", "CHECK"):
-            return self._examine(noun, loc), False
-        if verb in ("FIX", "REPAIR"):
-            return self._do_fix(noun, loc), False
-        if verb in ("INFLATE", "BLOW", "FILL"):
-            return self._do_inflate(noun), False
+            return self._wrap(self._do_use(noun, loc))
         if verb in ("OPEN", "UNLOCK"):
-            return self._do_open(noun, loc), False
+            return self._wrap(self._do_open(noun, loc))
+        if verb in ("EXAMINE", "LOOK AT"):
+            return self._wrap(self._examine(noun, loc))
+        if verb in ("FIX", "REPAIR"):
+            return self._wrap(self._do_fix(noun, loc))
+        if verb in ("INFLATE", "BLOW", "FILL"):
+            return self._wrap(self._do_inflate(noun))
 
-        # Movement - the helper methods return (string, transition_flag) tuples
-        if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc)
-        if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc)
-        if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc)
-        if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc)
-        if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc)
-        if verb in ("D", "DOWN") or (verb == "GO" and noun in ("D", "DOWN", "")):
-            return self._go_down(loc)
+        d = self._parse_direction(verb, noun)
+        if d is not None:
+            if d == "U":
+                return self._wrap(self._go_up(loc))
+            if d == "D":
+                return self._wrap(self._go_down(loc))
+            return self._wrap(self._go(d, loc))
 
-        return None, False  # Fall through to engine
+        return "You don't know how to do that.", False
+
+    @staticmethod
+    def _wrap(text):
+        """Wrap a command result into the (text, transition) tuple the
+        dispatcher in kidnapped.py unpacks.
+
+        A result whose text starts with "TRANSITION:" is a floor change;
+        everything else is ordinary prose.
+        """
+        if isinstance(text, tuple):
+            return text
+        return text, text.startswith("TRANSITION:")
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _parse_direction(verb, noun):
+        v = (verb or "").upper()
+        n = (noun or "").upper()
+        if v in ("N", "NORTH") or (v == "GO" and n in ("N", "NORTH")):
+            return "N"
+        if v in ("S", "SOUTH") or (v == "GO" and n in ("S", "SOUTH")):
+            return "S"
+        if v in ("E", "EAST") or (v == "GO" and n in ("E", "EAST")):
+            return "E"
+        if v in ("W", "WEST") or (v == "GO" and n in ("W", "WEST")):
+            return "W"
+        if v in ("U", "UP") or (v == "GO" and n in ("U", "UP")):
+            return "U"
+        if v in ("D", "DOWN") or (v == "GO" and n in ("D", "DOWN")):
+            return "D"
+        return None
+
+    @staticmethod
+    def _canonical_item(noun):
+        """Map a noun phrase onto a canonical item name (or None)."""
+        n = (noun or "").upper().strip()
+        if n.startswith("THE "):
+            n = n[4:].strip()
+        if not n:
+            return None
+        if n in _ITEM_ALIASES:
+            return _ITEM_ALIASES[n]
+        for alias in _ITEM_ALIASES:
+            if alias in n:
+                return _ITEM_ALIASES[alias]
+        return None
+
+    @staticmethod
+    def _is_rope(noun):
+        return Floor8Engine._canonical_item(noun) == "ROPE"
+
+    def _add_to_inventory(self, item):
+        """Add an item to the player's inventory (tolerates either a
+        real GameState with add_item/remove_item or a plain test double
+        that only carries an inventory list)."""
+        add = getattr(self.state, "add_item", None)
+        if callable(add):
+            add(item)
+        inv = getattr(self.state, "inventory", None)
+        if inv is not None and item not in inv:
+            inv.append(item)
+
+    def _remove_from_inventory(self, item):
+        """Remove an item from the player's inventory."""
+        remove = getattr(self.state, "remove_item", None)
+        if callable(remove):
+            remove(item)
+        inv = getattr(self.state, "inventory", None)
+        if inv is not None and item in inv:
+            inv.remove(item)
+
+    def _carrying(self, item):
+        inv = getattr(self.state, "inventory", None) or []
+        return item in inv
 
     # ------------------------------------------------------------------
     # Movement
@@ -226,40 +354,31 @@ class Floor8Engine:
     def _go(self, direction, loc):
         r = self.get_room(loc)
         if not r:
-            return "You are nowhere.", False
+            return "You are nowhere."
         exits = r.get("exits", {})
         next_target = exits.get(direction)
         if next_target is None:
-            return f"You can't go {direction} from here.", False
-        # Handle special transitions
+            return f"You can't go {direction} from here."
         if isinstance(next_target, str):
-            if next_target == "floor_9":
-                return f"TRANSITION:{next_target}:9", True
-            if next_target == "floor_7":
-                if not self.stairs_fixed:
-                    return (
-                        "You start down the stairs - but the broken step "
-                        "gives way! You'd better FIX it first."
-                    ), False
-                return f"TRANSITION:{next_target}:31", True
+            # No directional exit leaves floor 8 (the rope crossing is a
+            # verb), but keep the branch honest if one is ever added.
+            return f"TRANSITION:{next_target}:{self._landing(next_target)}"
         self.state.location = next_target
-        return self._describe_room(next_target), False
+        return self._describe_room(next_target)
 
     def _go_up(self, loc):
-        # Elevator: room 21 has a U exit pointing to floor_9
+        # There is no way back up to floor 9: the descent chain is one way.
         return self._go("U", loc)
 
     def _go_down(self, loc):
-        # Special case: stairs down from room 28
-        if loc == 28:
-            if not self.stairs_fixed:
-                return (
-                    "You start down - but the broken step gives way! "
-                    "You catch yourself. That step is dangerous. "
-                    "You'll need to FIX it before you can safely descend."
-                ), False
-            return f"TRANSITION:floor_7:31", True
+        # There is no way down by walking either - the rope is the only
+        # way to floor 7, and it is a verb, not a direction.
         return self._go("D", loc)
+
+    @staticmethod
+    def _landing(target):
+        """Landing room for an inter-floor marker (only floor_7 is used)."""
+        return SPECIAL_ROOMS.get(target, {}).get("landing_room", 1)
 
     # ------------------------------------------------------------------
     # GET / TAKE
@@ -269,58 +388,57 @@ class Floor8Engine:
             return "Take what?"
 
         room_items = self._room_items.get(loc, [])
+        item = self._canonical_item(noun)
 
-        # ---- THICK CURTAIN SHEET ----
-        if any(k in noun for k in ("CURTAIN", "SHEET", "CLOTH")):
-            if loc == 22:
-                if "THICK CURTAIN SHEET" in room_items:
-                    room_items.remove("THICK CURTAIN SHEET")
-                    self._room_items[22] = room_items
-                    self.state.add_item("THICK CURTAIN SHEET")
-                    return "You take the THICK CURTAIN SHEET. Heavy-duty fabric."
-                return "No curtain here."
-            return "No curtain here."
-
-        # ---- SUPER GLUE ----
-        if "GLUE" in noun:
-            if loc == 25:
-                if "SUPER GLUE" in room_items:
-                    room_items.remove("SUPER GLUE")
-                    self._room_items[25] = room_items
-                    self.state.add_item("SUPER GLUE")
-                    return "You pocket the tube of SUPER GLUE."
-                return "No glue here."
-            return "You don't see any glue here."
-
-        # ---- TANK OF HELIUM ----
-        if "HELIUM" in noun or "TANK" in noun:
-            if loc == 28:
-                if "TANK OF HELIUM GAS" in room_items:
-                    room_items.remove("TANK OF HELIUM GAS")
-                    self._room_items[28] = room_items
-                    self.state.add_item("TANK OF HELIUM GAS")
-                    return "You wheel out the TANK OF HELIUM GAS. It's heavy but manageable."
-                return "No helium tank here."
-            return "You don't see a helium tank here."
-
-        # ---- LARGE DEFLATED BALLOON ----
-        if "BALLOON" in noun:
-            if loc == 24:
-                if "LARGE DEFLATED BALLOON" in room_items:
-                    room_items.remove("LARGE DEFLATED BALLOON")
-                    self._room_items[24] = room_items
-                    self.state.add_item("LARGE DEFLATED BALLOON")
-                    return "You grab the LARGE DEFLATED BALLOON. It's limp but large - big enough to carry you."
-                return "No balloon here."
-            return "You don't see a balloon here."
-
-        # General check
-        for item in list(room_items):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                room_items.remove(item)
+        # ---- SLEEPING PILL (room 16) ----
+        if item == "SLEEPING PILL":
+            if "SLEEPING PILL" in room_items:
+                room_items.remove("SLEEPING PILL")
                 self._room_items[loc] = room_items
-                self.state.add_item(item)
-                return f"You take the {item}."
+                self._add_to_inventory("SLEEPING PILL")
+                return "You take the SLEEPING PILL."
+            if self.pill_in_tank and loc == _TANK_ROOM:
+                return ("The pill is at the bottom of the tank, dissolving "
+                        "in the green water. It is gone for good.")
+            return "There's no pill here."
+
+        # ---- ROPE (room 15) ----
+        if item == "ROPE":
+            if "ROPE" in room_items:
+                room_items.remove("ROPE")
+                self._room_items[loc] = room_items
+                self._add_to_inventory("ROPE")
+                return ("You lift the coil of ROPE off the hook. It is "
+                        "coarse, old, and strong enough.")
+            return "There's no rope here."
+
+        # ---- PIRANHA (lying in a room, or asleep in the tank) ----
+        if item == "PIRANHA":
+            if "PIRANHA" in room_items:
+                room_items.remove("PIRANHA")
+                self._room_items[loc] = room_items
+                self._add_to_inventory("PIRANHA")
+                return "You take the piranha."
+            if self.piranha_asleep and loc == _TANK_ROOM:
+                self.piranha_asleep = False
+                self._add_to_inventory("PIRANHA")
+                return ("You fish the sleeping piranha out of the tank. It "
+                        "hangs limp in your hands, quite dead to the "
+                        "world.")
+            return ("There is no piranha to take - the tank holds nothing "
+                    "but fish.")
+
+        # ---- Scenery: never takeable ----
+        if item in _SCENERY:
+            return "That's not something you can pick up."
+
+        # Generic: any other item lying in the room.
+        for candidate in list(room_items):
+            if noun.lower() in candidate.lower() or candidate.lower() in noun.lower():
+                room_items.remove(candidate)
+                self._room_items[loc] = room_items
+                self._add_to_inventory(candidate)
+                return f"You take the {candidate}."
         return "You don't see that here."
 
     # ------------------------------------------------------------------
@@ -329,11 +447,52 @@ class Floor8Engine:
     def _do_drop(self, noun, loc):
         if not noun:
             return "Drop what?"
-        for item in list(self.state.inventory):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                self.state.remove_item(item)
-                self._room_items.setdefault(loc, []).append(item)
-                return f"You drop the {item}."
+
+        item = self._canonical_item(noun)
+
+        # ---- SLEEPING PILL ----
+        if item == "SLEEPING PILL":
+            if not self._carrying("SLEEPING PILL"):
+                return "You're not carrying that."
+            self._remove_from_inventory("SLEEPING PILL")
+            if loc == _TANK_ROOM:
+                # Into the aquarium. The pill is spent; the piranha sleeps.
+                self.pill_in_tank = True
+                self.piranha_asleep = True
+                return ("You drop the SLEEPING PILL into the aquarium. It "
+                        "sinks through the green water and settles on the "
+                        "gravel. Something at the bottom of the tank stops "
+                        "moving.")
+            self._room_items.setdefault(loc, []).append("SLEEPING PILL")
+            return "You drop the SLEEPING PILL on the floor."
+
+        # ---- PIRANHA ----
+        if item == "PIRANHA":
+            if not self._carrying("PIRANHA"):
+                return "You're not carrying that."
+            self._remove_from_inventory("PIRANHA")
+            self._room_items.setdefault(loc, []).append("PIRANHA")
+            if loc == 16:
+                return ("You drop the piranha on the office floor. It hits "
+                        "the carpet and lies still, out of your hands.")
+            return ("You drop the piranha. It flops once and goes stiff on "
+                    "the floor.")
+
+        # ---- ROPE ----
+        if item == "ROPE":
+            if not self._carrying("ROPE"):
+                return "You're not carrying that."
+            self._remove_from_inventory("ROPE")
+            self._room_items.setdefault(loc, []).append("ROPE")
+            return "You drop the coil of ROPE."
+
+        # Generic: anything else you happen to be carrying.
+        inv = getattr(self.state, "inventory", None) or []
+        for candidate in list(inv):
+            if noun.lower() in candidate.lower() or candidate.lower() in noun.lower():
+                self._remove_from_inventory(candidate)
+                self._room_items.setdefault(loc, []).append(candidate)
+                return f"You drop the {candidate}."
         return "You're not carrying that."
 
     # ------------------------------------------------------------------
@@ -342,111 +501,105 @@ class Floor8Engine:
     def _do_use(self, noun, loc):
         if not noun:
             return "Use what?"
-        inv = self.state.inventory
 
-        # ---- USE HELIUM TANK on BALLOON ----
-        if "HELIUM" in noun or "TANK" in noun:
-            if "TANK OF HELIUM GAS" not in inv:
-                return "You don't have the helium tank."
-            if "LIVE HELIUM BALLOON" in inv:
-                return "The balloon is already inflated."
-            if "LARGE DEFLATED BALLOON" not in inv:
-                return "You don't have a balloon to fill."
-            if self.balloon_inflated:
-                return "The balloon is already inflated."
-            self.balloon_inflated = True
-            # Update balloon to inflated version
-            self.state.remove_item("LARGE DEFLATED BALLOON")
-            self.state.add_item("LIVE HELIUM BALLOON")
-            # Consume the helium tank
-            self.state.remove_item("TANK OF HELIUM GAS")
-            return (
-                "You attach the nozzle of the helium tank to the balloon's "
-                "valve and crack it open. The balloon hisses and inflates, "
-                "growing large and round - and begins to tug upward, pulling "
-                "your hand! You've got a LIVE HELIUM BALLOON now. "
-                "It floats at the end of an invisible tether."
-            )
+        item = self._canonical_item(noun)
 
-        # ---- USE BALLOON / HELIUM BALLOON ----
-        if "BALLOON" in noun or "HELIUM" in noun:
-            if "LARGE DEFLATED BALLOON" not in inv and "LIVE HELIUM BALLOON" not in inv:
-                return "You don't have a balloon."
-            if not self.balloon_inflated:
-                return "The balloon is still deflated. You need to INFLATE it first."
-            if loc == 22 or loc == 27:
-                return (
-                    "You hold the LIVE HELIUM BALLOON over the piranha pool. "
-                    "The fish surge toward it, thrashing! The balloon floats "
-                    "just above the water's surface. You could cross the pool "
-                    "if you stayed aloft - the balloon keeps you above the water."
-                )
-            return "The helium balloon bobs at the end of an invisible tether."
+        # ---- ROPE: use it the way the walkthrough does ----
+        if item == "ROPE":
+            return self._climb_rope("ROPE", loc)
 
-        # ---- USE SUPER GLUE ----
-        if "GLUE" in noun or "SUPER" in noun:
-            if "SUPER GLUE" not in inv:
-                return "You don't have any glue."
-            if loc == 28:
-                return self._do_fix("STEP", loc)
-            return "There's nothing here that needs gluing right now."
+        # ---- SLEEPING PILL into the aquarium ----
+        if item == "SLEEPING PILL":
+            if loc == _TANK_ROOM:
+                return self._do_drop("SLEEPING PILL", loc)
+            return "You have no use for it here."
 
-        # ---- USE CURTAIN ----
-        if "CURTAIN" in noun or "SHEET" in noun:
-            if "THICK CURTAIN SHEET" not in inv:
-                return "You don't have the curtain."
-            return "You could use the curtain as a safety line, but the balloon is more direct."
+        # ---- AQUARIUM ----
+        if item == "AQUARIUM":
+            return self._examine("AQUARIUM", loc)
+
+        # ---- DESK ----
+        if item == "DESK":
+            return ("You rummage through the desk. Paper clips, a dead "
+                    "battery, nothing you can use.")
+
+        # ---- OPEN WINDOW ----
+        if item == "OPEN WINDOW":
+            return ("The window is open already, and the drop beyond it "
+                    "goes a long way down.")
 
         return "You can't figure out how to use that here."
-
-    # ------------------------------------------------------------------
-    # FIX / REPAIR
-    # ------------------------------------------------------------------
-    def _do_fix(self, noun, loc):
-        if not noun:
-            return "Fix what?"
-        if "STEP" in noun or "STAIR" in noun:
-            if loc != 28:
-                return "There's no broken step here."
-            if "SUPER GLUE" not in self.state.inventory:
-                return "You need something to fix it with. SUPER GLUE would work."
-            if self.stairs_fixed:
-                return "The step is already fixed."
-            self.stairs_fixed = True
-            # Consume the glue
-            self.state.remove_item("SUPER GLUE")
-            return (
-                "You apply the SUPER GLUE to the cracked wooden step, "
-                "pressing the broken pieces together. It holds! "
-                "The step is solid now. You can safely go DOWN."
-            )
-        return "Nothing to fix here."
-
-    # ------------------------------------------------------------------
-    # INFLATE
-    # ------------------------------------------------------------------
-    def _do_inflate(self, noun):
-        if "BALLOON" in noun or "HELIUM" in noun:
-            if "LIVE HELIUM BALLOON" in self.state.inventory:
-                return "The balloon is already inflated."
-            if "LARGE DEFLATED BALLOON" not in self.state.inventory:
-                return "You don't have a balloon."
-            if self.balloon_inflated:
-                return "The balloon is already inflated."
-            # Redirect to USE HELIUM
-            return self._do_use("HELIUM", self.state.location)
-        return "Inflate what?"
 
     # ------------------------------------------------------------------
     # OPEN
     # ------------------------------------------------------------------
     def _do_open(self, noun, loc):
-        if "CABINET" in noun or "DOOR" in noun or "HATCH" in noun:
-            if loc == 25:
-                return "The maintenance hatch is already open. Nothing useful inside."
-            if loc == 22:
-                return "The curtain is hanging loose, not in a cabinet."
+        item = self._canonical_item(noun)
+        if item == "OPEN WINDOW":
+            if loc != _ROPE_ROOM:
+                return "There is no window here."
+            return ("The window is already open - that is how the rope will "
+                    "reach the floor below.")
+        if item == "DESK":
+            if loc not in (16, 17):
+                return "There is no desk here."
+            return ("You open the desk. Nothing inside but dust and a "
+                    "screwed-in envelope you cannot get at.")
+        if item == "AQUARIUM":
+            return ("The aquarium has no lid you could lift. The glass is "
+                    "too heavy to shift.")
         return "You can't open that."
+
+    # ------------------------------------------------------------------
+    # TIE ROPE / CLIMB ROPE - the verb transition down to floor 7
+    # ------------------------------------------------------------------
+    def _tie_rope(self, noun, loc):
+        if noun and not self._is_rope(noun):
+            return "You can't tie that."
+        if not self._carrying("ROPE"):
+            return "You don't have a rope to tie."
+        if loc != _ROPE_ROOM:
+            return ("There is nothing here to tie the rope to. The office "
+                    "at the end of the hall has an open window - try "
+                    "there.")
+        if self.rope_tied:
+            return "The rope is already knotted around the window frame."
+        self.rope_tied = True
+        return ("You tie one end of the rope around the window frame and "
+                "feed the rest out into the dark. The knot holds. The "
+                "rope hangs down into the stairwell.")
+
+    def _climb_rope(self, noun, loc):
+        if noun and not self._is_rope(noun):
+            return f"You can't climb the {noun.lower()}."
+        if not self._carrying("ROPE"):
+            return "You don't have a rope."
+        if loc != _ROPE_ROOM:
+            return ("There is nothing here to climb. The rope would have "
+                    "to be tied to the open window in the office at the "
+                    "end of the hall.")
+        if not self.rope_tied:
+            return ("The rope is not tied to anything. Tie it to the "
+                    "window frame first.")
+        # Verb transition to floor 7.  The dispatcher prints the marker
+        # and hands over to floor 7's on_enter(); floor 7 is not audited
+        # yet and its on_enter() does not set a location, so floor 8
+        # sets the landing room (31 - the foyer whose up-exit leads back
+        # here) itself before handing the player over.
+        landing = self._landing("floor_7")
+        self.state.location = landing
+        return f"TRANSITION:floor_7:{landing}"
+
+    # ------------------------------------------------------------------
+    # Vestigial helpers kept for API compatibility
+    # ------------------------------------------------------------------
+    def _do_fix(self, noun, loc):
+        """Nothing on this floor needs mending any more."""
+        return "There's nothing here to fix."
+
+    def _do_inflate(self, noun):
+        """Nothing on this floor needs inflating any more."""
+        return "There's nothing here to inflate."
 
     # ------------------------------------------------------------------
     # EXAMINE
@@ -454,52 +607,75 @@ class Floor8Engine:
     def _examine(self, noun, loc):
         if not noun:
             return self._describe_room(loc)
-        noun = noun.upper()
+
+        item = self._canonical_item(noun)
         room_items = self._room_items.get(loc, [])
-        inv = self.state.inventory
 
-        if "POOL" in noun or "PIRANHA" in noun:
-            if loc in (22, 27):
-                return (
-                    "The piranha pool is murky and dark. Dozens of sharp-toothed "
-                    "fish circle just below the surface. They're fast and vicious - "
-                    "you wouldn't last a second in that water."
-                )
-            return "You don't see a pool here."
+        if item == "AQUARIUM":
+            if loc != _TANK_ROOM:
+                return "There is no aquarium here."
+            if self.pill_in_tank:
+                return ("A big tank of green water along the wall. The "
+                        "sleeping pill lies on the gravel at the bottom, "
+                        "and the piranha hangs upside down in front of "
+                        "it, quite asleep.")
+            return ("A big tank of green water along the wall. Small fish "
+                    "drift at the top. Nothing in there but fish.")
 
-        if "HELIUM" in noun or "TANK" in noun:
-            if "TANK OF HELIUM GAS" in room_items or "TANK OF HELIUM GAS" in inv:
-                return "A heavy steel tank labeled 'AQUARIUM EVENTS ONLY'. The helium inside is still pressurized."
-            return "No helium tank here."
+        if item == "PIRANHA":
+            if self.piranha_asleep and loc == _TANK_ROOM:
+                return ("The piranha hangs motionless in the green water, "
+                        "belly up, fast asleep.")
+            if self._carrying("PIRANHA"):
+                return ("A heavy, toothy fish. It hangs limp and "
+                        "uninterested in your hands.")
+            return "There is no piranha here."
 
-        if "BALLOON" in noun:
-            if "LIVE HELIUM BALLOON" in inv or "LIVE HELIUM BALLOON" in room_items:
-                return "A large, round helium balloon. It tugs upward gently."
-            if "LARGE DEFLATED BALLOON" in inv or "LARGE DEFLATED BALLOON" in room_items:
-                return "A large, limp balloon. It needs helium to inflate."
-            return "No balloon here."
+        if item == "SLEEPING PILL":
+            if "SLEEPING PILL" in room_items:
+                return "A single small pill, white, lying on the desk."
+            if self._carrying("SLEEPING PILL"):
+                return "A single small pill, white, in your pocket."
+            if self.pill_in_tank and loc == _TANK_ROOM:
+                return ("The pill is on the gravel at the bottom of the "
+                        "tank, dissolving.")
+            return "There is no pill here."
 
-        if "GLUE" in noun:
-            if "SUPER GLUE" in room_items or "SUPER GLUE" in inv:
-                return "A tube of strong adhesive. Should fix just about anything."
-            return "No glue here."
+        if item == "ROPE":
+            if "ROPE" in room_items:
+                return "A coil of coarse rope hanging on a hook."
+            if self._carrying("ROPE"):
+                if self.rope_tied:
+                    return ("Your rope, knotted around the window frame, "
+                            "hanging down into the dark.")
+                return ("A coil of coarse rope, strong enough to hold "
+                        "your weight.")
+            return "There is no rope here."
 
-        if "CURTAIN" in noun or "SHEET" in noun:
-            if "THICK CURTAIN SHEET" in room_items or "THICK CURTAIN SHEET" in inv:
-                return "Heavy-duty curtain fabric. Could be useful as a safety line."
-            return "No curtain here."
+        if item == "OPEN WINDOW":
+            if loc != _ROPE_ROOM:
+                return "There is no window here."
+            return ("The window stands open on a shaft of stairs going "
+                    "down. It is a long way down, and a rope would reach "
+                    "it.")
 
-        if "STAIR" in noun or "STEP" in noun:
-            if loc == 28:
-                if self.stairs_fixed:
-                    return "The wooden step is solid - the glue held perfectly."
-                return "One of the wooden steps is cracked and loose. A blob of glue would fix it."
-            return "No stairs here."
+        if item == "DESK":
+            if loc not in (16, 17):
+                return "There is no desk here."
+            return ("A plain desk. The drawer is stiff and full of "
+                    "paperwork nobody has read since 1980.")
 
-        if "GALLERY" in noun or "VIEW" in noun:
-            if loc == 27:
-                return "Reinforced glass panels overlook the piranha pool. The fish circle below."
-            return "Nothing special."
+        if "LOUNGE" in noun:
+            return ("A visitors' lounge: armchairs, a dead plant, and a "
+                    "big aquarium against the wall.")
+        if "HALLWAY" in noun:
+            return ("A narrow hallway. The lift doors behind you are "
+                    "already shut.")
+        if "CLOSET" in noun:
+            return ("A janitor's closet, mops and buckets and a coil of "
+                    "rope.")
+        if "OFFICE" in noun:
+            return "A bare office with a desk and a dead lamp."
 
         return "You don't see anything unusual."
 
@@ -507,7 +683,7 @@ class Floor8Engine:
     # INVENTORY
     # ------------------------------------------------------------------
     def _do_inventory(self):
-        items = self.state.inventory
+        items = getattr(self.state, "inventory", None) or []
         if not items:
             return "You are empty-handed."
         return "You are carrying: " + ", ".join(items)
@@ -519,7 +695,7 @@ class Floor8Engine:
         r = self.get_room(room_id)
         if not r:
             return "You are nowhere."
-        desc = f"[{r['name']}]\n{r['desc']}"
+        desc = f"[{r['name']}]\n{r.get('desc', '')}"
         items = self._room_items.get(room_id, [])
         if items:
             desc += "\n\nYou can see: " + ", ".join(items) + "."
