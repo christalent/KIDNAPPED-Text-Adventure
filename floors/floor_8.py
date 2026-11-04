@@ -41,11 +41,10 @@ ROOMS = {
             "The air is thick with the smell of fish food and chlorine. "
             "Blue LED strips flicker overhead, casting rippling light on the walls "
             "- like being underwater. A sign reads 'AQUARIUM WING.' "
-            "The elevator doors stand open to the SOUTH - you came from Floor 9. "
-            "A concrete stairway in the same area leads DOWN to Floor 7. "
+            "The elevator doors stand open behind you - you came from Floor 9. "
             "The main aquarium corridor lies to the NORTH."
         ),
-        "exits": {"N": 22, "D": "floor_7"},  # S=elevator handled specially
+        "exits": {"N": 22, "U": "floor_9"},  # Elevator back up to floor 9
         "items": [],
     },
     22: {
@@ -160,6 +159,8 @@ class Floor8Engine:
         self._room_items = self._init_items()
         self.balloon_inflated = False
         self.stairs_fixed = False
+        # Set landing room: player arrives here from Floor 9's elevator
+        self.state.location = 21
 
     def on_leave(self):
         """Called when player leaves Floor 8."""
@@ -203,21 +204,21 @@ class Floor8Engine:
         if verb in ("OPEN", "UNLOCK"):
             return self._do_open(noun, loc), False
 
-        # Movement
+        # Movement - the helper methods return (string, transition_flag) tuples
         if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc), False
+            return self._go("N", loc)
         if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc), False
+            return self._go("S", loc)
         if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc), False
+            return self._go("E", loc)
         if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc), False
+            return self._go("W", loc)
         if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc), False
+            return self._go_up(loc)
         if verb in ("D", "DOWN") or (verb == "GO" and noun in ("D", "DOWN", "")):
-            return self._go_down(loc), False
+            return self._go_down(loc)
 
-        return None  # Fall through to engine
+        return None, False  # Fall through to engine
 
     # ------------------------------------------------------------------
     # Movement
@@ -225,29 +226,27 @@ class Floor8Engine:
     def _go(self, direction, loc):
         r = self.get_room(loc)
         if not r:
-            return "You are nowhere."
+            return "You are nowhere.", False
         exits = r.get("exits", {})
         next_target = exits.get(direction)
         if next_target is None:
-            return f"You can't go {direction} from here."
+            return f"You can't go {direction} from here.", False
         # Handle special transitions
         if isinstance(next_target, str):
             if next_target == "floor_9":
-                return f"TRANSITION:{next_target}:9"
+                return f"TRANSITION:{next_target}:9", True
             if next_target == "floor_7":
                 if not self.stairs_fixed:
                     return (
                         "You start down the stairs - but the broken step "
                         "gives way! You'd better FIX it first."
-                    )
-                return f"TRANSITION:{next_target}:31"
+                    ), False
+                return f"TRANSITION:{next_target}:31", True
         self.state.location = next_target
-        return self._describe_room(next_target)
+        return self._describe_room(next_target), False
 
     def _go_up(self, loc):
-        # Elevator: going UP from room 21 goes back to floor 9
-        if loc == 21:
-            return f"TRANSITION:floor_9:9"
+        # Elevator: room 21 has a U exit pointing to floor_9
         return self._go("U", loc)
 
     def _go_down(self, loc):
@@ -258,8 +257,8 @@ class Floor8Engine:
                     "You start down - but the broken step gives way! "
                     "You catch yourself. That step is dangerous. "
                     "You'll need to FIX it before you can safely descend."
-                )
-            return f"TRANSITION:floor_7:31"
+                ), False
+            return f"TRANSITION:floor_7:31", True
         return self._go("D", loc)
 
     # ------------------------------------------------------------------
@@ -349,6 +348,8 @@ class Floor8Engine:
         if "HELIUM" in noun or "TANK" in noun:
             if "TANK OF HELIUM GAS" not in inv:
                 return "You don't have the helium tank."
+            if "LIVE HELIUM BALLOON" in inv:
+                return "The balloon is already inflated."
             if "LARGE DEFLATED BALLOON" not in inv:
                 return "You don't have a balloon to fill."
             if self.balloon_inflated:
@@ -357,6 +358,8 @@ class Floor8Engine:
             # Update balloon to inflated version
             self.state.remove_item("LARGE DEFLATED BALLOON")
             self.state.add_item("LIVE HELIUM BALLOON")
+            # Consume the helium tank
+            self.state.remove_item("TANK OF HELIUM GAS")
             return (
                 "You attach the nozzle of the helium tank to the balloon's "
                 "valve and crack it open. The balloon hisses and inflates, "
@@ -410,6 +413,8 @@ class Floor8Engine:
             if self.stairs_fixed:
                 return "The step is already fixed."
             self.stairs_fixed = True
+            # Consume the glue
+            self.state.remove_item("SUPER GLUE")
             return (
                 "You apply the SUPER GLUE to the cracked wooden step, "
                 "pressing the broken pieces together. It holds! "
@@ -422,6 +427,8 @@ class Floor8Engine:
     # ------------------------------------------------------------------
     def _do_inflate(self, noun):
         if "BALLOON" in noun or "HELIUM" in noun:
+            if "LIVE HELIUM BALLOON" in self.state.inventory:
+                return "The balloon is already inflated."
             if "LARGE DEFLATED BALLOON" not in self.state.inventory:
                 return "You don't have a balloon."
             if self.balloon_inflated:
@@ -466,9 +473,9 @@ class Floor8Engine:
             return "No helium tank here."
 
         if "BALLOON" in noun:
-            if "LARGE DEFLATED BALLOON" in room_items or "LARGE DEFLATED BALLOON" in inv:
-                if self.balloon_inflated:
-                    return "A large, round helium balloon. It tugs upward gently."
+            if "LIVE HELIUM BALLOON" in inv or "LIVE HELIUM BALLOON" in room_items:
+                return "A large, round helium balloon. It tugs upward gently."
+            if "LARGE DEFLATED BALLOON" in inv or "LARGE DEFLATED BALLOON" in room_items:
                 return "A large, limp balloon. It needs helium to inflate."
             return "No balloon here."
 
