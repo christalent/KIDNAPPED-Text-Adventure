@@ -19,10 +19,13 @@ TRUST RULES (this project failed before because these were ignored):
   * Listing dispatch is ON A GOTO 11,12,...,75, so global room number
     = BASIC line number - 10.
 
-Floors 1-8 have NOT been audited yet. Their room tables in the tests
+Floors 1-7 have NOT been audited yet. Their room tables in the tests
 are still guesses, so the source-pair validation for them is skipped
 rather than validating a guess against itself (see
 tests/test_all_floors_map.py).
+
+Floors 8 and 9 ARE audited: their tables below are the pixel-derived
+corrected ones and are compared against the floor modules.
 """
 
 # ---------------------------------------------------------------------
@@ -133,8 +136,12 @@ FLOOR8_ROOMS = {
 # Floors whose room tables have NOT been pixel-audited yet.
 # The all-floors map test skips source-pair validation for these
 # instead of grading a guess against itself.
+#
+# Floor 8 is audited (its table is above), so it is NOT on this list:
+# floors/floor_8.py now carries the authoritative 13-17 table and the
+# map test compares the two.
 # ---------------------------------------------------------------------
-UNAUDITED_FLOORS = {1, 2, 3, 4, 5, 6, 7, 8}
+UNAUDITED_FLOORS = {1, 2, 3, 4, 5, 6, 7}
 
 # Audited floors, keyed by floor number.
 AUDITED_ROOMS = {

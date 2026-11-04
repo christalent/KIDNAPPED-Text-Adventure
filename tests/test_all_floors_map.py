@@ -53,9 +53,8 @@ import authoritative_tables
 # tables are still guesses. A floor is source-validated only if it has
 # an authoritative table AND is not on the unaudited list.
 #
-# Floor 8 has a table (FLOOR8_ROOMS) but floors/floor_8.py has not
-# been rewritten to it yet, so it stays on the unaudited list and is
-# skipped here until the floor module matches the table.
+# Floor 8 is audited too: floors/floor_8.py now carries the
+# authoritative 13-17 table, so it is compared here like floor 9.
 # ---------------------------------------------------------------------
 VALIDATED_FLOORS = {
     f for f in authoritative_tables.AUDITED_ROOMS
