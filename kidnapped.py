@@ -78,6 +78,28 @@ def show_help():
     print("  QUIT         — Quit the game")
 
 
+def ensure_valid_location(engine, state):
+    """Some floors' on_enter() leaves state.location outside their own room table.
+
+    A direct '--floor N' start then lands the player nowhere. Pick the floor's
+    own arrival room (or its lowest room) instead.
+    """
+    mod = sys.modules.get(type(engine).__module__)
+    rooms = getattr(mod, "ROOMS", None) if mod else None
+    if not rooms:
+        return
+    if getattr(state, "location", None) in rooms:
+        return
+    special = getattr(mod, "SPECIAL_ROOMS", {}) or {}
+    candidates = [e["landing_room"] for e in special.values()
+                   if isinstance(e, dict) and "landing_room" in e]
+    candidates.append(min(rooms))
+    for cand in candidates:
+        if cand in rooms:
+            state.location = cand
+            return
+
+
 def main():
     parser = argparse.ArgumentParser(description="KIDNAPPED! text adventure")
     parser.add_argument("--floor", type=int, default=9,
@@ -103,6 +125,7 @@ def main():
 
     engine = engine_class(state)
     engine.on_enter()
+    ensure_valid_location(engine, state)
 
     print(f"\n=== Floor {state.floor}: {get_floor_name(state.floor)} ===\n")
 
@@ -141,12 +164,27 @@ def main():
             continue
 
         # Pass to floor engine
-        result, transition = engine.handle_command(verb, noun)
-        print(result)
+        _res = engine.handle_command(verb, noun)
+        if _res is None:
+            # Floors 1-4 return bare None for unhandled verbs.
+            result, transition = "You can't do that here.", False
+        else:
+            result, transition = _res
+        if not (isinstance(result, str) and result.startswith("TRANSITION:")):
+            print(result)
 
         # Handle floor transition
         if transition:
-            next_floor = state.floor - 1
+            target_floor = None
+            landing_room = None
+            if isinstance(result, str) and result.startswith("TRANSITION:floor_"):
+                try:
+                    _pf, _pr = result[len("TRANSITION:"):].split(":", 1)
+                    target_floor = int(_pf.split("_")[1])
+                    landing_room = int(_pr)
+                except (ValueError, IndexError):
+                    target_floor = None
+            next_floor = target_floor if target_floor is not None else state.floor - 1
             if next_floor < 1:
                 print("\n" + "=" * 60)
                 print("CONGRATULATIONS! You escaped the building!")
@@ -154,7 +192,8 @@ def main():
                 state.game_over = True
                 break
 
-            print(f"\n=== Descending to Floor {next_floor}... ===\n")
+            _word = "Descending to" if next_floor < state.floor else "Ascending to"
+            print(f"\n=== {_word} Floor {next_floor}... ===\n")
             state.floor = next_floor
 
             engine_class = load_floor_engine(state.floor)
@@ -163,8 +202,12 @@ def main():
                 state.game_over = True
                 break
 
+            if landing_room is not None:
+                state.location = landing_room
+
             engine = engine_class(state)
             engine.on_enter()
+            ensure_valid_location(engine, state)
             print(f"\n=== Floor {state.floor}: {get_floor_name(state.floor)} ===\n")
             result, _ = engine.handle_command("LOOK", "")
             print(result)
