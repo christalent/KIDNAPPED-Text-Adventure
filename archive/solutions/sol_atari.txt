@@ -1,0 +1,240 @@
+:: CASA :: Kidnapped (Kidnapped.txt)
+
+Username:
+Password:
+
+Register  •
+Forgotten Password
+
+Games...
+
+All games
+
+Browse by publisher
+
+Browse by system
+
+Browse by platform
+
+Browse by year
+
+Browse by genre
+
+Browse by language
+
+Advanced search
+
+Reviews
+
+Articles
+
+Site...
+
+About
+
+Contact
+
+Submit contents
+
+Links
+
+Emulators
+
+Site FAQ
+
+Privacy policy
+
+Users
+
+Forum
+
+Kidnapped ( Kidnapped.txt )
+
+Kidnapped
+By Peter Kirsch
+Published in SoftSide, vol. 4, no. 10, July 1981, pp. 34–45; corrections vol. 4, no. 11, August
+1981, p. 22; vol. 5, no. 3, December 1981, p. 83
+For Atari 400/800/XL/XE (same or very similar for Apple II and TRS-80)
+
+Solution by Garry Francis
+----------------------------------------
+(This is a minimal solution. Verbs must be typed in full. For GET and DROP, only the first three
+letters of the noun phrase are significant. For other actions, only the last three letters of the
+noun phrase are significant.)
+
+[Floor 9]
+N
+GET CHAIR
+N
+GET LONG BROOM
+S
+S
+S
+GET KEY
+N
+E
+S
+OPEN CABINET
+GET FLASHLIGHT
+LIGHT FLASHLIGHT
+GET ELECTRICAL TAPE
+N
+N
+DROP CHAIR
+WAIT
+GO CHAIR
+TAPE WIRES
+D
+PRESS BUTTON
+
+[Floor 8]
+S
+GET SLEEPING PILL
+N
+W
+DROP SLEEPING PILL
+GET SLEEPING PIRANHA
+W
+GET ROPE
+E
+E
+S
+DROP SLEEPING PIRANHA
+E
+TIE ROPE
+GO ROPE
+
+[Floor 7]
+S
+E
+E
+GET THICK COPPER SHEET
+W
+W
+N
+N
+MAKE KEY
+GET CRUDE KEY
+S
+W
+GET SUPER GLUE
+GET WOODEN STAIR STEP
+E
+E
+OPEN DOOR
+GO DOOR
+GLUE STEP
+GO STAIRS
+
+[Floor 6]
+S
+GET GUN
+N
+E
+GET LARGE DEFLATED BALLOON
+W
+N
+N
+GET TANK OF HELIUM GAS
+INFLATE BALLOON
+S
+S
+W
+W
+GO LEDGE
+W
+GO WINDOW
+GET DOLLAR
+W
+E
+GO WINDOW
+E
+N
+PAY DOLLAR
+GET LONG STRING
+TIE STRING
+S
+W
+GO LEDGE
+JUMP
+
+[Floor 5]
+E
+S
+PRESS BUTTON
+N
+W
+W
+S
+GET KNITTING NEEDLES
+N
+N
+GET BALL OF YARN
+KNIT CLOTHES
+S
+E
+E
+N
+GET SMALL KEY
+S
+W
+OPEN DOOR
+GO DOOR
+GO STAIRS
+
+[Floor 4]
+N
+PRESS BUTTON
+S
+S
+GET BOOK
+READ BOOK
+N
+E
+SWIM
+N
+GET MARY POPPIN'S UMBRELLA
+OPEN UMBRELLA
+S
+E
+JUMP
+
+[Floor 3]
+E
+E
+N
+GET JAR OF FLUID
+DRINK FLUID
+GET VIAL OF YELLOW SOLUTION
+S
+OPEN DOOR
+DRINK SOLUTION
+GO DOOR
+GO SLIDE
+
+[Floor 2]
+GET PAPER CUP
+GET WATER
+W
+POUR WATER
+GO PLANT
+E
+GET FLUTE
+PLAY FLUTE
+GO ROPE
+GO STAIRS
+
+[Floor 1]
+GET KEY
+GET LONG ROPE
+E
+GET BOOK
+READ BOOK
+TIE ROPE
+THROW ROPE
+GO ROPE
+OPEN DOOR
+GO DOOR
+***THE END***
+
+(C) CASA 1999 - 2026

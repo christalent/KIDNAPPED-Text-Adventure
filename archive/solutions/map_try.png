@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" id="viewport" />
+		<title>:: CASA :: Kidnapped (Kidnapped_Peter_Kirsch_map.png)Access denied!</title>
+		<link rel="stylesheet" type="text/css" media="all" href="/styles/casa.css" />
+		<link href="/atom.xml" type="application/atom+xml" rel="alternate" title="CASA Atom Feed" />
+		<script src="/js/casa.js" type="text/javascript"></script>
+		<meta name="robots" content="noindex,nofollow" />
+	</head>
+	<body>
+	
+		<div id="wrapper">	
+		<div id="logo"><a href="/"><img src="/pics/logo.png" height="80" width="285" alt=":: CASA ::"/></a></div>
+<div id="userbox">
+	<form action="https://solutionarchive.com/phpBB3/ucp.php?mode=login" method="post">
+		Username: <input type="text" name="username" size="8" />
+		Password: <input type="password" name="password" size="8" />
+		<input type="submit" name="login" value="Login" />
+		<input type="hidden" name="redirect" value="/file/force%2Ctrue/id%2C13096/mode%2Cfile/width%2C1276/" />
+		<input type="hidden" name="sid" value="4ac6fa8662af7dcdefcc44b8738a082e" />
+		<input type="hidden" name="creation_time" value="1793752579" />
+		<input type="hidden" name="form_token" value="579a755bea87882a7f4a1b571f3970b3716a3c4d" />
+		<input type="hidden" name="autologin" value="true" />
+	</form>
+	<a href="/phpBB3/ucp.php?mode=register">Register</a> &bull;
+	<a href="/phpBB3/ucp.php?mode=sendpassword">Forgotten Password</a>
+</div>
+
+
+
+		
+		<div id="header">
+	<div id="menubox">
+		<ul class="menu-list">
+		<li>
+			<a href="/games/" class="regular">Games...</a>
+			<ul class="submenu-list">
+				<li><a href="/list/">All games</a></li>
+				<li><a href="/browse/id,1/">Browse by publisher</a></li>
+				<li><a href="/browse/id,2/">Browse by system</a></li>
+				<li><a href="/browse/id,3/">Browse by platform</a></li>
+				<li><a href="/browse/id,4/">Browse by year</a></li>
+				<li><a href="/browse/id,5/">Browse by genre</a></li>
+				<li><a href="/browse/id,6/">Browse by language</a></li>
+				<li><a href="/search/">Advanced search</a></li>
+			</ul>
+		</li>
+		<li><a href="/reviews/" class="regular">Reviews</a></li>
+		<li><a href="/articles/" class="regular">Articles</a></li>
+		<li>
+			<a href="/site/" class="regular">Site...</a>
+			<ul class="submenu-list">
+				<li><a href="/about/">About</a></li>
+				<li><a href="/contact/">Contact</a></li>
+				<li><a href="/submission/">Submit contents</a></li>
+				<li><a href="/links/">Links</a></li>
+				<li><a href="/emulators/">Emulators</a></li>
+                                <li><a href="/faq/">Site FAQ</a></li>
+                                <li><a href="/privacy/">Privacy policy</a></li>
+			</ul>
+		</li>
+		<li><a href="/users/" class="regular">Users</a></li>
+		<li><a href="/phpBB3/" class="regular">Forum</a></li>
+		
+		</ul>
+	</div>
+	<div id="searchbox">
+		<form action="/search/" method="post">
+			<!-- Hack for IE8 being useless -->
+			<input type="text" disabled="disabled" style="visibility: hidden; width: 0; display: none" />
+			<input type="text" name="title" value="(game title)" onfocus="this.value=''" />
+			<input type="submit" name="submit" value="Search" />
+		</form>
+	</div>
+</div>
+
+
+
+
+			<div id="contentarea">
+
+	<div id="warnings"></div>
+	
+	<div id="contents">
+		<h1>Access denied!</h1>
+		<p>Sorry, but this function is only available to authenticated users.</p>
+<form action="/file/force%2Ctrue/id%2C13096/mode%2Cfile/width%2C1276/" method="post">
+Username: <input type="text" name="username" /><br />
+Password: <input type="password" name="password" /><br />
+<input type="submit" name="submit" value="Submit" />
+</form>
+<a href="/phpBB3/ucp.php?mode=register">Register</a> &bull;
+<a href="/phpBB3/ucp.php?mode=sendpassword">Forgotten Password</a>
+
+	</div>
+
+	<br clear="all" />	
+	
+
+	<div id="copyright"><a href="/copyright/">(C) CASA 1999 - 2026</a></div>
+
+</div>
+
+			
+		</div>
+		
+		
+	
+		<script type="text/javascript">
+			initialise();
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" id="viewport" />
+		<title>:: CASA :: Kidnapped (Kidnapped_pd.txt)</title>
+		<link rel="stylesheet" type="text/css" media="all" href="/styles/casa.css" />
+		<link href="/atom.xml" type="application/atom+xml" rel="alternate" title="CASA Atom Feed" />
+		<script src="/js/casa.js" type="text/javascript"></script>
+		<meta name="robots" content="index,follow" />
+	</head>
+	<body>
+	
+		<div id="wrapper">	
+		<div id="logo"><a href="/"><img src="/pics/logo.png" height="80" width="285" alt=":: CASA ::"/></a></div>
+<div id="userbox">
+	<form action="https://solutionarchive.com/phpBB3/ucp.php?mode=login" method="post">
+		Username: <input type="text" name="username" size="8" />
+		Password: <input type="password" name="password" size="8" />
+		<input type="submit" name="login" value="Login" />
+		<input type="hidden" name="redirect" value="/file/id,1175/" />
+		<input type="hidden" name="sid" value="ab737468a1bae62457a5b9d60caef64b" />
+		<input type="hidden" name="creation_time" value="1793752538" />
+		<input type="hidden" name="form_token" value="67c7d265fcefa4570dcd252fe2318320ad626dce" />
+		<input type="hidden" name="autologin" value="true" />
+	</form>
+	<a href="/phpBB3/ucp.php?mode=register">Register</a> &bull;
+	<a href="/phpBB3/ucp.php?mode=sendpassword">Forgotten Password</a>
+</div>
+
+
+
+		
+		<div id="header">
+	<div id="menubox">
+		<ul class="menu-list">
+		<li>
+			<a href="/games/" class="regular">Games...</a>
+			<ul class="submenu-list">
+				<li><a href="/list/">All games</a></li>
+				<li><a href="/browse/id,1/">Browse by publisher</a></li>
+				<li><a href="/browse/id,2/">Browse by system</a></li>
+				<li><a href="/browse/id,3/">Browse by platform</a></li>
+				<li><a href="/browse/id,4/">Browse by year</a></li>
+				<li><a href="/browse/id,5/">Browse by genre</a></li>
+				<li><a href="/browse/id,6/">Browse by language</a></li>
+				<li><a href="/search/">Advanced search</a></li>
+			</ul>
+		</li>
+		<li><a href="/reviews/" class="regular">Reviews</a></li>
+		<li><a href="/articles/" class="regular">Articles</a></li>
+		<li>
+			<a href="/site/" class="regular">Site...</a>
+			<ul class="submenu-list">
+				<li><a href="/about/">About</a></li>
+				<li><a href="/contact/">Contact</a></li>
+				<li><a href="/submission/">Submit contents</a></li>
+				<li><a href="/links/">Links</a></li>
+				<li><a href="/emulators/">Emulators</a></li>
+                                <li><a href="/faq/">Site FAQ</a></li>
+                                <li><a href="/privacy/">Privacy policy</a></li>
+			</ul>
+		</li>
+		<li><a href="/users/" class="regular">Users</a></li>
+		<li><a href="/phpBB3/" class="regular">Forum</a></li>
+		
+		</ul>
+	</div>
+	<div id="searchbox">
+		<form action="/search/" method="post">
+			<!-- Hack for IE8 being useless -->
+			<input type="text" disabled="disabled" style="visibility: hidden; width: 0; display: none" />
+			<input type="text" name="title" value="(game title)" onfocus="this.value=''" />
+			<input type="submit" name="submit" value="Search" />
+		</form>
+	</div>
+</div>
+
+
+
+
+			<div id="contentarea">
+
+	<div id="warnings"></div>
+	
+	<div id="contents">
+		<h1>Kidnapped (<a href="/file/force%2Ctrue/id%2C1175/mode%2Cfile/">Kidnapped_pd.txt</a>)</h1>
+		<pre>KIDNAPPED (?)
+
+Inspired by an entry on the discussion board, I decided to have a 
+go at this game. It&#39;s quite probably the easiest adventure game 
+I&#39;ve ever played. Hmm… of course, King&#39;s Ransom is even shorter, 
+but this certainly comes in a close second.
+The plot is non-existant but revolves around a simple setup which 
+has you locked on the 9th floor of a building. You have to make 
+your way down to the ground floor. All floors have to be solved 
+seperately.
+
+
+Floor 9: N, GET CHAIR, READ NOTE (watch tv!), N, GET BROOM, S, S, 
+S, GET KEY (with the broom), N, W, S, READ GRAFFITI (a warning), 
+N, N, WATCH TV (the power will be cut), S, E, E, S, OPEN CABINET 
+(with the key), GET FLASHLIGHT, GET TAPE, LIGHT FLASHLIGHT, N, N, 
+DROP CHAIR, CLIMB CHAIR (you reach the trap door), TAPE WIRES, D, 
+PRESS BUTTON
+
+Floor 8: S, GET PILL, N, W, W, GET ROPE, E, DROP PILL (into the 
+aquarium), GET PIRANHA, E, S, DROP PIRANHA (it devours the poor 
+dog!!), E, TIE ROPE, CLIMB ROPE
+
+Floor 7: W, GET GLUE, GET STEP, E, S, E, E, GET SHEET (of 
+copper), W, W, N, N, MAKE KEY, GET KEY, S, E, OPEN DOOR (with the 
+key), GO DOOR, GLUE STEP (the staircase is repaired), CLIMB 
+STAIRS
+
+Floor 6: N, N, GET GAS (helium), S, S, E, GET BALLOON, W, S, GET 
+GUN, N, W, W, CLIMB LEDGE, W, CLIMB WINDOW, GET DOLLAR (you stick 
+up the kidnapper with the gun), W, E, CLIMB WINDOW, E, N, READ 
+SIGN, PUT DOLLAR (you buy some string), GET STRING, INFLATE 
+BALLOON, TIE BALLOON, S, W, CLIMB LEDGE, JUMP
+
+Floor 5: W, S, GET NEEDLES, N, N, GET YARN, S, E, E (there&#39;s a 
+fire to the north), S, PRESS BUTTON (sprinklers are turned on and 
+douse the fire – you remove your wet clothes), KNIT CLOTHES (you 
+quickly produce a new set), N, N, GET KEY, S, W, OPEN DOOR, GO 
+DOOR, CLIMB STAIRS
+
+Floor 4: N, PRESS BUTTON (this fills the pool with water), S, S, 
+GET BOOK, READ BOOK (you now know how to swim), N, E, SWIM, N, 
+GET UMBRELLA, OPEN UMBRELLA, JUMP
+
+Floor 3: N, READ GRAFFITI (a hint), S, E, E, N, GET FLUID, GET 
+SOLUTION, S, DRINK FLUID (you turn into the strong Mr. Hyde), 
+OPEN DOOR, GO DOOR, DRINK SOLUTION (you revert to normal), CLIMB 
+SLIDE
+
+Floor 2: (you are faced by a huge alligator) GET CUP, GET WATER, 
+W, POUR WATER (the plant grows to reach the ceiling), CLIMB 
+PLANT, E, GET FLUTE (you see a rope below), PLAY FLUTE (the magic 
+rope reaches up to you), CLIMB ROPE, CLIMB STAIRS
+
+Floor 1: GET ROPE, GET KEY (well, pianos have keys!), E, GET BOOK 
+(&quot;How to walk a tightrope), READ BOOK, TIE ROPE (to the stake), 
+THROW ROPE (it catches on to the hook), CLIMB ROPE (you cross the 
+pit), OPEN DOOR, GO DOOR (you have escaped!)
+
+Jacob Gunness – September 2004
+
+*****************************************************
+Displayed on the Classic Adventures Solution Archive:
+http://solutionarchive.com
+
+</pre>
+	</div>
+
+	<br clear="all" />	
+	
+
+	<div id="copyright"><a href="/copyright/">(C) CASA 1999 - 2026</a></div>
+
+</div>
+
+			
+		</div>
+		
+		
+	
+		<script type="text/javascript">
+			initialise();
+		</script>
+
+	</body>
+</html>

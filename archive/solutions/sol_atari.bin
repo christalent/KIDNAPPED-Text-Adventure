@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" id="viewport" />
+		<title>:: CASA :: Kidnapped (Kidnapped.txt)</title>
+		<link rel="stylesheet" type="text/css" media="all" href="/styles/casa.css" />
+		<link href="/atom.xml" type="application/atom+xml" rel="alternate" title="CASA Atom Feed" />
+		<script src="/js/casa.js" type="text/javascript"></script>
+		<meta name="robots" content="index,follow" />
+	</head>
+	<body>
+	
+		<div id="wrapper">	
+		<div id="logo"><a href="/"><img src="/pics/logo.png" height="80" width="285" alt=":: CASA ::"/></a></div>
+<div id="userbox">
+	<form action="https://solutionarchive.com/phpBB3/ucp.php?mode=login" method="post">
+		Username: <input type="text" name="username" size="8" />
+		Password: <input type="password" name="password" size="8" />
+		<input type="submit" name="login" value="Login" />
+		<input type="hidden" name="redirect" value="/file/id,13095/" />
+		<input type="hidden" name="sid" value="6f23c7715e1341c3bac31ac8b5672ebe" />
+		<input type="hidden" name="creation_time" value="1793752539" />
+		<input type="hidden" name="form_token" value="1a635aaf1426430522db2356249752573fc3251d" />
+		<input type="hidden" name="autologin" value="true" />
+	</form>
+	<a href="/phpBB3/ucp.php?mode=register">Register</a> &bull;
+	<a href="/phpBB3/ucp.php?mode=sendpassword">Forgotten Password</a>
+</div>
+
+
+
+		
+		<div id="header">
+	<div id="menubox">
+		<ul class="menu-list">
+		<li>
+			<a href="/games/" class="regular">Games...</a>
+			<ul class="submenu-list">
+				<li><a href="/list/">All games</a></li>
+				<li><a href="/browse/id,1/">Browse by publisher</a></li>
+				<li><a href="/browse/id,2/">Browse by system</a></li>
+				<li><a href="/browse/id,3/">Browse by platform</a></li>
+				<li><a href="/browse/id,4/">Browse by year</a></li>
+				<li><a href="/browse/id,5/">Browse by genre</a></li>
+				<li><a href="/browse/id,6/">Browse by language</a></li>
+				<li><a href="/search/">Advanced search</a></li>
+			</ul>
+		</li>
+		<li><a href="/reviews/" class="regular">Reviews</a></li>
+		<li><a href="/articles/" class="regular">Articles</a></li>
+		<li>
+			<a href="/site/" class="regular">Site...</a>
+			<ul class="submenu-list">
+				<li><a href="/about/">About</a></li>
+				<li><a href="/contact/">Contact</a></li>
+				<li><a href="/submission/">Submit contents</a></li>
+				<li><a href="/links/">Links</a></li>
+				<li><a href="/emulators/">Emulators</a></li>
+                                <li><a href="/faq/">Site FAQ</a></li>
+                                <li><a href="/privacy/">Privacy policy</a></li>
+			</ul>
+		</li>
+		<li><a href="/users/" class="regular">Users</a></li>
+		<li><a href="/phpBB3/" class="regular">Forum</a></li>
+		
+		</ul>
+	</div>
+	<div id="searchbox">
+		<form action="/search/" method="post">
+			<!-- Hack for IE8 being useless -->
+			<input type="text" disabled="disabled" style="visibility: hidden; width: 0; display: none" />
+			<input type="text" name="title" value="(game title)" onfocus="this.value=''" />
+			<input type="submit" name="submit" value="Search" />
+		</form>
+	</div>
+</div>
+
+
+
+
+			<div id="contentarea">
+
+	<div id="warnings"></div>
+	
+	<div id="contents">
+		<h1>Kidnapped (<a href="/file/force%2Ctrue/id%2C13095/mode%2Cfile/">Kidnapped.txt</a>)</h1>
+		<pre>Kidnapped
+By Peter Kirsch
+Published in SoftSide, vol. 4, no. 10, July 1981, pp. 34–45; corrections vol. 4, no. 11, August
+1981, p. 22; vol. 5, no. 3, December 1981, p. 83
+For Atari 400/800/XL/XE (same or very similar for Apple II and TRS-80)
+
+Solution by Garry Francis
+----------------------------------------
+(This is a minimal solution. Verbs must be typed in full. For GET and DROP, only the first three
+letters of the noun phrase are significant. For other actions, only the last three letters of the
+noun phrase are significant.)
+
+[Floor 9]
+N
+GET CHAIR
+N
+GET LONG BROOM
+S
+S
+S
+GET KEY
+N
+E
+S
+OPEN CABINET
+GET FLASHLIGHT
+LIGHT FLASHLIGHT
+GET ELECTRICAL TAPE
+N
+N
+DROP CHAIR
+WAIT
+GO CHAIR
+TAPE WIRES
+D
+PRESS BUTTON
+
+[Floor 8]
+S
+GET SLEEPING PILL
+N
+W
+DROP SLEEPING PILL
+GET SLEEPING PIRANHA
+W
+GET ROPE
+E
+E
+S
+DROP SLEEPING PIRANHA
+E
+TIE ROPE
+GO ROPE
+
+[Floor 7]
+S
+E
+E
+GET THICK COPPER SHEET
+W
+W
+N
+N
+MAKE KEY
+GET CRUDE KEY
+S
+W
+GET SUPER GLUE
+GET WOODEN STAIR STEP
+E
+E
+OPEN DOOR
+GO DOOR
+GLUE STEP
+GO STAIRS
+
+[Floor 6]
+S
+GET GUN
+N
+E
+GET LARGE DEFLATED BALLOON
+W
+N
+N
+GET TANK OF HELIUM GAS
+INFLATE BALLOON
+S
+S
+W
+W
+GO LEDGE
+W
+GO WINDOW
+GET DOLLAR
+W
+E
+GO WINDOW
+E
+N
+PAY DOLLAR
+GET LONG STRING
+TIE STRING
+S
+W
+GO LEDGE
+JUMP
+
+[Floor 5]
+E
+S
+PRESS BUTTON
+N
+W
+W
+S
+GET KNITTING NEEDLES
+N
+N
+GET BALL OF YARN
+KNIT CLOTHES
+S
+E
+E
+N
+GET SMALL KEY
+S
+W
+OPEN DOOR
+GO DOOR
+GO STAIRS
+
+[Floor 4]
+N
+PRESS BUTTON
+S
+S
+GET BOOK
+READ BOOK
+N
+E
+SWIM
+N
+GET MARY POPPIN&#39;S UMBRELLA
+OPEN UMBRELLA
+S
+E
+JUMP
+
+[Floor 3]
+E
+E
+N
+GET JAR OF FLUID
+DRINK FLUID
+GET VIAL OF YELLOW SOLUTION
+S
+OPEN DOOR
+DRINK SOLUTION
+GO DOOR
+GO SLIDE
+
+[Floor 2]
+GET PAPER CUP
+GET WATER
+W
+POUR WATER
+GO PLANT
+E
+GET FLUTE
+PLAY FLUTE
+GO ROPE
+GO STAIRS
+
+[Floor 1]
+GET KEY
+GET LONG ROPE
+E
+GET BOOK
+READ BOOK
+TIE ROPE
+THROW ROPE
+GO ROPE
+OPEN DOOR
+GO DOOR
+***THE END***
+</pre>
+	</div>
+
+	<br clear="all" />	
+	
+
+	<div id="copyright"><a href="/copyright/">(C) CASA 1999 - 2026</a></div>
+
+</div>
+
+			
+		</div>
+		
+		
+	
+		<script type="text/javascript">
+			initialise();
+		</script>
+
+	</body>
+</html>

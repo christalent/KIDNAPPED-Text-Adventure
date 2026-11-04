@@ -1,0 +1,117 @@
+:: CASA :: Kidnapped (Kidnapped_pd.txt)
+
+Username:
+Password:
+
+Register  •
+Forgotten Password
+
+Games...
+
+All games
+
+Browse by publisher
+
+Browse by system
+
+Browse by platform
+
+Browse by year
+
+Browse by genre
+
+Browse by language
+
+Advanced search
+
+Reviews
+
+Articles
+
+Site...
+
+About
+
+Contact
+
+Submit contents
+
+Links
+
+Emulators
+
+Site FAQ
+
+Privacy policy
+
+Users
+
+Forum
+
+Kidnapped ( Kidnapped_pd.txt )
+
+KIDNAPPED (?)
+
+Inspired by an entry on the discussion board, I decided to have a
+go at this game. It's quite probably the easiest adventure game
+I've ever played. Hmm… of course, King's Ransom is even shorter,
+but this certainly comes in a close second.
+The plot is non-existant but revolves around a simple setup which
+has you locked on the 9th floor of a building. You have to make
+your way down to the ground floor. All floors have to be solved
+seperately.
+
+Floor 9: N, GET CHAIR, READ NOTE (watch tv!), N, GET BROOM, S, S,
+S, GET KEY (with the broom), N, W, S, READ GRAFFITI (a warning),
+N, N, WATCH TV (the power will be cut), S, E, E, S, OPEN CABINET
+(with the key), GET FLASHLIGHT, GET TAPE, LIGHT FLASHLIGHT, N, N,
+DROP CHAIR, CLIMB CHAIR (you reach the trap door), TAPE WIRES, D,
+PRESS BUTTON
+
+Floor 8: S, GET PILL, N, W, W, GET ROPE, E, DROP PILL (into the
+aquarium), GET PIRANHA, E, S, DROP PIRANHA (it devours the poor
+dog!!), E, TIE ROPE, CLIMB ROPE
+
+Floor 7: W, GET GLUE, GET STEP, E, S, E, E, GET SHEET (of
+copper), W, W, N, N, MAKE KEY, GET KEY, S, E, OPEN DOOR (with the
+key), GO DOOR, GLUE STEP (the staircase is repaired), CLIMB
+STAIRS
+
+Floor 6: N, N, GET GAS (helium), S, S, E, GET BALLOON, W, S, GET
+GUN, N, W, W, CLIMB LEDGE, W, CLIMB WINDOW, GET DOLLAR (you stick
+up the kidnapper with the gun), W, E, CLIMB WINDOW, E, N, READ
+SIGN, PUT DOLLAR (you buy some string), GET STRING, INFLATE
+BALLOON, TIE BALLOON, S, W, CLIMB LEDGE, JUMP
+
+Floor 5: W, S, GET NEEDLES, N, N, GET YARN, S, E, E (there's a
+fire to the north), S, PRESS BUTTON (sprinklers are turned on and
+douse the fire – you remove your wet clothes), KNIT CLOTHES (you
+quickly produce a new set), N, N, GET KEY, S, W, OPEN DOOR, GO
+DOOR, CLIMB STAIRS
+
+Floor 4: N, PRESS BUTTON (this fills the pool with water), S, S,
+GET BOOK, READ BOOK (you now know how to swim), N, E, SWIM, N,
+GET UMBRELLA, OPEN UMBRELLA, JUMP
+
+Floor 3: N, READ GRAFFITI (a hint), S, E, E, N, GET FLUID, GET
+SOLUTION, S, DRINK FLUID (you turn into the strong Mr. Hyde),
+OPEN DOOR, GO DOOR, DRINK SOLUTION (you revert to normal), CLIMB
+SLIDE
+
+Floor 2: (you are faced by a huge alligator) GET CUP, GET WATER,
+W, POUR WATER (the plant grows to reach the ceiling), CLIMB
+PLANT, E, GET FLUTE (you see a rope below), PLAY FLUTE (the magic
+rope reaches up to you), CLIMB ROPE, CLIMB STAIRS
+
+Floor 1: GET ROPE, GET KEY (well, pianos have keys!), E, GET BOOK
+("How to walk a tightrope), READ BOOK, TIE ROPE (to the stake),
+THROW ROPE (it catches on to the hook), CLIMB ROPE (you cross the
+pit), OPEN DOOR, GO DOOR (you have escaped!)
+
+Jacob Gunness – September 2004
+
+*****************************************************
+Displayed on the Classic Adventures Solution Archive:
+http://solutionarchive.com
+
+(C) CASA 1999 - 2026
