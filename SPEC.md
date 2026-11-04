@@ -98,11 +98,6 @@ Floor 8:
   Room 15: ROPE (take)
   Room 16: SLEEPING PILL (take)
   Room 17: OPEN WINDOW (fixed), DESK (fixed)
-```
-
-Corrected source DATA rows and the OCR-vs-pixels evidence:
-`KIDNAPPED_SOURCE_CORRECTED.txt`, `OCR_CORRECTIONS_2026-11-04.md`.
-
 Floor 6:
   Room 28: TANK OF HELIUM GAS (take)
   Room 29: LARGE DEFLATED BALLOON (take)
@@ -110,6 +105,11 @@ Floor 6:
   Room 32: SIGN ON WALL (fixed), STRING VENDING MACHINE (fixed)
   Room 33: OPEN WINDOW (fixed)
   Room 35: DOLLAR (take)
+```
+
+Corrected source DATA rows and the OCR-vs-pixels evidence:
+`KIDNAPPED_SOURCE_CORRECTED.txt`, `OCR_CORRECTIONS_2026-11-04.md`.
+
 ```
 
 ## Floor Themes & Difficulty
