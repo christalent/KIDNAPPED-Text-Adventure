@@ -185,7 +185,10 @@ ROOMS = {
 # Special room targets
 # --------------------------------------------------------------------
 SPECIAL_ROOMS = {
-    "floor_8":  {"target": "floor_8",  "landing_room": 28},
+    # Floor 8 was re-audited (FLOOR9_AUDIT_2026-11-03.md): its rooms are
+    # the authoritative global rooms 13-17 and its arrival room is 13.
+    # The old landing room 28 belonged to the discarded, wrong floor 8.
+    "floor_8":  {"target": "floor_8",  "landing_room": 13},
     "floor_6":  {"target": "floor_6",  "landing_room": 41},
 }
 
@@ -304,7 +307,7 @@ class Floor7Engine:
         if isinstance(next_target, str):
             # Floor transitions
             if next_target == "floor_8":
-                return f"TRANSITION:{next_target}:28", True
+                return f"TRANSITION:{next_target}:13", True
             if next_target == "floor_6":
                 return f"TRANSITION:{next_target}:41", True
         # Vault door gate: only enter 55 from 37 when vault is unlocked
@@ -317,9 +320,10 @@ class Floor7Engine:
         return self._describe_room(next_target), False
 
     def _go_up(self, loc):
-        # Rooms 31 and 35 have U=floor_8
+        # Rooms 31 and 35 have U=floor_8.  Floor 8's arrival room is 13
+        # (the audited "IN A HALLWAY"), not the old, wrong room 28.
         if loc in (31, 35):
-            return f"TRANSITION:floor_8:28", True
+            return f"TRANSITION:floor_8:13", True
         return self._go("U", loc)
 
     def _go_down(self, loc):
