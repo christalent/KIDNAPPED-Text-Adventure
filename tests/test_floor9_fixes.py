@@ -1,281 +1,350 @@
 #!/usr/bin/env python3
 """
-Test the four Floor 9 bug fixes:
-  Bug #1: Player can now return from room 10 (crawlspace) to room 1 (elevator).
-  Bug #2: Player must wait until midnight to safely TAPE the live wires.
-  Bug #3: TAPE actually has to be in inventory; FLASHLIGHT persists in state.
-  Bug #4: After fixing the elevator, PUSH BUTTON descends to Floor 8.
+Regression tests for the CORRECTED Floor 9.
 
-The test runs the full puzzle sequence end-to-end and asserts that the
-state-of-the-world matches expectations at each step.
+The old version of this file tested the OLD, WRONG floor 9 (rooms 1-17
+with an elevator in room 1, a cabinet in room 1, a D exit from the
+elevator to the maintenance room and rooms 13-17 misfiled on floor 9).
+Every assertion here pins down one of the corrections the pixel audit
+(FLOOR9_AUDIT_2026-11-03.md) forced:
 
-The "reference run" command sequence (provided in the task spec) is run
-verbatim, and the observed output is printed at the end of the test.
+  * no room 9 -> 10 exit (the elevator does not lead to the
+    maintenance room; PRESS BUTTON goes down to floor 8)
+  * no room 3 -> 4 "U" exit (the closet does not open onto the roof)
+  * no room 4 -> 3 "D" exit
+  * no room 10 -> 9 "U" exit
+  * no room 11 -> 13/15 "E"/"W" exits (the crawlspace belongs to
+    floor 9 alone)
+  * room 12 ("ON A VERY NARROW LEDGE") does not exist
+  * room 1 is a HALLWAY; the elevator is room 9
+  * the CABINET is in room 10, the LONG BROOM is in room 3
+  * the key must be fished down with the broom
+  * the cabinet needs the key
+  * the wires are live until 23:00
+  * the elevator only moves once it is repaired
+  * the crawlspace is reached by CLIMB CHAIR, not by walking
+
+Run:  python3 tests/test_floor9_fixes.py
 """
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "floors"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
 from floors.floor_9 import Floor9Engine, ROOMS
+
+import authoritative_tables
 
 
 class SimpleState:
     """Minimal GameState-like object compatible with Floor9Engine."""
-    def __init__(self):
-        self.location = 1
+
+    def __init__(self, location=1):
+        self.location = location
         self.inventory = []
         self.floor = 9
         self.dark = False
         self.flashlight_on = False
         self.turns = 0
-        self.power_out = False
         self.game_time = "10:00 PM"
+        self.power_out = False
+        self.alive = True
+        self.game_over = False
         self.elevator_fixed = False
+
     def add_item(self, item):
         if item not in self.inventory:
             self.inventory.append(item)
+
     def remove_item(self, item):
-        if item in self.state if False else item in self.inventory:
+        if item in self.inventory:
             self.inventory.remove(item)
 
 
-# The exact command sequence from the task spec.
-REFERENCE_COMMANDS = [
-    "look",
-    "get broom",
-    "w",
-    "get chair",
-    "e",
-    "s",
-    "w",
-    "s",
-    "use broom",
-    "e",
-    "n",
-    "n",
-    "get flashlight",
-    "s",
-    "s",
-    "e",
-    "e",
-    "n",
-    "get tape",
-    "s",
-    "w",
-    "w",
-    "w",
-    "d",
-    "drop chair",
-    "u",
-    "look",
-    "use tape",
-    "d",
-    "s",
-    "d",
-    "d",
-]
-
-
-def fresh_engine():
-    state = SimpleState()
+def fresh_engine(location=1):
+    state = SimpleState(location=location)
     engine = Floor9Engine(state)
     engine.on_enter()
+    state.location = location
     return state, engine
 
 
-def run_reference(state, engine, verbose=True):
-    """Run the reference command sequence and return a list of (cmd, result) tuples."""
-    log = []
-    for cmd in REFERENCE_COMMANDS:
-        parts = cmd.upper().split()
-        verb = parts[0]
-        noun = " ".join(parts[1:]) if len(parts) > 1 else ""
-        if verb in ("N", "S", "E", "W", "U", "D"):
-            noun = verb
-            verb = "GO"
-        result, transition = engine.handle_command(verb, noun)
-        log.append((cmd, result, transition))
-        if verbose:
-            print(f"> {cmd}")
-            print(result)
-            if transition:
-                print(f"  [TRANSITION -> floor {state.floor}]")
-            print()
-    return log
+# ----------------------------------------------------------------------
+# 1. The old wrong exits must be gone
+# ----------------------------------------------------------------------
+
+def test_no_exit_from_elevator_to_maintenance_room():
+    """Room 9 (the elevator) has no D exit to room 10."""
+    assert "D" not in ROOMS[9]["exits"], \
+        f"Room 9 must not have a D exit, got {ROOMS[9]['exits']}"
+    assert ROOMS[9]["exits"].get("D") != 10, \
+        "Room 9 must not lead down to the maintenance room (room 10)"
+    print("✅ room 9 has no D exit to room 10")
+
+
+def test_no_wrong_vertical_exits():
+    """Room 3 has no U exit, room 4 has no D exit, room 10 has no U exit."""
+    assert "U" not in ROOMS[3]["exits"], \
+        f"Room 3 (closet) must not have a U exit, got {ROOMS[3]['exits']}"
+    assert "D" not in ROOMS[4]["exits"], \
+        f"Room 4 must not have a D exit, got {ROOMS[4]['exits']}"
+    assert "U" not in ROOMS[10]["exits"], \
+        f"Room 10 (maintenance room) must not have a U exit, got {ROOMS[10]['exits']}"
+    print("✅ no bogus U/D exits on rooms 3, 4 and 10")
+
+
+def test_crawlspace_has_no_side_exits():
+    """Room 11 (crawlspace) only leads back down to the elevator."""
+    exits = ROOMS[11]["exits"]
+    assert "E" not in exits, f"Room 11 must not have an E exit, got {exits}"
+    assert "W" not in exits, f"Room 11 must not have a W exit, got {exits}"
+    assert exits == {"D": 9}, f"Room 11's exits must be exactly D=9, got {exits}"
+    print("✅ room 11 has no E/W exits into floor 8")
+
+
+def test_no_room_12():
+    """Room 12 ('ON A VERY NARROW LEDGE') must not exist on floor 9."""
+    assert 12 not in ROOMS, "Room 12 must not exist on floor 9"
+    assert 12 in authoritative_tables.FLOOR9_FORBIDDEN_ROOMS, \
+        "the authoritative table should list 12 as forbidden"
+    state, engine = fresh_engine()
+    assert engine.get_room(12) is None, \
+        "the engine must not be able to return a room 12"
+    # and nothing may move the player into it
+    for rid, room in ROOMS.items():
+        for d, t in room["exits"].items():
+            assert t != 12, f"Room {rid} has an exit to the forbidden room 12"
+    state.location = 9
+    result, _ = engine.handle_command("D", "D")
+    assert state.location != 12, "the player must never land in room 12"
+    print("✅ room 12 does not exist and cannot be entered")
 
 
 # ----------------------------------------------------------------------
-# Per-bug focused tests
+# 2. The right rooms hold the right things
 # ----------------------------------------------------------------------
 
-def test_bug1_room10_to_room1():
-    """Bug #1: room 10 (crawlspace) must be reachable from room 1.
-
-    Room 10's exits are N=8 and U=9. Path from 1 to 10 is
-    1→E→8→S→10, and the return path is 10→N→8→W→1.
-    """
-    state, engine = fresh_engine()
-    # Forward: 1 → E → 8 → S → 10
-    state.location = 1
-    result, _ = engine.handle_command("E", "")
-    assert state.location == 8, f"Expected 8, got {state.location}"
-    result, _ = engine.handle_command("S", "")
-    assert state.location == 10, f"Expected 10, got {state.location}"
-
-    # Back: 10 → N → 8 → W → 1
-    result, _ = engine.handle_command("N", "")
-    assert state.location == 8, f"Expected 8, got {state.location}"
-    result, _ = engine.handle_command("W", "")
-    assert state.location == 1, f"Expected 1, got {state.location}"
-    assert "ELEVATOR" in result.upper(), f"Expected elevator desc, got: {result[:80]}"
-    print("✅ Bug #1 fixed: room 1 ↔ room 10 path works (via room 8)")
+def test_room_1_is_a_hallway_not_the_elevator():
+    """Room 1 is a HALLWAY; the elevator is room 9."""
+    assert ROOMS[1]["name"] == "IN A HALLWAY", \
+        f"Room 1 must be 'IN A HALLWAY', got {ROOMS[1]['name']!r}"
+    assert "ELEVATOR" not in ROOMS[1]["name"].upper(), \
+        "Room 1 must not be the elevator"
+    assert ROOMS[9]["name"] == "IN AN ELEVATOR", \
+        f"Room 9 must be 'IN AN ELEVATOR', got {ROOMS[9]['name']!r}"
+    print("✅ room 1 is a hallway, room 9 is the elevator")
 
 
-def test_bug2_midnight_required_for_tape():
-    """Bug #2: cannot tape wires while power is on; wires are live
-    before 11 PM and de-energized after (per wires_live property)."""
-    state, engine = fresh_engine()
-    # Give the player TAPE and put them in room 11
-    state.add_item("TAPE")
-    state.location = 11
-
-    # First attempt: power is on, should fail
-    result, _ = engine.handle_command("USE", "TAPE")
-    assert "electrocuted" in result.lower() or "danger" in result.lower() \
-        or "wait" in result.lower() or "live" in result.lower(), \
-        f"Expected warning about live wires, got: {result}"
-    assert not engine.elevator_fixed, "Elevator should NOT be fixed while power is on"
-    assert engine.wires_live, "Wires should be live at start (10:00 PM)"
-
-    # Wait until past 11 PM. Time advance: 10 min/turn, start at 10:00 PM.
-    # 11 PM = 60 min later = 6 turns.
-    for _ in range(10):
-        engine.handle_command("WAIT", "")
-    assert not engine.wires_live, \
-        f"Wires should be safe after waiting past 11 PM (turns={engine._turn})"
-
-    # Try to tape — should succeed
-    result, _ = engine.handle_command("USE", "TAPE")
-    assert engine.elevator_fixed, f"Elevator should be fixed after taping, got: {result}"
-    assert "FIXED" in result.upper() or "tape" in result.lower(), \
-        f"Expected success message, got: {result}"
-    print("✅ Bug #2 fixed: taping wires gated on time-of-day (wires_live)")
+def test_cabinet_is_in_room_10():
+    """The CABINET lives in the maintenance room (10), not in 1 or 2."""
+    assert "CABINET" in ROOMS[10]["items"], \
+        f"Room 10 must hold the CABINET, got {ROOMS[10]['items']}"
+    assert "CABINET" not in ROOMS[1]["items"], \
+        "The CABINET must not be in room 1"
+    assert "CABINET" not in ROOMS[2]["items"], \
+        "The CABINET must not be in room 2"
+    print("✅ the CABINET is in room 10")
 
 
-def test_bug3_tape_in_inventory_and_flashlight_in_cabinet():
-    """Bug #3: TAPE must be in inventory to use; FLASHLIGHT must appear after opening cabinet."""
-    state, engine = fresh_engine()
-    # Without TAPE in inventory, USE TAPE in room 11 should fail
-    state.location = 11
-    result, _ = engine.handle_command("USE", "TAPE")
-    assert "don't have" in result.lower() or "no" in result.lower(), \
-        f"Expected 'no tape' message, got: {result}"
-    assert not engine.elevator_fixed, "Elevator should NOT be fixed without tape"
+def test_broom_is_in_room_3():
+    """The LONG BROOM lives in the closet (3), not in room 2."""
+    assert "LONG BROOM" in ROOMS[3]["items"], \
+        f"Room 3 must hold the LONG BROOM, got {ROOMS[3]['items']}"
+    assert "LONG BROOM" not in ROOMS[2]["items"], \
+        "The LONG BROOM must not be in room 2"
+    print("✅ the LONG BROOM is in room 3")
 
-    # Open cabinet without key — should fail
-    state.location = 1
+
+# ----------------------------------------------------------------------
+# 3. The puzzle mechanics
+# ----------------------------------------------------------------------
+
+def test_key_needs_the_broom():
+    """GET KEY in room 7 is refused without the LONG BROOM."""
+    state, engine = fresh_engine(location=7)
+    result, _ = engine.handle_command("GET", "KEY")
+    assert "KEY ON KEY CHAIN" not in state.inventory, \
+        "GET KEY must be refused without the LONG BROOM"
+    assert "reach" in result.lower() or "broom" in result.lower(), \
+        f"Expected a refusal about reaching the key, got: {result}"
+    print("✅ GET KEY refused without the LONG BROOM")
+
+    state, engine = fresh_engine(location=7)
+    state.add_item("LONG BROOM")
+    result, _ = engine.handle_command("GET", "KEY")
+    assert "KEY ON KEY CHAIN" in state.inventory, \
+        f"GET KEY should succeed with the broom, got: {result}"
+    print("✅ GET KEY succeeds with the LONG BROOM")
+
+
+def test_cabinet_needs_the_key():
+    """OPEN CABINET in room 10 is refused without the key and reveals
+    the FLASHLIGHT and TAPE with it."""
+    state, engine = fresh_engine(location=10)
     result, _ = engine.handle_command("OPEN", "CABINET")
+    assert "FLASHLIGHT" not in result and "TAPE" not in result, \
+        f"The cabinet must not open without the key, got: {result}"
     assert "locked" in result.lower() or "key" in result.lower(), \
-        f"Expected locked message, got: {result}"
+        f"Expected a 'locked / need a key' message, got: {result}"
+    assert not engine.cabinet_open, "the cabinet must stay closed"
+    print("✅ OPEN CABINET refused without the key")
 
-    # Add key, open cabinet, FLASHLIGHT should appear
+    state, engine = fresh_engine(location=10)
     state.add_item("KEY ON KEY CHAIN")
     result, _ = engine.handle_command("OPEN", "CABINET")
-    assert "FLASHLIGHT" in result, f"Expected FLASHLIGHT in result, got: {result}"
-    # And the FLASHLIGHT should be in the room items so it can be picked up
-    assert "FLASHLIGHT" in engine._room_items.get(1, []), \
-        f"Expected FLASHLIGHT in room 1 items, got: {engine._room_items.get(1, [])}"
-    print("✅ Bug #3 fixed: TAPE inventory check + FLASHLIGHT appears in cabinet")
+    assert engine.cabinet_open, "the cabinet should be open now"
+    assert "FLASHLIGHT" in result and "TAPE" in result, \
+        f"Opening the cabinet should reveal the FLASHLIGHT and TAPE, got: {result}"
+    room10 = engine._room_items.get(10, [])
+    assert "FLASHLIGHT" in room10 and "TAPE" in room10, \
+        f"The FLASHLIGHT and TAPE should be in room 10, got {room10}"
+    print("✅ OPEN CABINET reveals the FLASHLIGHT and TAPE with the key")
 
 
-def test_bug4_floor_transition():
-    """Bug #4: PUSH BUTTON in room 9 descends to Floor 8 once elevator is fixed."""
-    state, engine = fresh_engine()
-    # Try pushing button with broken elevator
-    state.location = 9
-    result, transition = engine.handle_command("PUSH", "BUTTON")
-    assert not transition, "Should not transition with broken elevator"
-    assert "dead" in result.lower() or "fix" in result.lower(), \
-        f"Expected dead-elevator message, got: {result}"
-
-    # Force-fix the elevator (simulate the rest of the puzzle)
+def test_wires_are_live_until_23_00():
+    """The wires are live before 23:00 and dead afterwards."""
+    state, engine = fresh_engine(location=11)
     state.add_item("TAPE")
-    engine.tape_used = True
-    engine.elevator_fixed = True
-    # Force the wires-safe state by advancing time past 11 PM
-    engine._turn = 10  # past the 11 PM threshold
+    assert engine.wires_live, \
+        f"wires should be live at {engine._current_time_str()}"
+    result, _ = engine.handle_command("TAPE", "WIRES")
+    assert not engine.elevator_fixed, \
+        "taping live wires must not fix the elevator"
+    assert "live" in result.lower(), \
+        f"Expected a 'the wires are live' refusal, got: {result}"
+    print(f"✅ TAPE WIRES refused while the wires are live "
+          f"({engine._current_time_str()})")
 
-    result, transition = engine.handle_command("PUSH", "BUTTON")
-    assert transition, "Should transition when elevator is fixed"
-    assert state.floor == 8, f"Expected floor=8, got {state.floor}"
-    assert "floor 8" in result.lower() or "ding" in result.lower(), \
-        f"Expected floor-8 transition message, got: {result}"
-    print("✅ Bug #4 fixed: PUSH BUTTON descends to Floor 8 when elevator is fixed")
+    turns = 0
+    while engine.wires_live and turns < 30:
+        engine.handle_command("WAIT", "")
+        turns += 1
+    assert not engine.wires_live, \
+        f"wires should be dead by now ({engine._current_time_str()})"
+    print(f"✅ wires dead at {engine._current_time_str()} after {turns} waits")
+
+    result, _ = engine.handle_command("TAPE", "WIRES")
+    assert engine.elevator_fixed, \
+        f"TAPE WIRES should repair the elevator, got: {result}"
+    assert state.elevator_fixed, "state.elevator_fixed was not set"
+    print("✅ TAPE WIRES succeeds after 23:00")
 
 
-def test_bug1_secondary_north_exit():
-    """Bug #1: room 1's exits must include a way to reach the elevator
-    chain that leads to room 10 (crawlspace). The chain is 1↔8→10."""
-    state, engine = fresh_engine()
-    # From room 1, the EAST exit leads to room 8, which is on the
-    # path to room 10. So room 1 must have an E exit to 8.
-    exits = ROOMS[1]["exits"]
-    assert exits.get("E") == 8, f"Expected room 1 E→8, got: {exits}"
-    # And room 8's S exit must reach room 10
-    assert ROOMS[8]["exits"].get("S") == 10, f"Expected room 8 S→10, got: {ROOMS[8]['exits']}"
-    print("✅ Bug #1 secondary check: room 1 → 8 → 10 path exists")
+def test_button_only_works_after_the_repair():
+    """PRESS BUTTON in room 9 is refused until the elevator is repaired."""
+    state, engine = fresh_engine(location=9)
+    result, transition = engine.handle_command("PRESS", "BUTTON")
+    assert not transition, "PRESS BUTTON must not transition a dead elevator"
+    assert "dead" in result.lower() or "repair" in result.lower() \
+        or "fix" in result.lower(), \
+        f"Expected a 'dead elevator' message, got: {result}"
+    print("✅ PRESS BUTTON refused before the repair")
+
+    # repair it the honest way: tape the wires once they are dead
+    state, engine = fresh_engine(location=9)
+    state.add_item("TAPE")
+    state.add_item("CHAIR")
+    engine.state.location = 11
+    turns = 0
+    while engine.wires_live and turns < 30:
+        engine.handle_command("WAIT", "")
+        turns += 1
+    engine.handle_command("TAPE", "WIRES")
+    assert engine.elevator_fixed, "the elevator should be repaired by now"
+    engine.state.location = 9
+
+    result, transition = engine.handle_command("PRESS", "BUTTON")
+    assert transition, "PRESS BUTTON must transition once the elevator is fixed"
+    assert result == "TRANSITION:floor_8:13", \
+        f"unexpected transition marker: {result!r}"
+    print("✅ PRESS BUTTON descends to floor 8 room 13 after the repair")
+
+
+def test_climb_chair_needs_a_chair():
+    """CLIMB CHAIR in room 9 is refused without a chair."""
+    state, engine = fresh_engine(location=9)
+    result, _ = engine.handle_command("CLIMB", "CHAIR")
+    assert state.location == 9, \
+        f"CLIMB CHAIR without a chair must not move the player, got {state.location}"
+    assert "chair" in result.lower() or "reach" in result.lower(), \
+        f"Expected a 'need a chair' message, got: {result}"
+    print("✅ CLIMB CHAIR refused without a chair")
+
+    # carried chair
+    state, engine = fresh_engine(location=9)
+    state.add_item("CHAIR")
+    result, _ = engine.handle_command("CLIMB", "CHAIR")
+    assert state.location == 11, \
+        f"CLIMB CHAIR with a carried chair must reach room 11, got {state.location}"
+    print("✅ CLIMB CHAIR with a carried chair reaches room 11")
+
+    # chair dropped in the elevator
+    state, engine = fresh_engine(location=9)
+    state.add_item("CHAIR")
+    engine.handle_command("DROP", "CHAIR")
+    assert "CHAIR" in engine._room_items.get(9, []), \
+        "the chair should be on the floor of room 9"
+    result, _ = engine.handle_command("CLIMB", "CHAIR")
+    assert state.location == 11, \
+        f"CLIMB CHAIR with a dropped chair must reach room 11, got {state.location}"
+    print("✅ CLIMB CHAIR with a dropped chair reaches room 11")
 
 
 def test_verify_exits_pass():
-    """All exits remain bidirectionally consistent."""
+    """The module's own bidirectional-exit check passes."""
     errors = Floor9Engine.verify_exits()
     assert not errors, f"Exit verification failed: {errors}"
-    print("✅ All exits are bidirectionally consistent")
+    print("✅ all exits are bidirectionally consistent (verb link excepted)")
 
 
 # ----------------------------------------------------------------------
-# Main entry: run all focused tests, then dump the reference sequence
+# Main entry
 # ----------------------------------------------------------------------
+
+TESTS = [
+    ("No elevator -> maintenance room exit", test_no_exit_from_elevator_to_maintenance_room),
+    ("No bogus vertical exits", test_no_wrong_vertical_exits),
+    ("Crawlspace has no side exits", test_crawlspace_has_no_side_exits),
+    ("Room 12 does not exist", test_no_room_12),
+    ("Room 1 is a hallway, not the elevator", test_room_1_is_a_hallway_not_the_elevator),
+    ("CABINET is in room 10", test_cabinet_is_in_room_10),
+    ("LONG BROOM is in room 3", test_broom_is_in_room_3),
+    ("GET KEY needs the broom", test_key_needs_the_broom),
+    ("OPEN CABINET needs the key", test_cabinet_needs_the_key),
+    ("Wires live until 23:00", test_wires_are_live_until_23_00),
+    ("PRESS BUTTON after the repair", test_button_only_works_after_the_repair),
+    ("CLIMB CHAIR needs a chair", test_climb_chair_needs_a_chair),
+    ("verify_exits", test_verify_exits_pass),
+]
+
 
 def main():
     print("=" * 60)
-    print("FLOOR 9 BUG-FIX TESTS")
+    print("FLOOR 9 CORRECTION REGRESSION TESTS")
     print("=" * 60)
     print()
 
-    print("[Bug #1] Room 10 ↔ Room 1 connection")
-    test_bug1_room10_to_room1()
-    test_bug1_secondary_north_exit()
-    print()
+    failures = []
+    for name, fn in TESTS:
+        try:
+            fn()
+        except AssertionError as e:
+            print(f"❌ {name}: {e}")
+            failures.append(name)
+        except Exception as e:  # noqa: BLE001
+            print(f"❌ {name}: unexpected {type(e).__name__}: {e}")
+            failures.append(name)
 
-    print("[Bug #2] Midnight required to tape wires")
-    test_bug2_midnight_required_for_tape()
-    print()
-
-    print("[Bug #3] TAPE inventory check + FLASHLIGHT in cabinet")
-    test_bug3_tape_in_inventory_and_flashlight_in_cabinet()
-    print()
-
-    print("[Bug #4] Floor 9 → Floor 8 transition")
-    test_bug4_floor_transition()
-    print()
-
-    print("[verify_exits] Bidirectional check")
-    test_verify_exits_pass()
-    print()
-
-    print("=" * 60)
-    print("REFERENCE COMMAND SEQUENCE (verbatim from task spec)")
-    print("=" * 60)
-    print()
-    state, engine = fresh_engine()
-    run_reference(state, engine, verbose=True)
     print()
     print("=" * 60)
-    print("DONE")
+    if failures:
+        print(f"❌ {len(failures)} of {len(TESTS)} checks FAILED: {failures}")
+        print("=" * 60)
+        return 1
+    print(f"✅ All {len(TESTS)} floor 9 correction checks passed")
     print("=" * 60)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -11,6 +11,13 @@ def test_floor(floor_num):
     rooms = getattr(mod, "ROOMS", None)
     if not rooms:
         return None, "No ROOMS dict"
+
+    # Deliberate one-way verb transitions (e.g. floor 9's CLIMB CHAIR
+    # between the elevator and the crawlspace) are declared by the floor
+    # module as VERB_LINK_PAIRS. They have no reverse directional exit
+    # and must not be reported as one.
+    verb_links = getattr(mod, "VERB_LINK_PAIRS", None) or set()
+    verb_links = {tuple(p) for p in verb_links}
     
     errors = []
     for room_id, room in rooms.items():
@@ -24,6 +31,8 @@ def test_floor(floor_num):
             if target not in rooms:
                 errors.append(f"Room {room_id} → {direction} = {target} (target room doesn't exist)")
                 continue
+            if (room_id, target) in verb_links:
+                continue  # deliberate one-way verb transition
             reverse_map = {"N": "S", "S": "N", "E": "W", "W": "E", "U": "D", "D": "U"}
             reverse = reverse_map.get(direction)
             if reverse:
