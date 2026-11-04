@@ -79,7 +79,10 @@ room 2   PAPER NOTE, DESK(-2), CHAIR
 room 3   LONG BROOM
 room 5   TV SET(-5), CLOCK(-5)
 room 6   GRAFFITI ON WALL(-6)
-room 7   OPEN WINDOW(-7), KEY ON A KEY CHAIN   (handler: "YOU SEE A SMALL LEDGE OUTSIDE THE WINDOW")
+room 7   OPEN WINDOW(-7), KEY ON A KEY CHAIN   (key-on-ledge confirmed by walkthrough: 1-S→7 GET KEY.
+                                                    The "SMALL LEDGE OUTSIDE THE WINDOW" wording is from the
+                                                    repo's third-hand BASIC, whose room numbering does NOT
+                                                    match the magazine's — corroboration, not proof.)
 room 9   TRAP DOOR IN CEILING(-9), DOWN BUTTON(-9)
 room 10  CABINET(-10), FLASHLIGHT, TAPE        (flashlight is behind the cabinet; needs the key)
 room 11  ENDS OF 2 'LIVE' WIRES(-11)
@@ -114,10 +117,10 @@ at room 19 where the magazine has `KEY MAKING MACHINE`. **PDF wins.** The repo h
 ## 6. Open questions (not resolved yet)
 
 - **Room 12** — "ON A VERY NARROW LEDGE.", no directional exits, no items, and neither walkthrough
-  visits it. Reachable only by a special verb, and its purpose is unconfirmed. The room-2 handler
-  prints "THERE IS A WIDE, LONG LEDGE OUTSIDE THE WINDOW." — so floor 9 has two window ledges
-  (room 2 wide/long, room 7 small) plus room 12's narrow one. Needs one pass over the BASIC
-  verb handlers to resolve.
+  visits it. Reachable only by a special verb, and its purpose is unconfirmed. The repo's third-hand BASIC prints
+  "THERE IS A WIDE, LONG LEDGE OUTSIDE THE WINDOW." for *its own* room 2, but that transcription's room
+  numbering does not match the magazine's, so this is a lead, not proof. Needs one pass over the
+  magazine's own verb handlers to resolve.
 - `LOCKED DOOR,-5` appears in the repo DATA but not in the magazine's floor-9 DATA read.
 - The magazine's DATA for FLASHLIGHT/TAPE (room 10) was read via a cropped image; re-verify with a
   tighter crop if the cabinet sequence misbehaves.
