@@ -5,7 +5,7 @@ A Python port of the classic **KIDNAPPED!** text adventure game by Peter Kirsch 
 ## Original Game
 - **Platform:** TRS-80 / S-80 (16K machines)
 - **Author:** Peter Kirsch, 1980
-- **Locations:** 65+ rooms across 9 floors
+- **Rooms:** 65 rooms across 9 floors (source numbering 1-65)
 - **Objective:** Escape a 9-story building as a kidnapping victim, floor by floor
 
 ## This Port
@@ -26,29 +26,35 @@ python3 kidnapped.py --floor 5
 
 Use 1-2 word commands like `LOOK`, `GET KEY`, `OPEN DOOR`, `N`, `S`, `E`, `W`, `U`, `D`, `INVENTORY` (or `I`), `HELP`, `QUIT`.
 
-## Floor Status (2026-06-04)
+## Floor Status (2026-11-04)
 
-All 9 floors implemented and passing bidirectional navigation tests.
+All 9 floors are playable and pass bidirectional navigation tests, but only floors 9
+and 8 have been audited against the scanned source. Floors 7-1 still carry stale room
+numbering and are being rewritten floor-by-floor (floor 6 is next).
 
 | Floor | Theme | Rooms | Status |
 |-------|-------|-------|--------|
-| 9 | Roof — elevator & midnight blackout | 16 | ✅ Working |
-| 8 | Aquarium — piranhas & balloon | 6 | ✅ Working |
-| 7 | Bank Vault — combination locks | 10 | ✅ Working |
-| 6 | Office — balloon/vending puzzles | 9 | ✅ Working |
-| 5 | Weird (Mary Poppins) — knitting, umbrellas | 9 | ✅ Working |
-| 4 | Jekyll/Hyde Lab — transformation | 8 | ✅ Working |
-| 3 | Greenhouse — plants and traps | 5 | ✅ Working |
-| 2 | Quicksand — piano puzzle | 5 | ✅ Working |
-| 1 | Ground — escape! | 4 | ✅ Working |
+| 9 | Roof — elevator & midnight blackout | 11 | ✅ Audited vs source 2026-11-03 |
+| 8 | Aquarium — piranhas & balloon | 5 | ✅ Audited vs source 2026-11-03 |
+| 7 | Bank Vault — combination locks | 10 | ⚠️ Stale room IDs — rewrite next |
+| 6 | Office — balloon/vending puzzles | 9 | ⚠️ Stale room IDs — rewrite next |
+| 5 | Weird (Mary Poppins) — knitting, umbrellas | 9 | ⚠️ Stale room IDs |
+| 4 | Jekyll/Hyde Lab — transformation | 8 | ⚠️ Stale room IDs |
+| 3 | Greenhouse — plants and traps | 5 | ⚠️ Stale room IDs |
+| 2 | Quicksand — piano puzzle | 5 | ⚠️ Stale room IDs |
+| 1 | Ground — escape! | 4 | ⚠️ Stale room IDs |
 
-**Total: 72 rooms** (vs the original's 65 — slight differences from hand-rebuilding with bidirectional exit verification).
+**Source: 65 rooms** (global room numbers 1-65). This port currently ships 66 room entries,
+because floors 7-1 are still on stale room numbering; floors 9 and 8 match the source
+exactly (rooms 1-11 and 13-17). The count lands on 65 as floors 7-1 are rewritten.
 
 ## Project Structure
 
 ```
 kidnapped-text-adventure/
 ├── kidnapped.py              # Main launcher (engine + REPL) — supports --floor N
+├── KIDNAPPED_SOURCE_CORRECTED.txt  # Source-corrected DATA rows (2026-11-04)
+├── OCR_CORRECTIONS_2026-11-04.md  # OCR-vs-pixels correction log
 ├── floors/                   # One module per floor
 │   ├── floor_1.py            # Ground floor
 │   ├── floor_2.py            # Quicksand

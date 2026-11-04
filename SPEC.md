@@ -33,41 +33,55 @@ The TIME variable (TI) controls this:
 - Player must WAIT until after midnight to safely tape wires
 - The CLOCK in room 5 is frozen at midnight
 
-## Correct Floor 9 Room Layout (from BASIC)
+## Audited Room Layout -- Floors 9 and 8 (source-verified 2026-11-03)
+Replaces the old "Correct Floor 9 Room Layout" block, which was hand-patched
+from the corrupted OCR layer (see FLOOR9_GROUND_TRUTH.md -- the invented
+reciprocal `E=14`/`W=11` pairs made the bad map look symmetric).
+
+### Floor 9 -- rooms 1-11
 ```
-Room 1:  N=2, E=8, S=7      (elevator hub)
-Room 2:  N=3, S=1           (office, FLASHLIGHT here)
-Room 3:  S=2                 (closet, CHAIR)
-Room 4:  W=5, E=1, S=6      (roof)
-Room 5:  E=4                 (large room, TV/CLOCK/LOCKED DOOR)
-Room 6:  N=4                 (restroom, GRAFFITI)
-Room 7:  N=1                 (office, KEY on ledge)
-Room 8:  N=9, W=1, S=10    (elevator)
-Room 9:  S=8, U=11, D=10   (elevator, PUSH BUTTON)
-Room 10: N=8, U=9           (crawlspace)
-Room 11: D=9, E=13, W=15   (shaft, LIVE WIRES)
-Room 13: W=11, S=16, E=14  (visitor lounge)
-Room 14: W=15, E=13         (small room)
-Room 15: E=14, W=11         (closet, TAPE)
-Room 16: N=13, E=17         (nursery)
-Room 17: W=16                (storage)
+Room 1:  IN A HALLWAY                               W=4 N=2 E=8 S=7           
+Room 2:  IN AN OFFICE                               N=3 S=1                     PAPER NOTE, DESK, CHAIR
+Room 3:  IN A CLOSET                                S=2                         LONG BROOM
+Room 4:  IN A HALLWAY                               N=5 E=1 S=6               
+Room 5:  IN AN OFFICE                               S=4                         TV SET, CLOCK
+Room 6:  IN A RESTROOM                              N=4                         GRAFFITI ON WALL
+Room 7:  IN AN OFFICE                               N=1                         OPEN WINDOW, KEY ON KEY CHAIN
+Room 8:  IN A HALLWAY                               W=1 N=9 S=10              
+Room 9:  IN AN ELEVATOR                             S=8                         TRAP DOOR IN CEILING, DOWN BUTTON
+Room 10:  IN A MAINTENANCE ROOM                     N=8                         CABINET, FLASHLIGHT, TAPE
+Room 11:  IN A CRAWLSPACE ON TOP OF THE ELEVATOR    D=9                         ENDS OF 2 LIVE WIRES
 ```
 
-## Correct Floor 9 Items (from BASIC DATA)
+### Floor 8 -- rooms 13-17
 ```
-Room 2:  PAPER NOTE, CHAIR (takeable)
-Room 3:  LONG BROOM (takeable)
-Room 5:  TV SET, CLOCK, LOCKED DOOR (fixed)
-Room 6:  GRAFFITI ON WALL (fixed)
-Room 7:  OPEN WINDOW (fixed) — KEY on ledge outside
-Room 9:  TRAP DOOR, PUSH BUTTON (fixed)
-Room 10: CABINET (fixed) — opens to reveal FLASHLIGHT
-Room 11: LIVE WIRES, ADMISSION (fixed)
-Room 15: ROPE (takeable)
-Room 16: SLEEPING PILL (takeable)
-Room 19: KEY ON KEY CHAIN (takeable)
-Room 20: SUPER GLUE, WOODEN STAIR STEP (takeable)
+Room 13:  IN A HALLWAY                              W=14 S=16                 
+Room 14:  IN A VISITORS LOUNGE                      W=15 E=13                   AQUARIUM
+Room 15:  IN A CLOSET                               E=14                        ROPE
+Room 16:  IN AN OFFICE                              N=13 E=17                   SLEEPING PILL
+Room 17:  IN AN OFFICE                              W=16                        OPEN WINDOW, DESK
 ```
+
+## Audited Items -- Floors 9 and 8
+```
+Floor 9:
+  Room  2: PAPER NOTE (take), DESK (fixed), CHAIR (take)
+  Room  3: LONG BROOM (take)          <- source DATA: "LONG BROOM",3
+  Room  5: TV SET (fixed), CLOCK (fixed)
+  Room  6: GRAFFITI ON WALL (fixed)    <- reads 'WATCH OUT FOR LIVE ONES'
+  Room  7: OPEN WINDOW (fixed), KEY ON KEY CHAIN (take, created in code)
+  Room  9: TRAP DOOR IN CEILING (fixed), DOWN BUTTON (fixed)
+  Room 10: CABINET (fixed, opens to reveal FLASHLIGHT), TAPE (take)
+  Room 11: ENDS OF 2 'LIVE' WIRES (fixed)
+Floor 8:
+  Room 14: AQUARIUM (fixed)            <- source DATA: "AQUARIUM",-14
+  Room 15: ROPE (take)
+  Room 16: SLEEPING PILL (take)
+  Room 17: OPEN WINDOW (fixed), DESK (fixed)
+```
+
+Corrected source DATA rows and the OCR-vs-pixels evidence:
+`KIDNAPPED_SOURCE_CORRECTED.txt`, `OCR_CORRECTIONS_2026-11-04.md`.
 
 ## Floor Themes & Difficulty
 | Floor | Theme | Key Puzzles | Difficulty |

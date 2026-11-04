@@ -689,7 +689,7 @@ class Floor9Engine:
                     "OVER THE CAR ARE STILL LIVE.\n"
                     "   TAPE THEM BEFORE YOU RIDE IT DOWN.'")
         if t == "GRAFFITI ON WALL" and loc == 6:
-            return "'MATCH WIT FOR LIVE WIRES.'"
+            return "'WATCH OUT FOR LIVE ONES'"
         if t == "ENDS OF 2 LIVE WIRES" and loc == 11:
             if self.tape_used:
                 return "The wires are wrapped in tape, no longer sparking."

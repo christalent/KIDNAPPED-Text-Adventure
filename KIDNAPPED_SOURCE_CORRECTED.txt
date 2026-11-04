@@ -1,0 +1,80 @@
+KIDNAPPED! -- SOURCE-CORRECTED TRANSCRIPTION (SoftSide Vol.3 No.03, Dec 1980)
+Corrected 2026-11-04 from native 300 ppi renders of KIDNAPPED_Original.pdf,
+cross-checked against two independent OCR passes of the same listing:
+  * the PDF text layer (KIDNAPPED_OCR.txt)
+  * Archive.org issue 27 djvu text (SoftSide Dec 1980 magazine scan)
+  * Archive.org issue 34 djvu text (SoftSide Jul 1981 Apple/Atari re-listing)
+
+WHY THE OCR IS WRONG
+  The printed listing is degraded and BOTH OCR passes systematically read the digit
+  4 as 1 (see FLOOR9_GROUND_TRUTH.md: listing line 23 OCR 'W=11' vs pixels 'W=14').
+  Every room number below is therefore given in its PRINTED value.
+
+CONFIDENCE LEGEND
+  [PIX]  read directly from native 300 ppi pixels
+  [OCR2] both independent OCR passes agree after the 4->1 repair
+  [XCHK] additionally confirmed by an audited floor module in this repo
+  [UNRES] unresolved -- needs a fresh pixel read before use
+
+READ COMMAND (listing line 650)
+  PIX  650 IF A=6 AND E$="GRAFFITI" THEN PRINT"GRAFFITI: WATCH OUT FOR LIVE ONES"
+  PIX  650 ELSE IF A=53 THEN PRINT"GRAFFITI: DO YOU HAVE A SPLIT PERSONALITY?"
+       (the room-53 literal is confirmed by the Jul-1981 re-listing text:
+        "GRAFFITI; Do you have a split personality")
+
+DATA ROWS (printed form, item names and room numbers)
+  PIX  2000 DATA"PAPER NOTE",2,"DESK",-2,"CHAIR",2,"LONG BROOM",3,"TV SET",-5,"CLOCK",-5,
+       "GRAFFITI ON WALL",-6,"OPEN WINDOW",-7,"TRAP DOOR IN CEILING",-9,"DOWN BUTTON",-9,
+       "CABINET",-10,"ENDS OF 2 'LIVE' WIRES",-11,"AQUARIUM",-14,"ROPE",15,
+       "SLEEPING PILL",16,"OPEN WINDOW",-17
+       [OCR2 for the text; the numeric repairs -11->-14 (AQUARIUM), 4->N in "DOWN BUTTON"
+        and -14->-13 are corroborated by the audited floor 8/9 modules in this repo]
+  OCR2 2010 DATA"DESK",-17,"KEY MAKING MACHINE",-19,"SUPER GLUE",20,"WOODEN STAIR STEP",20,
+       "THICK COPPER SHEET",23,"LOCKED DOOR",-24,"WOODEN STAIRS",-25,
+       "TANK OF HELIUM GAS",28,"LARGE DEFLATED BALLOON",29
+  PIX  2020 DATA"LOCKED DOOR",-30,"GUN",30,"SIGN ON WALL",-32,"STRING VENDING MACHINE",-32,
+       "OPEN WINDOW",-33,"LOCKED DOOR",-43,"BALL OF YARN",39,"KNITTING NEEDLES",40,
+       "PUSH BUTTON ON WALL",-42,"SEXY, YOUNG GIRL OFFICE WORKERS",-37,"STAIRS",-44
+  PIX  2030 DATA"PUSH BUTTON ON WALL",-46,"BOOK",47,"MARY POPPIN'S UMBRELLA",50,
+       "OPEN WINDOW",-51,"GRAFFITI ON WALL",-53,"SMALL KEY",37,"STEEL DOOR",-55,
+       "JAR OF YELLOW SOLUTION",56,"JAR OF FLUID",56,"CHILD'S SLIDE",-57
+  PIX  2040 DATA"WATER COOLER",-58,"PAPER CUP",58,"SMALL-SIZED PLANT",-59,"FLUTE",61,
+       "STAIRS",-62,"SMALL BOOK",64,"PIANO",-63,"LONG ROPE",63,"FRONT DOOR",-65
+
+ITEM-NAME CORRECTIONS vs KIDNAPPED.BAS (the BAS rows are hand-transcribed and wrong)
+  BAS  "FLASHLIGHT",2            -> source has no DATA item for FLASHLIGHT (it is created
+                                    in code when the CABINET at room 10 is opened)
+  BAS  "CHAIR",3                 -> "CHAIR",2
+  BAS  "BROOM",4                 -> "LONG BROOM",3          [PIX]
+  BAS  "LOCKED DOOR",-5          -> not in the 2000 row (the TV/CLOCK room 5 has no door item)
+  BAS  "PUSH BUTTON",-9          -> "DOWN BUTTON",-9
+  BAS  "TWO 'LIVE' WIRES",-11    -> "ENDS OF 2 'LIVE' WIRES",-11
+  BAS  "ADMISSION",-11           -> "AQUARIUM",-14
+  BAS  "KEY ON A KEY CHAIN",-19  -> "KEY MAKING MACHINE",-19
+  BAS  "THICK CURTAIN SHEET",23  -> "THICK COPPER SHEET",23
+  BAS  "TIN FOIL",-33            -> "OPEN WINDOW",-33
+  BAS  "LOCKED DOOR",-13         -> "LOCKED DOOR",-43
+  BAS  "KNITTING NEEDLES",40     -> confirmed (OCR read the printed 4 as 1)
+  BAS  "PUSH BUTTON ON WALL",-42 -> confirmed
+  BAS  "STAIRS",41               -> "STAIRS",-44
+  BAS  "PUSH BUTTON ON WALL",-16 -> "PUSH BUTTON ON WALL",-46
+  BAS  "BOOK",57                 -> "BOOK",47
+  BAS  "EVERY PUPIL'S LAMP",50   -> "MARY POPPIN'S UMBRELLA",50
+  BAS  "SHALL KEY"->"SMALL KEY",37 ; "STEEL ~"->"STEEL DOOR",-55 ;
+       "JAR OF YELLOW SOLUTION",56 ; "JAR OF FLUID",56 ;
+       "GOLD'S SLIDE"->"CHILD'S SLIDE",-57
+  BAS  10040 DATA"",0 (empty)    -> the real 2040 row is:
+       "WATER COOLER",-58,"PAPER CUP",58,"SMALL-SIZED PLANT",-59,"FLUTE",61,
+       "STAIRS",-62,"SMALL BOOK",64,"PIANO",-63,"LONG ROPE",63,"FRONT DOOR",-65
+  BAS  the whole row "LOCKED DOOR",-30 / "GUN",30 ... "STAIRS",-44 is present but the
+       row-2010 "LOCKED DOOR" room is still open: see [UNRES] above.
+
+STILL OPEN (not silently guessed)
+  [UNRES] the room number of the "LOCKED DOOR" item in the 2010 row
+          (candidate -24; needs a fresh pixel crop of that row)
+  [UNRES] the item list for source rooms 18-25 (floor 7) and 45-52 (floor 4)
+          -- floors 7 and 4 are still on stale room numbering in this repo
+  [PEND] the source's room 53 literal is "DO YOU HAVE A SPLIT PERSONALITY?", but this
+          repo's floors/floor_5.py room 53 (stale numbering) still shows
+          "MARY POPPINS WAS HERE." -- fixed when floors 3/5 are rewritten to source IDs
+  [PEND] the KEY ON KEY CHAIN (floor 9 room 7) is created in code, not via DATA

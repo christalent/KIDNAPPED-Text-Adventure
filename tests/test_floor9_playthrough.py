@@ -128,8 +128,10 @@ def solve_floor_9():
     go("W", expect=4)
     go("S", expect=6)
     msg, _ = go("READ", "GRAFFITI", note=" in room 6")
-    assert "MATCH" in msg.upper(), \
-        f"READ GRAFFITI did not show the graffiti: {msg!r}"
+    assert "WATCH OUT FOR LIVE ONES" in msg.upper(), \
+        f"READ GRAFFITI did not show the source graffiti: {msg!r}"
+    assert "MATCH" not in msg.upper(), \
+        f"graffiti still contains the old OCR text: {msg!r}"
 
     # --- room 5: the television --------------------------------------
     go("N", expect=4)
