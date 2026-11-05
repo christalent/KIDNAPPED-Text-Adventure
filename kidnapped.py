@@ -17,6 +17,7 @@ class GameState:
         self.floor = floor
         self.game_over = False
         self.alive = True
+        self.pm_scared = False
 
     def add_item(self, item):
         self.inventory.append(item)

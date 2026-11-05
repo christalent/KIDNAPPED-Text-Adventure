@@ -63,6 +63,8 @@ Room 17:  IN AN OFFICE                              W=16                        
 ```
 
 ### Floor 6 -- rooms 26-36
+
+Vault mechanics (source-verified 2026-11-05): see `audit/FLOOR6_VAULT_2026-11-05.md`.
 ```
 Room 26:  IN A HALLWAY                          W=31 N=27 E=29 S=30   
 Room 27:  IN AN OFFICE                          N=28 S=26             
@@ -151,3 +153,13 @@ This is Chris's 4th attempt from scratch to rebuild this game. Key lessons learn
 - Bidirectional exit verification is MANDATORY per floor
 - The midnight blackout puzzle is the key Floor 9 mechanic
 - Parallel Lemmy approach had Token Plan concurrency limits (2-3 max)
+
+## Testing
+
+Run the whole suite with:
+
+    python3 tests/run_all.py
+
+Do NOT use `python3 -m unittest discover` here - the test files are
+script-style, unittest collects zero tests, and it reports "OK" even when
+the code is broken.

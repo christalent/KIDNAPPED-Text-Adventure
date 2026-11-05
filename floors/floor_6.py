@@ -424,6 +424,131 @@ class Floor6Engine:
     # ------------------------------------------------------------------
     # Command dispatch - every path returns a (text, transition) tuple
     # ------------------------------------------------------------------
+
+    # ----------------------------------------------------------------
+    # Vault rules - source lines 467 / 960 / 1515 / 1516.
+    #
+    # Original listing line 467:
+    #   IF A=35 IF E$="PER" OR (E$="LAR" OR E$="NEY") IF I(27)=0 THEN
+    #   PRINT"YOU GET TOO CLOSE TO HIM, HE JUMPS UP AND STRANGLES YOU.":
+    #   GOTO7300 ELSE IF I(27)=1 THEN PRINT"KIDNAPPER SEES YOUR GUN AND
+    #   FREEZES. YOU GRAB A DOLLAR":A$(56)="DOLLAR":H$(56)=A$(56):
+    #   A(56)=35:PM=1:E$="LAR"
+    #
+    # Original listing line 960 (the gun branch):
+    #   IF D(B)<>14 THEN 970 ELSE IF E$="GUN" OR E$="PER" IF I(27)=1
+    #   IF A=35 THEN PRINT"GUN HAD BLANKS! KIDNAPPER SHOOTS YOU.":
+    #   GOTO7200 ELSE PRINT"GUN MISFIRES":GOTO5000
+    #
+    # E$ is the last three letters of the noun: KIDNAPPER->PER,
+    # DOLLAR->LAR, MONEY->NEY.  I(27) is the GUN (DATA item 27).
+    # The DOLLAR is NOT a DATA item - it is created at run time here.
+    # ----------------------------------------------------------------
+    # ----------------------------------------------------------------
+    # Vault rules - source lines 467 / 960 / 1515 / 1516.
+    #
+    # Original listing line 467 (PDF logical line 1060):
+    #   IF A=35 IF E$="PER" OR (E$="LAR" OR E$="NEY") IF I(27)=0 THEN
+    #   PRINT"YOU GET TOO CLOSE TO HIM, HE JUMPS UP AND STRANGLES YOU.":
+    #   GOTO7300 ELSE IF I(27)=1 PRINT"KIDNAPPER SEES YOUR GUN AND
+    #   FREEZES. YOU GRAB A DOLLAR":A$(56)="DOLLAR":H$(56)=A$(56):
+    #   A(56)=35:PM=1:E$="LAR"
+    #
+    # Original listing line 960 (the gun branch):
+    #   IF D(B)<>14 THEN 970 ELSE IF E$="GUN" OR E$="PER" IF I(27)=1
+    #   IF A=35 THEN PRINT"GUN HAD BLANKS! KIDNAPPER SHOOTS YOU!":
+    #   GOTO7200 ELSE PRINT"GUN MISFIRES":GOTO5000
+    #
+    # E$ is the last three letters of the noun: KIDNAPPER->PER,
+    # DOLLAR->LAR, MONEY->NEY.  I(27) is the GUN (DATA item 27).
+    # The DOLLAR is NOT a DATA item - it is created at run time here.
+    # ----------------------------------------------------------------
+    # Vault rules - original listing lines 1060 and 960 (room 35),
+    # plus the room descriptions 1515 / 1516.
+    #
+    #   1060 IFA=35 AND (E$="PER" OR E$="LAR" OR E$="NEY") THEN
+    #        IF I(27)=0 THEN PRINT"YOU GET TOO CLOSE TO HIM, HE JUMPS UP
+    #        AND STRANGLES YOU.":GOTO7300
+    #        ELSE IF I(27)=1 THEN PRINT"KIDNAPPER SEES YOUR GUN AND
+    #        FREEZES. YOU GRAB A DOLLAR":A$(56)="DOLLAR":H$(56)=A$(56):
+    #        A(56)=35:PM=1:E$="LAR"
+    #
+    #    960 IF D(B)<>14 THEN 970 ELSE IF E$="GUN" OR E$="PER" IF I(27)=1
+    #        IF A=35 THEN PRINT"GUN HAD BLANKS! KIDNAPPER SHOOTS YOU!":
+    #        GOTO7200 ELSE PRINT"GUN MISFIRES":GOTO5000
+    #
+    # E$ is the last three letters of the noun: KIDNAPPER->PER,
+    # DOLLAR->LAR, MONEY->NEY.  I(27) is the GUN (DATA item 27).
+    # The DOLLAR is NOT a DATA item - it is created at run time here.
+    # ----------------------------------------------------------------
+    def _vault_rules(self, verb, noun):
+        """Apply the source-accurate rules for the vault (room 35)."""
+        v = (verb or "").upper()
+        n = (noun or "").upper().strip()
+        if not n:
+            return None
+        e = n[-3:] if len(n) >= 3 else n
+        in_vault = getattr(self.state, "location", None) == 35
+        inv = [str(i).upper() for i in getattr(self.state, "inventory", [])]
+        has_gun = "GUN" in inv
+
+        # 1060 - the money in the vault
+        if v in ("GET", "TAKE") and e in ("PER", "LAR", "NEY"):
+            if not in_vault:
+                return None
+            if getattr(self.state, "pm_scared", False):
+                # 1516: the money is gone once he is scared.
+                return ("The money is gone.", False)
+            if not has_gun:
+                # GOTO7300
+                return (self._vault_death(
+                    "YOU GET TOO CLOSE TO HIM, HE JUMPS UP AND STRANGLES YOU."),
+                    False)
+            # A$(56)="DOLLAR":H$(56)=A$(56):A(56)=35:PM=1:E$="LAR"
+            setattr(self.state, "pm_scared", True)
+            if "DOLLAR" not in inv:
+                add = getattr(self.state, "add_item", None)
+                if callable(add):
+                    add("DOLLAR")
+                else:
+                    self.state.inventory.append("DOLLAR")
+            return ("KIDNAPPER SEES YOUR GUN AND FREEZES. YOU GRAB A DOLLAR",
+                    False)
+
+        # 960 - the gun branch (source verb 14 = SHOOT; USE is the
+        # remake's alias for the same action)
+        if v in ("SHOOT", "FIRE", "USE") and e in ("GUN", "PER"):
+            if not has_gun:
+                return None
+            if in_vault:
+                # GOTO7200 -> GOTO7300
+                return (self._vault_death(
+                    "GUN HAD BLANKS! KIDNAPPER SHOOTS YOU!",
+                    VAULT_DEATH_7200), False)
+            # 960: away from the vault the gun only misfires.
+            return ("GUN MISFIRES", False)
+        return None
+
+    def _vault_death(self, message, extra=""):
+        """GOTO7200 / GOTO7300 - the player is dead and the game is over.
+
+        Returns the TEXT only; the caller wraps it in the (text, move)
+        tuple the dispatcher expects.
+        """
+        try:
+            self.state.alive = False
+        except Exception:
+            pass
+        try:
+            self.state.game_over = True
+        except Exception:
+            pass
+        parts = [message]
+        if extra:
+            parts.append(extra)
+        parts.append(VAULT_DEATH_7300)
+        return "\n".join(parts)
+
     def handle_command(self, verb, noun=""):
         verb = (verb or "").upper().strip()
         noun = (noun or "").upper().strip()
@@ -433,6 +558,13 @@ class Floor6Engine:
             verb = "GET"
         if verb in ("X", "CHECK"):
             verb = "EXAMINE"
+
+        # Vault (room 35) rules - source lines 1060 and 960.  These must
+        # run AFTER the verb aliases are normalised, and they must be
+        # given the real noun (an empty noun used to short-circuit them).
+        _vr = self._vault_rules(verb, noun)
+        if _vr is not None:
+            return _vr
 
         # Verb transitions have to be recognised BEFORE movement, so
         # that "GO LEDGE" is not mistaken for a direction.
@@ -745,3 +877,45 @@ class Floor6Engine:
         if "BUTTON" in noun:
             return "There's no button here."
         return f"You can't push the {noun}."
+
+
+# --------------------------------------------------------------------
+# Vault (room 35) descriptions - source lines 1515 and 1516.
+#   1515 PRINT"KIDNAPPER IS COUNTING MONEY. HE DOESN'T SEE YOU YET."
+#   1516 PRINT"KIDNAPPER IS SCARED"
+# --------------------------------------------------------------------
+VAULT_DESC_COUNTING = (
+    "A vault, small and square, its door standing open. A single "
+    "desk sits inside it, with a fat roll of money on top. A "
+    "KIDNAPPER IS COUNTING MONEY, HE DOESN'T SEE YOU YET."
+)
+VAULT_DEATH_7200 = 'YOU SEEM TO HAVE GOTTEN YOURSELF KILLED!'
+VAULT_DEATH_7300 = "TO TRY AGAIN YOU'LL HAVE TO START OVER FROM THE 9TH FLOOR."
+
+VAULT_DESC_SCARED = (
+    "A vault, small and square, its door standing open. The money is "
+    "gone. The KIDNAPPER IS SCARED."
+)
+
+if isinstance(ROOMS.get(35), dict):
+    ROOMS[35]["desc"] = VAULT_DESC_COUNTING
+
+_orig_get_room = getattr(Floor6Engine, "get_room", None)
+if _orig_get_room is not None:
+    def _wrapped_get_room(self, *a, **kw):
+        data = _orig_get_room(self, *a, **kw)
+        try:
+            room = a[0] if a else kw.get("room")
+            if room == 35 and isinstance(data, dict):
+                data = dict(data)
+                data["desc"] = (VAULT_DESC_SCARED
+                                if getattr(self.state, "pm_scared", False)
+                                else VAULT_DESC_COUNTING)
+                items = list(data.get("items") or [])
+                if getattr(self.state, "pm_scared", False):
+                    items = [i for i in items if i != "DOLLAR"]
+                data["items"] = items
+        except Exception:
+            pass
+        return data
+    Floor6Engine.get_room = _wrapped_get_room

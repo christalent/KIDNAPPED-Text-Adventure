@@ -78,3 +78,35 @@ STILL OPEN (not silently guessed)
           repo's floors/floor_5.py room 53 (stale numbering) still shows
           "MARY POPPINS WAS HERE." -- fixed when floors 3/5 are rewritten to source IDs
   [PEND] the KEY ON KEY CHAIN (floor 9 room 7) is created in code, not via DATA
+
+
+VAULT (ROOM 35) CORRECTIONS - 2026-11-05
+Source: December 1980 SoftSide listing (KIDNAPPED_Original.pdf), confirmed by
+the original issue OCR and the July 1981 Apple/Atari re-listing.
+
+  1060  IFA=35 AND (E$="PER" OR E$="LAR" OR E$="NEY") THEN IF I(27)=0 THEN
+        PRINT"YOU GET TOO CLOSE TO HIM, HE JUMPS UP AND STRANGLES YOU.":
+        GOTO7300 ELSE IF I(27)=1 THEN PRINT"KIDNAPPER SEES YOUR GUN AND
+        FREEZES. YOU GRAB A DOLLAR":A$(56)="DOLLAR":H$(56)=A$(56):A(56)=35:
+        PM=1:E$="LAR"                        [HIGH - native pixels verified]
+
+   960  IF D(B)<>14 THEN 970 ELSE IF E$="GUN" OR E$="PER" IF I(27)=1
+        IF A=35 THEN PRINT"GUN HAD BLANKS! KIDNAPPER SHOOTS YOU!":
+        GOTO7200 ELSE PRINT"GUN MISFIRES":GOTO5000
+                                                [HIGH - native pixels verified]
+
+  1515  PRINT"KIDNAPPER IS COUNTING MONEY, HE DOESN'T SEE YOU YET.":GOTO390
+        (one statement, typeset across two printed lines)
+                                                [HIGH - native pixels verified]
+  1516  PRINT"KIDNAPPER IS SCARED":GOTO390   [HIGH - native pixels verified]
+
+  7200  PRINT"YOU SEEM TO HAVE GOTTEN YOURSELF KILLED!"
+  7300  PRINT:PRINT"TO TRY AGAIN YOU'LL HAVE TO START OVER FROM THE 9TH FLOOR."            [HIGH - two OCR witnesses agree]
+
+NOTES
+  - E$ is the last three letters of the noun (KIDNAPPER->PER, DOLLAR->LAR,
+    MONEY->NEY); I(27) is the GUN.
+  - The DOLLAR is created at run time, not read from DATA.
+  - KIDNAPPED.BAS line 1060 was corrected in place on 2026-11-05; its
+    line 1080 ("WHICH DOLLAR?") has no source counterpart and remains
+    flagged as suspect.
