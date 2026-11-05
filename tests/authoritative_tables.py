@@ -230,11 +230,70 @@ FLOOR6_FORBIDDEN_ROOMS = (set(range(1, 26)) | set(range(37, 66)))
 # floors/floor_8.py now carries the authoritative 13-17 table and the
 # map test compares the two.
 # ---------------------------------------------------------------------
-UNAUDITED_FLOORS = {1, 2, 3, 4, 5, 7}
+UNAUDITED_FLOORS = {1, 2, 3, 4, 5}
 
 # Audited floors, keyed by floor number.
+# Floor 7 - listing lines 28-35 of the original BASIC listing.
+# Transcribed from the printed PDF pixels (300 dpi), not from OCR.
+# Rooms 18-25 fill the gap between floor 8 (13-17) and floor 6 (26-36).
+#
+# "items" are takeable.  "fixed_items" are scenery: the source gives
+# them a NEGATIVE room number in its DATA rows, so they cannot be
+# picked up.  The locked door is a verb link (24 <-> 25), not an exit.
+FLOOR7_ROOMS = {
+    18: {
+        "name": "IN A HALLWAY",
+        "exits": {"W": 20, "N": 19, "E": 24, "S": 21},
+        "items": [],
+        "fixed_items": [],
+    },
+    19: {
+        "name": "IN AN OFFICE",
+        "exits": {"S": 18},
+        "items": [],
+        "fixed_items": ["KEY MAKING MACHINE"],
+    },
+    20: {
+        "name": "IN A TOOL CRIB",
+        "exits": {"E": 18},
+        "items": ["SUPER GLUE", "WOODEN STAIR STEP"],
+        "fixed_items": [],
+    },
+    21: {
+        "name": "IN A HALLWAY",
+        "exits": {"N": 18, "E": 22},
+        "items": [],
+        "fixed_items": [],
+    },
+    22: {
+        "name": "IN AN OFFICE",
+        "exits": {"W": 21, "E": 23},
+        "items": [],
+        "fixed_items": [],
+    },
+    23: {
+        "name": "IN A SMALL STORAGE ROOM",
+        "exits": {"W": 22},
+        "items": ["THICK COPPER SHEET"],
+        "fixed_items": [],
+    },
+    24: {
+        "name": "IN A HALLWAY",
+        "exits": {"W": 18},
+        "items": [],
+        "fixed_items": ["LOCKED DOOR"],
+    },
+    25: {
+        "name": "IN A NARROW STAIRWAY",
+        "exits": {"W": 24},
+        "items": [],
+        "fixed_items": ["WOODEN STAIRS"],
+    },
+}
+
 AUDITED_ROOMS = {
     6: FLOOR6_ROOMS,
+    7: FLOOR7_ROOMS,
     8: FLOOR8_ROOMS,
     9: FLOOR9_ROOMS,
 }

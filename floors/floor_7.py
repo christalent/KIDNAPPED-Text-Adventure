@@ -1,703 +1,460 @@
 """
-KIDNAPPED! - Floor 7: The Bank Vault
-Hardest floor - wrest a dollar from a burglar.
+KIDNAPPED! - Floor 7: Tool Crib, Storage Room and the Narrow Stairway
 
-Entry from Floor 8 via stairs DOWN -> Room 31.
-Goal: Knit a disguise, get the dollar from the burglar, slide down to Floor 6.
+Source: SoftSide Vol 3 No 03 (March 1980), BASIC listing for
+"KIDNAPPED" by Peter Kirsch.  Floor 7 occupies listing lines 28-35,
+which are global rooms 18-25.  The room table below was transcribed
+from the printed PDF pixels (300 dpi), not from OCR.
 
-Based on:
-- BASIC source from SoftSide Vol 3 No 03 (clean PDF)
-- RetroGamesTroove review: https://www.retrogamestrove.com/game-149-kidnapped-1980/
-- Confirmed bidirectional pairs: 31<->32, 32<->37, 36<->37, 38<->31, 38<->35, 38<->39
+ROOM TABLE (listing lines 28-35)
+    18  IN A HALLWAY             W=20  N=19  E=24  S=21
+    19  IN AN OFFICE             S=18                 KEY MAKING MACHINE (item 18, fixed)
+    20  IN A TOOL CRIB           E=18                 SUPER GLUE (19), WOODEN STAIR STEP (20)
+    21  IN A HALLWAY             N=18  E=22
+    22  IN AN OFFICE             W=21  E=23
+    23  IN A SMALL STORAGE ROOM  W=22                 THICK COPPER SHEET (21)
+    24  IN A HALLWAY             W=18                 LOCKED DOOR (22, fixed)
+    25  IN A NARROW STAIRWAY     W=24                 WOODEN STAIRS (23, fixed)
+
+DATA (listing line 2010 onward, item numbers verified from pixels)
+    19 = SUPER GLUE            in room 20   (takeable)
+    20 = WOODEN STAIR STEP     in room 20   (takeable)
+    21 = THICK COPPER SHEET    in room 23   (takeable)
+    22 = LOCKED DOOR           in room 24   (fixed scenery)
+    23 = WOODEN STAIRS         in room 25   (fixed scenery)
+
+HANDLERS (listing lines 900 and 930)
+    900  IF D(B)<>11 THEN 930 ELSE IF A=19 IF E$="KEY" IF I(21)=1
+         A$(56)="CRUDE KEY":H$(56)=A$(56):A(56)=19:GOTO4900
+         -> "MAKE KEY" in room 19 with the THICK COPPER SHEET (item 21)
+            makes a CRUDE KEY in room 19 (A(56) is the room it lies in).
+    930  IF D(B)<>12 THEN 950 ELSE IF A=25 IF I(19)=1 IF I(20)=1
+         IF E$="TEP" OR E$="IRS" PRINT"STAIR'S FIXED":SC=1:RS="":K3=20:GOSUB1100
+         -> "GLUE STEP" in room 25 with SUPER GLUE (19) and WOODEN STAIR STEP (20)
+            fixes the staircase and consumes the step.
+
+TRANSITIONS
+    Floor 8 -> Floor 7 lands in room 18 (the stair descent from floor 8).
+    Floor 7 -> Floor 6 lands in room 26 (the top of floor 6).
+    There is no way back up: the chain runs 9 -> 8 -> 7 -> 6 -> 5.
 """
 
 FLOOR_NUMBER = 7
 NEXT_FLOOR_DOWN = 6
 
-# --------------------------------------------------------------------
-# Room map (Floor 7, rooms 31-39 + vault 55-56):
-#
-#   [33]---[31 Bank Entry]---[32 Main Floor]---[36 Combo Office]---[37 Antechamber]
-#    |        |                  |    |                              |
-#   [33]   [38 Corridor]------[35 Stairs]                         [55 Vault]---[56 Playroom]
-#            |                  |
-#           [38]--------------[39 Vault Office (BURGLAR + DOLLAR)]
-#
-# Confirmed bidirectional pairs (per task spec):
-#   31<->32, 31<->33, 31<->38, 32<->36, 32<->37, 32<->39, 35<->38,
-#   36<->37, 37<->55, 38<->39, 55<->56
-#
-# Items:
-#   Room 33: SMALL KEY (takeable), JAR OF YELLOW SOLUTION (takeable)
-#   Room 32: STRING VENDING MACHINE (fixed)
-#   Room 36: TIN FOIL (takeable)
-#   Room 37: STEEL DOOR (fixed, locked until SMALL KEY used)
-#   Room 39: BALL OF YARN (takeable), KNITTING NEEDLES (takeable),
-#            DOLLAR BILL (held by BURGLAR, only gettable when disguised)
-#   Room 55: JAR OF FLUID (takeable), KID'S SLIDE (fixed, descends to floor 6)
-#   Room 56: (no items)
-#
-# Puzzle flow:
-#   1. Get SMALL KEY from 33
-#   2. Use SMALL KEY on STEEL DOOR in 37 to unlock vault (37 N -> 55)
-#   3. Get BALL OF YARN and KNITTING NEEDLES from 39 (burglar tolerates)
-#   4. Get TIN FOIL from 36
-#   5. KNIT YARN + NEEDLES -> HAND-KNIT SUIT (auto-worn)
-#   6. Get DOLLAR BILL from 39 (burglar does not recognize you)
-#   7. (Optional) Use DOLLAR on STRING VENDING MACHINE in 32 -> STRING
-#   8. Go 37 -> 55 (vault is open)
-#   9. USE KID'S SLIDE in 55 -> descend to Floor 6
-# --------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Rooms.  "items" are takeable; "fixed_items" are scenery (the source
+# gives them negative room numbers, which marks them immovable).
+# ---------------------------------------------------------------------
 ROOMS = {
-    31: {
-        "name": "BANK ENTRY",
+    18: {
+        "name": "IN A HALLWAY",
         "desc": (
-            "You descend the stairs into a wide marble foyer. "
-            "The air smells of old money and dust. "
-            "Ornate frescoes line the ceiling, now cracked and peeling. "
-            "A sign reads 'FIRST NATIONAL BANK OF DESCENT.' "
-            "To the NORTH, the main bank floor stretches out. "
-            "To the WEST, a small storage room. "
-            "To the EAST, a long corridor. "
-            "The stairs lead UP back to Floor 8."
+            "A grey corridor on the seventh floor. Paint the colour of old "
+            "dishwater, a ceiling of acoustic tiles, no windows. Something "
+            "heavy was dragged along this floor once - the carpet wears a "
+            "long bald stripe down the middle."
         ),
-        "exits": {"N": 32, "W": 33, "E": 38, "U": "floor_8"},
+        "exits": {"W": 20, "N": 19, "E": 24, "S": 21},
         "items": [],
+        "fixed_items": [],
     },
-    32: {
-        "name": "MAIN BANK FLOOR",
+    19: {
+        "name": "IN AN OFFICE",
         "desc": (
-            "You're in the heart of the old bank. "
-            "Rotting velvet ropes section off the former teller windows. "
-            "An old STRING VENDING MACHINE stands against one wall - "
-            "it takes bills and dispenses... something. "
-            "To the WEST, a vault office. "
-            "To the NORTH, the vault antechamber. "
-            "To the EAST, the combination office. "
-            "The entry is to the SOUTH."
+            "A small office with a desk bolted to the floor. On the desk "
+            "sits a KEY MAKING MACHINE, the size of a heavy typewriter with "
+            "a crank on the side and a brass plate half worn away."
         ),
-        "exits": {"S": 31, "E": 36, "N": 37, "W": 39},
-        "items": ["STRING VENDING MACHINE"],
-    },
-    33: {
-        "name": "OLD VAULT STORAGE",
-        "desc": (
-            "A small storage room adjacent to the vault. "
-            "Shelves of old bank records, rusted metal boxes. "
-            "A SMALL KEY lies on a shelf - someone dropped it. "
-            "A JAR OF YELLOW SOLUTION sits on another shelf. "
-            "To the EAST, the bank entry."
-        ),
-        "exits": {"E": 31},
-        "items": ["SMALL KEY", "JAR OF YELLOW SOLUTION"],
-    },
-    35: {
-        "name": "STAIRS UP",
-        "desc": (
-            "A narrow side stairway with concrete steps. "
-            "A faded sign reads 'STAIRS TO FLOOR 8'. "
-            "Looks like an alternate way back up. "
-            "The bank corridor is to the WEST."
-        ),
-        "exits": {"W": 38, "U": "floor_8"},
+        "exits": {"S": 18},
         "items": [],
+        "fixed_items": ["KEY MAKING MACHINE"],
     },
-    36: {
-        "name": "COMBINATION OFFICE",
+    20: {
+        "name": "IN A TOOL CRIB",
         "desc": (
-            "A cramped office lined with safety deposit boxes. "
-            "A single desk holds some papers and a sheet of TIN FOIL. "
-            "The walls are covered in combination notes. "
-            "To the WEST, the main bank floor. "
-            "To the EAST, the vault antechamber."
+            "A closet the size of a phone box, shelves sagging under a "
+            "SUPER GLUE and a WOODEN STAIR STEP. Whoever left them here "
+            "was planning something."
         ),
-        "exits": {"W": 32, "E": 37},
-        "items": ["TIN FOIL"],
+        "exits": {"E": 18},
+        "items": ["SUPER GLUE", "WOODEN STAIR STEP"],
+        "fixed_items": [],
     },
-    37: {
-        "name": "VAULT ANTECHAMBER",
+    21: {
+        "name": "IN A HALLWAY",
         "desc": (
-            "You stand in the vault antechamber. "
-            "A massive STEEL DOOR to the north is closed and locked. "
-            "The door has a keyhole - a SMALL KEY might open it. "
-            "Through a gap in the door, you glimpse gold inside. "
-            "To the WEST, the combination office. "
-            "To the SOUTH, the main bank floor."
+            "Another stretch of corridor. The paint is a slightly different "
+            "grey here, which means somebody repainted one hallway and "
+            "never got round to this one."
         ),
-        "exits": {"W": 36, "N": 55, "S": 32},
+        "exits": {"N": 18, "E": 22},
         "items": [],
+        "fixed_items": [],
     },
-    38: {
-        "name": "BANK CORRIDOR",
+    22: {
+        "name": "IN AN OFFICE",
         "desc": (
-            "A narrow corridor runs north-south through the old bank. "
-            "Faded photographs of prosperous merchants line the walls. "
-            "The corridor continues NORTH to the vault office. "
-            "The bank entry is to the WEST. "
-            "Side stairs lead EAST up to Floor 8."
+            "A second office, smaller and more abused than the first. A "
+            "filing cabinet with no door, a swivel chair bolted down, and "
+            "paperwork spread across every available surface."
         ),
-        "exits": {"W": 31, "E": 35, "N": 39},
+        "exits": {"W": 21, "E": 23},
         "items": [],
+        "fixed_items": [],
     },
-    39: {
-        "name": "VAULT OFFICE",
+    23: {
+        "name": "IN A SMALL STORAGE ROOM",
         "desc": (
-            "A private office inside the vault area. "
-            "A BURGLAR crouches behind the desk, eyes darting. "
-            "He is clutching something - looks like a DOLLAR BILL. "
-            "On the desk: BALL OF YARN and KNITTING NEEDLES, "
-            "left by some previous visitor. "
-            "The main bank floor is to the EAST. "
-            "The corridor is to the SOUTH."
+            "A storage room barely wider than the door. Shelves, a broken "
+            "fan, and a THICK COPPER SHEET rolled against the back wall."
         ),
-        "exits": {"S": 38, "E": 32},
-        "items": ["BALL OF YARN", "KNITTING NEEDLES"],
+        "exits": {"W": 22},
+        "items": ["THICK COPPER SHEET"],
+        "fixed_items": [],
     },
-    55: {
-        "name": "THE VAULT",
+    24: {
+        "name": "IN A HALLWAY",
         "desc": (
-            "You step inside the First National Bank vault. "
-            "Gold bars and cash stacks fill the space - millions untouched "
-            "since the bank closed. "
-            "A child's slide - a KID'S SLIDE - has been set up from the "
-            "vault to some lower level. "
-            "There's also a JAR OF FLUID here - unlabeled. "
-            "The antechamber is to the SOUTH. "
-            "A playroom lies to the NORTH."
+            "The corridor stops here at a LOCKED DOOR. Office issue steel, "
+            "with a brass keyhole worn shiny from use."
         ),
-        "exits": {"S": 37, "N": 56},
-        "items": ["JAR OF FLUID", "KID'S SLIDE"],
-    },
-    56: {
-        "name": "CHILD'S PLAYROOM",
-        "desc": (
-            "A small child's playroom connects to the vault area. "
-            "Toys scattered everywhere, a small bed in the corner. "
-            "Someone lived here after the bank closed. "
-            "The vault is to the SOUTH."
-        ),
-        "exits": {"S": 55},
+        "exits": {"W": 18},
         "items": [],
+        "fixed_items": ["LOCKED DOOR"],
+    },
+    25: {
+        "name": "IN A NARROW STAIRWAY",
+        "desc": (
+            "A narrow stairway wedged between the walls, going down and "
+            "down. One of the wooden steps is missing and the rest has "
+            "gone soft with damp."
+        ),
+        "exits": {"W": 24},
+        "items": [],
+        "fixed_items": ["WOODEN STAIRS"],
     },
 }
 
-# --------------------------------------------------------------------
-# Special room targets
-# --------------------------------------------------------------------
+# The locked door is a verb transition, not a directional exit: you open
+# it with a key and then "GO DOOR" from room 24 into room 25.
+VERB_LINK_PAIRS = {(24, 25), (25, 24)}
+
 SPECIAL_ROOMS = {
-    # Floor 8 was re-audited (FLOOR9_AUDIT_2026-11-03.md): its rooms are
-    # the authoritative global rooms 13-17 and its arrival room is 13.
-    # The old landing room 28 belonged to the discarded, wrong floor 8.
-    "floor_8":  {"target": "floor_8",  "landing_room": 13},
-    "floor_6":  {"target": "floor_6",  "landing_room": 26},
+    "floor_6": {"target": "floor_6", "landing_room": 26},
+}
+
+FIXED_ITEM_TEXT = {
+    "KEY MAKING MACHINE": (
+        "A battered cast-iron machine with a crank and a feed slot. The "
+        "brass plate reads KEY MAKING MACHINE."
+    ),
+    "LOCKED DOOR": (
+        "A steel door with a brass keyhole. It is locked, and the frame "
+        "around it has been walked through more than once."
+    ),
+    "WOODEN STAIRS": (
+        "A wooden staircase going down, treads soft with damp. One step is "
+        "missing from the middle."
+    ),
 }
 
 
-# --------------------------------------------------------------------
-# Floor 7 Engine
-# --------------------------------------------------------------------
 class Floor7Engine:
+    """The seventh floor: make a key, unlock the door, glue a stair step."""
+
+    _DIRS = {"N": "NORTH", "S": "SOUTH", "E": "EAST", "W": "WEST",
+             "U": "UP", "D": "DOWN"}
+    _DIRWORDS = {
+        "NORTH": "N", "N": "N", "SOUTH": "S", "S": "S", "EAST": "E", "E": "E",
+        "WEST": "W", "W": "W", "UP": "U", "U": "U", "DOWN": "D", "D": "D",
+    }
+
     def __init__(self, state):
         self.state = state
-        self._room_items = self._init_items()
-        self.vault_unlocked = False
-        self.suit_worn = False
-        self.dollar_taken = False
-        self.burglar_alerted = False
+        self._init_items()
+        self.door_unlocked = False
+        self.stairs_fixed = False
 
+    # ------------------------------------------------------------------
+    # Item initialization (reset each time the player enters floor 7)
+    # ------------------------------------------------------------------
     def _init_items(self):
-        return {
-            31: [],
-            32: ["STRING VENDING MACHINE"],
-            33: ["SMALL KEY", "JAR OF YELLOW SOLUTION"],
-            35: [],
-            36: ["TIN FOIL"],
-            37: [],
-            38: [],
-            39: ["BALL OF YARN", "KNITTING NEEDLES"],
-            55: ["JAR OF FLUID", "KID'S SLIDE"],
-            56: [],
+        self.room_items = {rid: list(r["items"]) for rid, r in ROOMS.items()}
+        self.room_fixed = {
+            rid: list(r.get("fixed_items", [])) for rid, r in ROOMS.items()
         }
 
     def on_enter(self):
-        self._room_items = self._init_items()
-        self.vault_unlocked = False
-        self.suit_worn = False
-        self.dollar_taken = False
-        self.burglar_alerted = False
+        self.state.floor = FLOOR_NUMBER
+        self.state.location = 18
 
     def on_leave(self):
         pass
 
+    # ------------------------------------------------------------------
     def get_room(self, room_id):
         return ROOMS.get(room_id)
 
     def get_current_room(self):
-        return ROOMS.get(self.state.location)
-
-    # ------------------------------------------------------------------
-    # Command dispatch
-    # ------------------------------------------------------------------
-    def handle_command(self, verb, noun=""):
-        loc = self.state.location
-        verb = verb.upper().strip()
-        noun = noun.upper().strip() if noun else ""
-
-        # Observation / inventory
-        if verb in ("LOOK", "L"):
-            return self._describe_room(loc), False
-        if verb in ("INVENTORY", "I", "INV"):
-            return self._do_inventory(), False
-
-        # Item manipulation -- these may return TRANSITION strings (for
-        # USE SLIDE). Parse the string and return the proper tuple.
-        if verb in ("GET", "TAKE", "GRAB", "PICK"):
-            return self._wrap(self._do_get(noun, loc))
-        if verb in ("DROP", "PUT", "PLACE"):
-            return self._wrap(self._do_drop(noun, loc))
-        if verb in ("USE", "APPLY"):
-            return self._wrap(self._do_use(noun, loc))
-        if verb in ("KNIT", "WEAR", "MAKE", "FASHION"):
-            return self._wrap(self._do_knit_or_wear(noun, loc))
-        if verb in ("OPEN", "UNLOCK"):
-            return self._wrap(self._do_open(noun, loc))
-        if verb in ("PAY", "INSERT"):
-            return self._wrap(self._do_use("DOLLAR", loc))
-
-        # Observation
-        if verb in ("READ", "EXAMINE", "X", "CHECK"):
-            return self._examine(noun, loc), False
-
-        # Movement (returns a (text, transition_flag) tuple directly)
-        if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc)
-        if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc)
-        if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc)
-        if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc)
-        if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc)
-        if verb in ("D", "DOWN") or (verb == "GO" and noun in ("D", "DOWN", "")):
-            return self._go_down(loc)
-
-        return "You don't know how to do that.", False
+        return getattr(self.state, "location", 18)
 
     @staticmethod
-    def _wrap(result):
-        """Wrap an action result string into a (text, transition_flag) tuple.
-        A 'TRANSITION:floor_N:room' prefix is treated as a transition.
+    def _wrap(text):
+        """Wrap a command result into the (text, transition) tuple the
+        dispatcher in kidnapped.py unpacks."""
+        return (text, False)
+
+    # ------------------------------------------------------------------
+    def handle_command(self, verb, noun=""):
+        """Public entry point.  Always returns (text, transition).
+
+        The top-level parser may hand us either "MAKE" + "KEY" or the
+        whole phrase "MAKE KEY", so split a multi-word verb here.
         """
-        if isinstance(result, str) and result.startswith("TRANSITION:"):
-            return result, True
-        return result, False
+        verb = (verb or "").strip()
+        noun = (noun or "").strip()
+        if " " in verb:
+            first, rest = verb.split(None, 1)
+            noun = (rest + " " + noun).strip()
+            verb = first
+        result = self._dispatch(verb, noun)
+        if isinstance(result, tuple):
+            return result
+        return (result, False)
+
+    def _dispatch(self, verb, noun=""):
+        v = (verb or "").strip().upper()
+        n = (noun or "").strip().upper()
+        loc = self.get_current_room()
+
+        if v in ("LOOK", "L"):
+            return self._describe_room(loc)
+        if v in ("INVENTORY", "I", "INV"):
+            return self._do_inventory()
+        if v in ("EXAMINE", "X"):
+            return self._examine(n, loc)
+        if v in ("GET", "TAKE"):
+            return self._do_get(n, loc)
+        if v in ("DROP", "DISCARD"):
+            return self._do_drop(n, loc)
+        if v in ("OPEN", "UNLOCK"):
+            return self._do_open(n, loc)
+        if v in ("USE", "APPLY", "PUT"):
+            return self._do_use(n, loc)
+        if v == "MAKE":
+            return self._do_make(n, loc)
+        if v == "GLUE":
+            return self._do_glue(n, loc)
+        if v in ("CLIMB", "DESCEND"):
+            return self._descend(loc)
+        if v == "GO" or v in self._DIRWORDS:
+            return self._go(v, n, loc)
+        return "You can't do that here."
 
     # ------------------------------------------------------------------
-    # Movement
-    # ------------------------------------------------------------------
-    def _go(self, direction, loc):
-        r = self.get_room(loc)
-        if not r:
-            return "You are nowhere.", False
-        exits = r.get("exits", {})
-        next_target = exits.get(direction)
-        if next_target is None:
-            return f"You can't go {direction} from here.", False
-        if isinstance(next_target, str):
-            # Floor transitions
-            if next_target == "floor_8":
-                return f"TRANSITION:{next_target}:13", True
-            if next_target == "floor_6":
-                return f"TRANSITION:{next_target}:26", True
-        # Vault door gate: only enter 55 from 37 when vault is unlocked
-        if loc == 37 and direction == "N" and not self.vault_unlocked:
-            return (
-                "The massive STEEL DOOR is locked. "
-                "You need a SMALL KEY to open it."
-            ), False
-        self.state.location = next_target
-        return self._describe_room(next_target), False
+    def _go(self, verb, noun, loc):
+        target = noun.strip().upper()
+        if verb == "GO":
+            if not target:
+                return "Go where?"
+            if target in self._DIRWORDS:
+                return self._move(self._DIRWORDS[target], loc)
+            if "DOOR" in target:
+                return self._do_door(loc)
+            if "STAIR" in target or target == "STEP":
+                return self._descend(loc)
+            return "You can't go that way."
+        return self._move(self._DIRWORDS[verb], loc)
 
-    def _go_up(self, loc):
-        # Rooms 31 and 35 have U=floor_8.  Floor 8's arrival room is 13
-        # (the audited "IN A HALLWAY"), not the old, wrong room 28.
-        if loc in (31, 35):
-            return f"TRANSITION:floor_8:13", True
-        return self._go("U", loc)
+    def _move(self, direction, loc):
+        exits = ROOMS.get(loc, {}).get("exits", {})
+        if direction not in exits:
+            return "You can't go that way."
+        target = exits[direction]
+        if isinstance(target, str):
+            return "You can't go that way."
+        self.state.location = target
+        return self._describe_room(target)
 
-    def _go_down(self, loc):
-        # Only the KID'S SLIDE in 55 descends to floor 6
-        if loc == 55:
-            return (
-                "You climb onto the KID'S SLIDE and zoom down! "
-                "You land with a thump on Floor 6."
-            ), False  # Description only; USE SLIDE triggers the transition
-        return self._go("D", loc)
+    def _do_door(self, loc):
+        if loc == 24:
+            if not self.door_unlocked:
+                return "The LOCKED DOOR is locked."
+            self.state.location = 25
+            return self._describe_room(25)
+        return "There is no door here."
 
-    # ------------------------------------------------------------------
-    # GET / TAKE
     # ------------------------------------------------------------------
     def _do_get(self, noun, loc):
         if not noun:
-            return "Take what?"
-
-        # Special: burglar guards the DOLLAR BILL
-        if "DOLLAR" in noun or "BILL" in noun:
-            if loc != 39:
-                return "You don't see a dollar bill here."
-            if self.dollar_taken:
-                return "You already have the dollar bill."
-            if "HAND-KNIT SUIT" in self.state.inventory or self.suit_worn:
-                # Disguised: burglar does not recognize you
-                self.dollar_taken = True
-                self.state.add_item("DOLLAR BILL")
-                self.burglar_alerted = False
-                return (
-                    "The BURGLAR blinks at your finely tailored suit "
-                    "and assumes you're the bank owner. "
-                    "He sheepishly hands over the DOLLAR BILL."
-                )
-            if "GUN" in self.state.inventory:
-                # Alternate solution per BASIC: GUN freezes the burglar
-                self.dollar_taken = True
-                self.state.add_item("DOLLAR BILL")
-                return (
-                    "The BURGLAR sees your GUN and freezes. "
-                    "He drops the DOLLAR BILL and you grab it."
-                )
-            # No protection: burglar kills you
-            return self._kill_player(
-                "The BURGLAR spots you reaching for his dollar. "
-                "He lunges. You die a terrible death."
-            )
-
-        room_items = self._room_items.get(loc, [])
-
-        # Walk room items, matching by substring
-        for item in list(room_items):
-            if self._item_matches(noun, item):
-                room_items.remove(item)
-                self._room_items[loc] = room_items
-                self.state.add_item(item)
-                return f"You take the {item}."
-
+            return "Get what?"
+        match = self._match_item(noun, self.room_items.get(loc, []))
+        if match:
+            self.room_items[loc].remove(match)
+            self.state.add_item(match)
+            return "You take the {0}.".format(match)
+        fixed = self._match_item(noun, self.room_fixed.get(loc, []))
+        if fixed:
+            return "The {0} is part of the building. You can't take it.".format(fixed)
         return "You don't see that here."
 
-    def _item_matches(self, noun, item):
-        """Case-insensitive substring match for items."""
-        n = noun.upper().strip()
-        i = item.upper().strip()
-        if not n:
-            return False
-        return n in i or i in n
-
-    # ------------------------------------------------------------------
-    # DROP
-    # ------------------------------------------------------------------
     def _do_drop(self, noun, loc):
-        if not noun:
-            return "Drop what?"
-        for item in list(self.state.inventory):
-            if self._item_matches(noun, item):
-                self.state.remove_item(item)
-                self._room_items.setdefault(loc, []).append(item)
-                # Dropping the suit removes disguise
-                if item == "HAND-KNIT SUIT":
-                    self.suit_worn = False
-                return f"You drop the {item}."
-        return "You're not carrying that."
+        match = self._match_item(noun, list(self.state.inventory))
+        if not match:
+            return "You aren't carrying that."
+        self.state.remove_item(match)
+        self.room_items.setdefault(loc, []).append(match)
+        return "You drop the {0}.".format(match)
 
-    # ------------------------------------------------------------------
-    # USE
-    # ------------------------------------------------------------------
-    def _do_use(self, noun, loc):
-        """Return a string. Transitions are signalled via the
-        'TRANSITION:floor_N:room' prefix; the caller parses it.
-        """
-        if not noun:
-            return "Use what?"
-        inv = self.state.inventory
-
-        # USE SMALL KEY on the vault door
-        if "KEY" in noun and ("SMALL" in noun or "VAULT" in noun or "DOOR" in noun):
-            return self._use_small_key(loc)
-        if "KEY" in noun:
-            return self._use_small_key(loc)
-
-        # USE YARN + NEEDLES (also handles KNIT command)
-        if "YARN" in noun or "NEEDLE" in noun:
-            return self._knit_suit(loc)
-
-        # USE DOLLAR / BILL on vending machine
-        if "DOLLAR" in noun or "BILL" in noun:
-            return self._use_dollar_on_vending(loc)
-
-        # USE TIN FOIL (no-op for now, future-proofing)
-        if "FOIL" in noun or "TIN" in noun:
-            return "The TIN FOIL is shiny but doesn't seem useful on its own."
-
-        # USE SUIT
-        if "SUIT" in noun:
-            return self._wear_suit(loc)
-
-        # USE SLIDE / RIDE / GO (descend to floor 6)
-        if "SLIDE" in noun:
-            if loc == 55:
-                return f"TRANSITION:floor_6:26"
-            return "There's no slide here."
-
-        # USE YELLOW SOLUTION / FLUID (no-op for floor 7)
-        if "SOLUTION" in noun or "FLUID" in noun or "JAR" in noun:
-            return "The jar is sealed. Probably best not to open it here."
-
-        return "You can't figure out how to use that here."
-
-    def _use_small_key(self, loc):
-        if "SMALL KEY" not in self.state.inventory:
-            return "You don't have a SMALL KEY."
-        if loc != 37:
-            return "There's no vault door here."
-        if self.vault_unlocked:
-            return "The vault door is already unlocked."
-        self.vault_unlocked = True
-        return (
-            "You insert the SMALL KEY into the vault door lock. "
-            "It turns with a satisfying CLICK! "
-            "The massive STEEL DOOR swings open, "
-            "revealing the vault beyond."
-        )
-
-    def _use_dollar_on_vending(self, loc):
-        if "DOLLAR BILL" not in self.state.inventory:
-            return "You need a DOLLAR BILL."
-        if loc != 32:
-            return "There's no vending machine here."
-        self.state.remove_item("DOLLAR BILL")
-        self.state.add_item("STRING")
-        return (
-            "You insert the DOLLAR BILL into the STRING VENDING MACHINE. "
-            "Ka-chunk! A length of STRING tumbles out. "
-            "It might be useful... or not."
-        )
-
-    def _knit_suit(self, loc):
-        if "BALL OF YARN" not in self.state.inventory:
-            return "You need BALL OF YARN to knit."
-        if "KNITTING NEEDLES" not in self.state.inventory:
-            return "You need KNITTING NEEDLES to knit."
-        if "HAND-KNIT SUIT" in self.state.inventory or self.suit_worn:
-            return "You already have a suit."
-        self.state.remove_item("BALL OF YARN")
-        self.state.remove_item("KNITTING NEEDLES")
-        self.state.add_item("HAND-KNIT SUIT")
-        self.suit_worn = True
-        return (
-            "You sit down and KNIT a rough but serviceable SUIT from the yarn. "
-            "It's not pretty, but it'll do. You put it on. "
-            "You feel like a proper bank owner."
-        )
-
-    def _wear_suit(self, loc):
-        if "HAND-KNIT SUIT" not in self.state.inventory:
-            return "You don't have a suit to wear."
-        if self.suit_worn:
-            return "You're already wearing the suit."
-        self.suit_worn = True
-        return "You put on the HAND-KNIT SUIT. You feel very professional."
-
-    # ------------------------------------------------------------------
-    # KNIT / WEAR
-    # ------------------------------------------------------------------
-    def _do_knit_or_wear(self, noun, loc):
-        if "SUIT" in noun.upper():
-            return self._wear_suit(loc)
-        if "KNIT" in noun.upper() or noun == "":
-            return self._knit_suit(loc)
-        return "You can't do that."
-
-    # ------------------------------------------------------------------
-    # OPEN
-    # ------------------------------------------------------------------
     def _do_open(self, noun, loc):
-        if "DOOR" in noun or "VAULT" in noun or "STEEL" in noun:
-            if loc == 37:
-                if self.vault_unlocked:
-                    return "The vault door is already open. Go NORTH."
-                return "The STEEL DOOR is locked. You need a SMALL KEY."
-            return "There's no locked door here."
-        if "VENDING" in noun or "MACHINE" in noun:
-            if loc == 32:
-                return "The vending machine has no opening - just a coin slot."
-            return "No vending machine here."
+        if "DOOR" in noun:
+            if loc != 24:
+                return "There is no door to open here."
+            if self.door_unlocked:
+                return "The door is already open."
+            if self._carries("CRUDE KEY"):
+                self.door_unlocked = True
+                return "The lock turns over and the LOCKED DOOR swings open."
+            return "You need a key to open this door."
         return "You can't open that."
 
-    # ------------------------------------------------------------------
-    # EXAMINE
+    def _do_use(self, noun, loc):
+        if loc == 24 and ("KEY" in noun or "DOOR" in noun):
+            return self._do_open("DOOR", loc)
+        if loc == 25 and ("STEP" in noun or "STAIR" in noun):
+            return self._do_glue("STEP", loc)
+        if loc == 19 and ("SHEET" in noun or "COPPER" in noun or "KEY" in noun):
+            return self._do_make("KEY", loc)
+        return "You can't use that here."
+
+    def _do_make(self, noun, loc):
+        if loc != 19:
+            return "There is no key-making machine here."
+        if "KEY" not in noun:
+            return "Make what?"
+        if self._carries("CRUDE KEY"):
+            return "You already have a crude key."
+        if not self._carries("THICK COPPER SHEET"):
+            return "You need a thick copper sheet to make a key."
+        if "CRUDE KEY" not in self.room_items[19]:
+            self.room_items[19].append("CRUDE KEY")
+        return "You feed the copper sheet into the machine. A CRUDE KEY appears."
+
+    def _do_glue(self, noun, loc):
+        if loc != 25:
+            return "There is nothing here to glue."
+        if not ("STEP" in noun or "STAIR" in noun):
+            return "Glue what?"
+        if self.stairs_fixed:
+            return "The step is already glued in place."
+        if not self._carries("SUPER GLUE"):
+            return "You need super glue to glue a step in place."
+        here = "WOODEN STAIR STEP" in self.room_items.get(25, [])
+        if not (self._carries("WOODEN STAIR STEP") or here):
+            return "You need a wooden stair step to fit in the gap."
+        self.state.remove_item("WOODEN STAIR STEP")
+        if here:
+            self.room_items[25].remove("WOODEN STAIR STEP")
+        self.stairs_fixed = True
+        return "STAIR'S FIXED"
+
+    def _descend(self, loc):
+        if loc != 25:
+            return "There are no stairs here."
+        if not self.stairs_fixed:
+            return ("The staircase is rotten and one wooden step is missing. "
+                    "Glue a step into place before you try to climb down.")
+        return "TRANSITION:floor_6:26", True
+
     # ------------------------------------------------------------------
     def _examine(self, noun, loc):
-        if not noun:
-            return self._describe_room(loc)
-        n = noun.upper()
+        present = list(self.room_items.get(loc, [])) + list(self.room_fixed.get(loc, []))
+        match = self._match_item(noun, present)
+        if not match:
+            return "You don't see that here."
+        if match in FIXED_ITEM_TEXT:
+            return FIXED_ITEM_TEXT[match]
+        return "It is a {0}.".format(match.lower())
 
-        if "BURGLAR" in n or "MAN" in n or "THIEF" in n:
-            if loc == 39:
-                if self.dollar_taken:
-                    return (
-                        "The burglar looks dazed - you've got his dollar. "
-                        "He doesn't look like he'll bother you."
-                    )
-                if self.suit_worn or "HAND-KNIT SUIT" in self.state.inventory:
-                    return (
-                        "The burglar peers at your HAND-KNIT SUIT. "
-                        "He seems to think you belong here. "
-                        "He won't give up the dollar easily - "
-                        "but he might not stop you either."
-                    )
-                return (
-                    "A rough-looking burglar, watchful and tense. "
-                    "He's clutching a DOLLAR BILL. "
-                    "He will not let you take it without a fight."
-                )
-            return "No burglar here."
-
-        if "DOLLAR" in n or "BILL" in n:
-            if loc == 39 and not self.dollar_taken:
-                return "A crisp DOLLAR BILL clutched by the burglar."
-            if "DOLLAR BILL" in self.state.inventory:
-                return "A crisp DOLLAR BILL. Good for vending machines."
-            return "You don't see a dollar here."
-
-        if "VAULT" in n or "STEEL" in n or "DOOR" in n:
-            if loc == 37:
-                if self.vault_unlocked:
-                    return "The vault door stands open. Gold gleams inside."
-                return "A massive STEEL DOOR with a keyhole. It's locked."
-            return "No vault door here."
-
-        if "VENDING" in n or "MACHINE" in n:
-            if loc == 32:
-                return (
-                    "An old string vending machine. "
-                    "It takes dollar bills and dispenses STRING. "
-                    "Worth a try?"
-                )
-            return "No vending machine here."
-
-        if "YARN" in n:
-            if "BALL OF YARN" in self.state.inventory:
-                return "A ball of red-and-white knitting yarn."
-            return "No yarn here."
-
-        if "NEEDLE" in n:
-            if "KNITTING NEEDLES" in self.state.inventory:
-                return "Sharp metal knitting needles."
-            return "No needles here."
-
-        if "SLIDE" in n:
-            if loc == 55:
-                return (
-                    "A KID'S SLIDE leading down into darkness. "
-                    "It seems to lead to Floor 6. "
-                    "USE SLIDE to ride it."
-                )
-            return "No slide here."
-
-        if "SUIT" in n:
-            if "HAND-KNIT SUIT" in self.state.inventory:
-                if self.suit_worn:
-                    return "You're wearing a HAND-KNIT SUIT. Very dapper."
-                return "A HAND-KNIT SUIT in your inventory."
-            return "You don't have a suit."
-
-        if "SOLUTION" in n or "FLUID" in n or "JAR" in n:
-            return "A jar of fluid, sealed tight. The label is smudged."
-
-        return f"You don't see anything unusual about the {noun}."
-
-    # ------------------------------------------------------------------
-    # Inventory
-    # ------------------------------------------------------------------
     def _do_inventory(self):
-        items = self.state.inventory
-        if not items:
-            return "You are empty-handed."
-        suffix = " (wearing suit)" if self.suit_worn else ""
-        return "You are carrying: " + ", ".join(items) + suffix
+        if not self.state.inventory:
+            return "You are carrying nothing."
+        return "You are carrying: " + ", ".join(self.state.inventory) + "."
 
-    # ------------------------------------------------------------------
-    # Room description
-    # ------------------------------------------------------------------
     def _describe_room(self, room_id):
-        r = self.get_room(room_id)
-        if not r:
+        room = ROOMS.get(room_id)
+        if not room:
             return "You are nowhere."
-        desc = f"[{r['name']}]\n{r['desc']}"
-        items = self._room_items.get(room_id, [])
-        if items:
-            desc += "\n\nYou can see: " + ", ".join(items) + "."
-        # Vault state
-        if room_id == 37 and self.vault_unlocked:
-            desc += "\n\nThe STEEL DOOR stands open to the NORTH."
-        # Burglar state
-        if room_id == 39 and not self.dollar_taken:
-            desc += "\n\nThe BURGLAR clutches his DOLLAR BILL."
-        exits = r.get("exits", {})
-        exit_list = []
-        for d in ("N", "S", "E", "W", "U", "D"):
-            if d in exits:
-                t = exits[d]
-                if isinstance(t, int):
-                    target_name = ROOMS.get(t, {}).get("name", f"Room {t}")
-                    exit_list.append(f"{d} to {target_name}")
-                else:
-                    exit_list.append(f"{d} to {t}")
-        if exit_list:
-            desc += "\n\nExits: " + ", ".join(exit_list) + "."
-        return desc
+        lines = [room["name"] + ".", room["desc"], ""]
+        exits = room.get("exits", {})
+        if exits:
+            lines.append("EXITS ARE: " + ", ".join(
+                self._DIRS[d] for d in sorted(exits) if d in self._DIRS))
+        else:
+            lines.append("NO EXIT")
+        lines.append("")
+        present = list(self.room_items.get(room_id, [])) + list(self.room_fixed.get(room_id, []))
+        if present:
+            lines.append("THINGS YOU SEE HERE:")
+            for item in present:
+                lines.append("  " + item)
+        if room_id == 25:
+            lines.append("")
+            if self.stairs_fixed:
+                lines.append("The glued step holds firm in its socket.")
+            else:
+                lines.append("A gap where a step should be.")
+        lines.append("")
+        return "\n".join(lines)
 
     # ------------------------------------------------------------------
-    # Player death helper
-    # ------------------------------------------------------------------
-    def _kill_player(self, msg):
-        # The engine reads the return value; death is reported as a
-        # non-transition result and the runner handles game over.
-        if hasattr(self.state, "alive"):
-            self.state.alive = False
-        if hasattr(self.state, "game_over"):
-            self.state.game_over = True
-        return msg
+    def _carries(self, keyword):
+        keyword = keyword.upper()
+        for item in self.state.inventory:
+            if keyword in item.upper():
+                return True
+        return False
 
-    # ------------------------------------------------------------------
-    # Static exit verification (mirrors floor 9's pattern)
+    @staticmethod
+    def _match_item(noun, items):
+        noun = (noun or "").strip().upper()
+        if not noun:
+            return None
+        for item in items:
+            if item.upper() == noun:
+                return item
+        for item in items:
+            if item.upper().endswith(noun):
+                return item
+        for item in items:
+            if noun in item.upper() or item.upper() in noun:
+                return item
+        return None
+
     # ------------------------------------------------------------------
     @staticmethod
     def verify_exits():
+        """Return a list of exit problems (empty list when the map is
+        consistent).  Verb-linked pairs are allowed to be one-way."""
         errors = []
-        opp = {"N": "S", "S": "N", "E": "W", "W": "E", "U": "D", "D": "U"}
-        for rid, r in ROOMS.items():
-            for d, t in r["exits"].items():
-                if isinstance(t, str):
+        opposite = {"N": "S", "S": "N", "E": "W", "W": "E"}
+        for rid, room in ROOMS.items():
+            for direction, target in room.get("exits", {}).items():
+                if isinstance(target, str):
                     continue
-                if t not in ROOMS:
-                    errors.append(f"Room {rid} -> {d}={t}, but room {t} does not exist")
-                    continue
-                ro = opp[d]
-                reverse = ROOMS[t]["exits"].get(ro)
-                if reverse is None:
-                    errors.append(f"Room {rid} -> {d}={t}, but {t} has no {ro}")
-                elif reverse != rid:
+                if target not in ROOMS:
                     errors.append(
-                        f"Room {rid} -> {d}={t}, but {t} -> {ro}={reverse} (not back to {rid})"
-                    )
+                        "Room {0}->{1}={2}: target room does not exist".format(rid, direction, target))
+                    continue
+                if (rid, target) in VERB_LINK_PAIRS:
+                    continue
+                rev = opposite.get(direction)
+                if not rev:
+                    continue
+                back = ROOMS[target].get("exits", {}).get(rev)
+                if back != rid:
+                    errors.append(
+                        "Room {0}->{1}={2}, but {2}->{3}={4} (expected {0})".format(
+                            rid, direction, target, rev, back))
         return errors
-
-
-if __name__ == "__main__":
-    e = Floor7Engine.verify_exits()
-    if e:
-        print(f"FAIL: {len(e)} errors:")
-        for x in e:
-            print(f"  {x}")
-    else:
-        print(f"PASS: All exits bidirectional ({len(ROOMS)} rooms)")

@@ -96,7 +96,7 @@ ROUTE = [
     ("DROP", "PIRANHA", 16),
     ("E", "", 17),
     ("TIE", "ROPE", 17),
-    ("CLIMB", "ROPE", 31),
+    ("CLIMB", "ROPE", 18),
 ]
 
 
@@ -230,7 +230,7 @@ def test_published_route():
         text, transition = engine.handle_command(verb, noun)
         assert isinstance(text, str), f"{verb} {noun} returned no text"
         assert isinstance(transition, bool), f"{verb} {noun} returned no flag"
-        if expected_room == 31:
+        if expected_room == 18:
             # The rope crossing: the marker names floor 7 and the player
             # is left in floor 7's landing room.
             assert transition is True, (

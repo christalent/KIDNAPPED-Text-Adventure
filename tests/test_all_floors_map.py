@@ -262,6 +262,11 @@ def check_against_authoritative(floor_num):
         if list(m.get("items", [])) != list(t["items"]):
             errors.append(f"Room {rid}: items {list(m.get('items', []))!r} != "
                           f"authoritative {list(t['items'])!r}")
+        if "fixed_items" in t:
+            if list(m.get("fixed_items", [])) != list(t["fixed_items"]):
+                errors.append(f"Room {rid}: fixed_items "
+                              f"{list(m.get('fixed_items', []))!r} != "
+                              f"authoritative {list(t['fixed_items'])!r}")
 
     # flattened exit triples must agree as well
     module_pairs = authoritative_tables.source_pairs(

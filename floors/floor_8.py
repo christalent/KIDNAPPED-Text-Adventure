@@ -47,9 +47,9 @@ THE PUZZLE (published walkthrough route)
 The rope crossing is a VERB transition, not a directional exit: room 17
 has no "D" exit and there is no up-exit to floor 9 (the descent chain
 is one way: floor 9 -> floor 8 -> floor 7).  The marker string
-``"TRANSITION:floor_7:31"`` follows the codebase convention; the
+``"TRANSITION:floor_7:18"`` follows the codebase convention; the
 dispatcher in ``kidnapped.py`` prints it and lets floor 7's
-``on_enter()`` place the player (room 31, the foyer whose up-exit leads
+``on_enter()`` place the player (room 18, the seventh-floor hallway whose up-exit leads
 back here).  Because floor 7 is not audited yet and its ``on_enter()``
 does not set a location, floor 8 sets the landing room itself just
 before it hands the player over.
@@ -69,7 +69,7 @@ NEXT_FLOOR_DOWN = 7
 # climbed back into floor 9.
 # --------------------------------------------------------------------
 SPECIAL_ROOMS = {
-    "floor_7": {"target": "floor_7", "landing_room": 31},
+    "floor_7": {"target": "floor_7", "landing_room": 18},
 }
 
 # --------------------------------------------------------------------
@@ -584,7 +584,7 @@ class Floor8Engine:
         # Verb transition to floor 7.  The dispatcher prints the marker
         # and hands over to floor 7's on_enter(); floor 7 is not audited
         # yet and its on_enter() does not set a location, so floor 8
-        # sets the landing room (31 - the foyer whose up-exit leads back
+        # sets the landing room (18 - the seventh-floor hallway whose up-exit leads back
         # here) itself before handing the player over.
         landing = self._landing("floor_7")
         self.state.location = landing
