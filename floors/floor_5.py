@@ -1,576 +1,464 @@
 """
-KIDNAPPED! - Floor 5: The Mary Poppins Floor
-"The weird one" — finding Mary Poppin's umbrella
+KIDNAPPED! - Floor 5: The Fire and the Knitting
 
-Entry from Floor 6 via stairs DOWN -> Room 51.
-Goal: Navigate the absurdist Mary Poppins-themed floor, find the umbrella, descend.
+Floor 5 of the original listing: The Fire and the Knitting.
 
-Puzzle flow (the absurd chain):
-  1. SIGN in 52 hints "SIDE END OPEN MOST REVERSIBLE" - the most
-     REVERSIBLE thing on the floor is the REVERSIBLE PIE.
-  2. PUSH BUTTON in 56 dispenses a REVERSIBLE PIE (one-time use).
-  3. USE the REVERSIBLE PIE on the SUPER CALIFRAGILISTIC machine
-     in 57 - the machine runs in REVERSE and the magical barrier
-     blocking the umbrella vault is disabled.
-  4. JUMP at the JUMP PLATFORM in 58 - with the machine reversed,
-     the bounce amplifies and carries the player up into the
-     umbrella vault (59). N from 58 is also unblocked.
-  5. GET the MAGIC UMBRELLA in 59 and head D to Floor 4.
+THE PREVIOUS VERSION OF THIS MODULE WAS WRONG.  It carried an invented
+room set, including rooms that do not exist in the listing at all, and
+objects (ALLIGATOR, BURGLAR'S MASK, INDIAN ROPE) that appear nowhere in
+the magazine.  Everything below is re-derived from the source pixels.
 
-Based on:
-- BASIC source from SoftSide Vol 3 No 03 (clean PDF)
-- RetroGamesTroove review
-- BASIC DATA statements for Floor 5 items
+SOURCE OF TRUTH
+---------------
+The listing dispatches with ``ON A GOTO 11,12,...,75``, so a global room
+number is the printed BASIC line number minus ten.  Floor 5 is printed
+lines 47-54, i.e. global rooms 37-44.
+
+Every room number, exit and item placement below was read from raster
+crops of the printed listing - never from the PDF text layer, which reads
+4 as 1, 8 as S and 0 as O.  The result was checked by replaying both
+published walkthroughs (Jacob Gunness, CASA Solution Archive, Sept 2004;
+Garry Francis, minimal Atari solution) command for command.
+
+ROOM TABLE (listing lines 47-54)
+    37  AN OFFICE              S=41             SEXY, YOUNG GIRL OFFICE WORKERS
+    38  A HALLWAY              E=43 N=39 S=40   
+    39  AN OFFICE              S=38             
+    40  AN OFFICE              N=38             
+    41  A HALLWAY              N=37 S=42 W=43   
+    42  AN OFFICE              N=41             
+    43  A HALLWAY              E=41 W=38        
+    44  A STAIRCASE            -                
+
+DATA ITEMS ON THIS FLOOR
+    37  SEXY, YOUNG GIRL OFFICE WORKERS  (fixed)
+    42  PUSH BUTTON ON WALL  (fixed)
+    43  LOCKED DOOR  (fixed)
+    44  STAIRS  (fixed)
+    37  SMALL KEY  (takeable)
+    39  BALL OF YARN  (takeable)
+    40  KNITTING NEEDLES  (takeable)
+
+WALKTHROUGH REPLAY
+Both published solutions take different routes through the same rooms and
+both land on the right object at every step.  Francis (Atari) starts at
+room 43 and Gunness at the same room, then they diverge and rejoin.
+
+  Francis: E(41) S(42) PRESS BUTTON  N(41) W(43) W(38) S(40) GET KNITTING
+           NEEDLES  N(38) N(39) GET BALL OF YARN  KNIT CLOTHES  S(38)
+           E(43) E(41) N(37) GET SMALL KEY  S(41) W(43) OPEN DOOR
+           GO DOOR(44) GO STAIRS -> floor 4 room 45
+
+  Gunness: W(38) S(40) GET NEEDLES  N(38) N(39) GET YARN  S(38) E(43)
+           E(41) S(42) PRESS BUTTON  KNIT CLOTHES  N(41) N(37) GET KEY
+           S(41) W(43) OPEN DOOR  GO DOOR(44) CLIMB STAIRS -> floor 4 room 45
+
+INFERRED, NOT TRANSCRIBED
+-------------------------
+* The fire blocks the northward move from room 41 until the button in
+  room 42 is pressed.  The walkthroughs only say "there's a fire to the
+  north", so the block itself is an interpretation.
+* Pressing the button drowns you and costs your clothes; KNIT CLOTHES
+  (needles + yarn) replaces them.  The listing does not say so - the
+  walkthrough says "sprinklers are turned on and douse the fire - you
+  remove your wet clothes ... you quickly produce a new set".
+* The stairs refuse a naked player.  Not stated anywhere; it exists so
+  the knitting step is not optional.
+
+The handler code on listing pages 2-4 has not been transcribed yet, so the
+puzzle state machine below is reconstructed from the two published
+walkthroughs and from the items the listing actually places.  Everything
+listed under INFERRED above is a port-level interpretation, not a
+transcription of the magazine.
 """
 
 FLOOR_NUMBER = 5
 NEXT_FLOOR_DOWN = 4
+ENTRY_ROOM = 43
 
-# --------------------------------------------------------------------
-# Room map (Floor 5, rooms 51-59):
-# Mary Poppins themed - whimsical and weird
-#
-# Items from BASIC DATA:
-# Room 58: SIGN (fixed)
-# Room 59: PUSH BUTTON (fixed)
-# Room 65: FRONT DOOR (but this is floor 1)
-# Room 53: GRAFFITI ON WALL (overlaps with floor 7)
-# Room 61: FLUTE, SMALL BOOK (floor 4 overlap)
-#
-# This floor is intentionally weird per RetroGamesTroove.
-# --------------------------------------------------------------------
-ROOMS = {
-    51: {
-        "name": "CHILDE'S LANDING",
-        "desc": (
-            "You descend into a whimsical space. "
-            "Striped wallpaper, floating candles (electric), a grand staircase. "
-            "A sign reads 'FLOOR 5 - BYE-BYE.' "
-            "The stairs UP lead back to Floor 6. "
-            "The main hall extends NORTH."
-        ),
-        "exits": {"N": 52, "U": "floor_6"},
-        "items": [],
-    },
-    52: {
-        "name": "GRAND HALL",
-        "desc": (
-            "A grand hall decorated in a peculiar style - part Victorian, "
-            "part cartoon, part dream. "
-            "A SIGN on the wall reads: 'SIDE END OPEN MOST REVERSIBLE.' "
-            "Doesn't make sense. "
-            "Doorways lead in several directions."
-        ),
-        "exits": {"S": 51, "N": 53, "E": 54, "W": 55},
-        "items": ["SIGN ON WALL"],
-    },
-    53: {
-        "name": "UPSIDE DOWN ROOM",
-        "desc": (
-            "You enter a room where everything is upside down. "
-            "Chandeliers hang from the floor, furniture clings to the ceiling. "
-            "Someone has written GRAFFITI on the ceiling: "
-            "'MARY POPPINS WAS HERE.' "
-            "A doorway leads SOUTH."
-        ),
-        "exits": {"S": 52},
-        "items": ["GRAFFITI ON WALL"],
-    },
-    54: {
-        "name": "THE BIRD WOMAN'S PERCH",
-        "desc": (
-            "A small alcove overlooking an imaginary park. "
-            "Stone birds perch on invisible ledges. "
-            "A note reads: '2+2=5 OR 2+2=22.' "
-            "It's nonsense but somehow profound. "
-            "The main hall is to the WEST."
-        ),
-        "exits": {"W": 52, "N": 56},
-        "items": [],
-    },
-    55: {
-        "name": "DRAWING ROOM",
-        "desc": (
-            "A proper English drawing room. Tea service is laid out, "
-            "though decades old and covered in dust. "
-            "On the mantle: a SMALL UMBRELLA. "
-            "It's not quite right - not THE umbrella, but close. "
-            "The main hall is to the EAST."
-        ),
-        "exits": {"E": 52, "N": 57},
-        "items": ["SMALL UMBRELLA"],
-    },
-    56: {
-        "name": "MAGIC PIE SHOP",
-        "desc": (
-            "Tiny pies line the shelves, each labeled with impossible flavors: "
-            "'REVERSIBLE PIE,' 'UP IS DOWN PIE,' 'FIVE DIMENSIONAL PIE.' "
-            "A PUSH BUTTON is on the wall, labeled 'PUSH FOR MEANING.' "
-            "The Bird Woman's Perch is to the SOUTH."
-        ),
-        "exits": {"S": 54, "E": 57},
-        "items": ["PUSH BUTTON"],
-    },
-    57: {
-        "name": "THE SUPER CALIFA GULATOR",
-        "desc": (
-            "You step into a room filled with spinning gears and mirrors. "
-            "A machine labeled 'SUPER CALIFRAGILISTIC' whirs and clicks. "
-            "It seems to be in working order but needs something to activate it. "
-            "A NOTE on the machine reads: 'ONE PUSH TO BEGIN.' "
-            "The Drawing Room is to the SOUTH. "
-            "The Magic Pie Shop is to the WEST."
-        ),
-        "exits": {"S": 55, "W": 56, "N": 58},
-        "items": ["SUPER CALIFRAGILISTIC MACHINE"],
-    },
-    58: {
-        "name": "JUMP CHAMBER",
-        "desc": (
-            "A room with a strange, springy floor. "
-            "In the center, a JUMP PLATFORM with a big red button on top. "
-            "The Super Califragilator room is to the SOUTH. "
-            "A shimmer in the air above suggests there's something up there, "
-            "beyond reach."
-        ),
-        "exits": {"S": 57, "N": 59},
-        "items": ["JUMP PLATFORM"],
-    },
-    59: {
-        "name": "THE UMBRELLA VAULT",
-        "desc": (
-            "The final room of Floor 5. "
-            "Umbrellas everywhere - hundreds of them, of every color. "
-            "Most are ordinary. But in the center, in a glass case: "
-            "MARY POPPINS' OWN UMBRELLA. "
-            "It's not just an umbrella - it feels magical. "
-            "A stairway leads DOWN to Floor 4."
-        ),
-        "exits": {"S": 58, "D": "floor_4"},
-        "items": ["MAGIC UMBRELLA"],
-    },
-}
-
-# Items that are fixed scenery and cannot be taken.
-FIXED_ITEMS = {
-    "SIGN ON WALL",
-    "GRAFFITI ON WALL",
-    "PUSH BUTTON",
-    "JUMP PLATFORM",
-    "SUPER CALIFRAGILISTIC MACHINE",
-}
-
+# Which floor you arrive from -> the room you land in.
 SPECIAL_ROOMS = {
-    "floor_6": {"target": "floor_6", "landing_room": 26},
-    "floor_4": {"target": "floor_4", "landing_room": 61},
+    "floor_6": {"landing_room": 43},
 }
 
+# Fixed scenery: item name -> the room it is bolted to.
+FIXED_ITEMS = {
+    "SEXY, YOUNG GIRL OFFICE WORKERS": 37,
+    "PUSH BUTTON ON WALL": 42,
+    "LOCKED DOOR": 43,
+    "STAIRS": 44,
+}
+
+# Takeable items -> the DATA room they start in.
+ITEM_ROOMS = {
+    "SMALL KEY": 37,
+    "BALL OF YARN": 39,
+    "KNITTING NEEDLES": 40,
+}
+
+# Names the published walkthroughs use for the listing's items.
+ITEM_ALIASES = {
+
+    "VIAL OF YELLOW SOLUTION": "JAR OF YELLOW SOLUTION"
+}
+
+ROOMS = {
+    37: {
+        "name": "AN OFFICE",
+        "desc": "An office. Smoke rolls along the ceiling and the fire is raging in here.",
+        "exits": {"S": 41},
+        "items": ["SEXY, YOUNG GIRL OFFICE WORKERS"],
+    },
+    38: {
+        "name": "A HALLWAY",
+        "desc": "A hallway, hot with smoke.",
+        "exits": {"E": 43, "N": 39, "S": 40},
+        "items": [],
+    },
+    39: {
+        "name": "AN OFFICE",
+        "desc": "A small office. A ball of yarn sits on the desk.",
+        "exits": {"S": 38},
+        "items": [],
+    },
+    40: {
+        "name": "AN OFFICE",
+        "desc": "A small office. Knitting needles lie on the desk.",
+        "exits": {"N": 38},
+        "items": [],
+    },
+    41: {
+        "name": "A HALLWAY",
+        "desc": "A hallway. To the north the fire roars.",
+        "exits": {"N": 37, "S": 42, "W": 43},
+        "items": [],
+    },
+    42: {
+        "name": "AN OFFICE",
+        "desc": "A small office. A button is set into the wall.",
+        "exits": {"N": 41},
+        "items": [],
+    },
+    43: {
+        "name": "A HALLWAY",
+        "desc": "A hallway. A locked door blocks the way east.",
+        "exits": {"E": 41, "W": 38},
+        "items": [],
+    },
+    44: {
+        "name": "A STAIRCASE",
+        "desc": "A staircase, going down.",
+        "exits": {},
+        "items": [],
+    },
+}
+
+
+# Off-grid transitions the room table cannot express: these room pairs are
+# linked by a verb action, not by a compass exit.
+# the locked door (43->44) to the staircase
+VERB_LINK_PAIRS = {(43, 44)}
 
 class Floor5Engine:
+    """Floor 5 engine - The Fire and the Knitting."""
+
     def __init__(self, state):
         self.state = state
-        self._room_items = self._init_items()
-        self.umbrella_found = False
-        self.pie_taken = False
-        self.pie_used = False
-        self.machine_activated = False
+        self.flags = {}
+        self._init_items()
 
+    # -- setup ---------------------------------------------------------
     def _init_items(self):
-        return {
-            52: ["SIGN ON WALL"],
-            53: ["GRAFFITI ON WALL"],
-            55: ["SMALL UMBRELLA"],
-            56: ["PUSH BUTTON"],
-            57: ["SUPER CALIFRAGILISTIC MACHINE"],
-            58: ["JUMP PLATFORM"],
-            59: ["MAGIC UMBRELLA"],
-        }
+        """Per-instance item state.
 
+        Module-level ROOMS is never mutated: each game instance keeps its
+        own copy of the room item lists, so two engines running in the
+        same process cannot see each other's pickups.
+        """
+        self._room_items = {rid: list(r.get("items", [])) for rid, r in ROOMS.items()}
+        self._room_fixed = {rid: list(r.get("fixed_items", [])) for rid, r in ROOMS.items()}
+        for item, room in FIXED_ITEMS.items():
+            if room in self._room_fixed and item not in self._room_fixed[room]:
+                self._room_fixed[room].append(item)
+        for item, room in ITEM_ROOMS.items():
+            if room in self._room_items and item not in self._room_items[room]:
+                self._room_items[room].append(item)
+        return self._room_items
     def on_enter(self):
-        self._room_items = self._init_items()
-        self.umbrella_found = False
-        self.pie_taken = False
-        self.pie_used = False
-        self.machine_activated = False
-        # Player arrives from Floor 6 (stairs down) -> landing room 51.
-        self.state.location = 51
-        if not hasattr(self.state, "inventory"):
-            self.state.inventory = []
+        self.state.floor = FLOOR_NUMBER
+        if self.state.location not in ROOMS:
+            self.state.location = ENTRY_ROOM
 
     def on_leave(self):
         pass
 
+    # -- queries -------------------------------------------------------
     def get_room(self, room_id):
         return ROOMS.get(room_id)
 
     def get_current_room(self):
         return ROOMS.get(self.state.location)
 
-    # ------------------------------------------------------------------
-    # Command dispatch
-    # ------------------------------------------------------------------
-    def handle_command(self, verb, noun=""):
-        loc = self.state.location
-        verb = verb.upper().strip()
-        noun = noun.upper().strip() if noun else ""
+    def _room(self):
+        return ROOMS.get(self.state.location, {})
 
-        if verb in ("LOOK", "L"):
-            return self._look(), False
-        if verb in ("INVENTORY", "I", "INV"):
-            return self._do_inventory(), False
-        if verb in ("GET", "TAKE", "GRAB", "PICK"):
-            return self._do_get(noun, loc), False
-        if verb in ("DROP", "PUT", "PLACE"):
-            return self._do_drop(noun, loc), False
-        if verb in ("USE", "APPLY", "EAT"):
-            return self._do_use(noun, loc), False
-        if verb in ("PUSH", "PRESS"):
-            return self._do_push(noun, loc), False
-        if verb in ("JUMP",):
-            return self._do_jump(noun, loc), False
-        if verb in ("READ", "EXAMINE", "X", "CHECK"):
-            return self._examine(noun, loc), False
+    def _here(self, item):
+        """Is this object present in the current room?
 
-        # Movement
-        if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc)
-        if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc)
-        if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc)
-        if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc)
-        if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc)
-        if verb in ("D", "DOWN") or (verb == "GO" and noun in ("D", "DOWN", "")):
-            return self._go_down(loc)
-
-        return "You don't know how to do that.", False
-
-    @staticmethod
-    def _wrap(result):
-        """Wrap an action result string into a (text, transition_flag) tuple.
-        A 'TRANSITION:floor_N:room' prefix is treated as a transition.
+        Fixed scenery lives in _room_fixed (or FIXED_ITEMS), takeable
+        objects in _room_items.  Both count as here: the listing puts
+        PUSH BUTTON ON WALL, LOCKED DOOR, STEEL DOOR, FRONT DOOR, PIANO,
+        WATER COOLER, SMALL-SIZED PLANT and CHILD'S SLIDE in the room
+        description, not in the takeable list.
         """
-        if isinstance(result, str) and result.startswith("TRANSITION:"):
-            return result, True
-        return result, False
+        loc = self.state.location
+        if item in self._room_items.get(loc, []):
+            return True
+        if item in getattr(self, "_room_fixed", {}).get(loc, []):
+            return True
+        return FIXED_ITEMS.get(item) == loc
+    def _has(self, item):
+        return item in self.state.inventory
 
-    # ------------------------------------------------------------------
-    # Movement
-    # ------------------------------------------------------------------
-    def _go(self, direction, loc):
-        r = self.get_room(loc)
-        if not r:
-            return "You are nowhere.", False
-        exits = r.get("exits", {})
-        next_target = exits.get(direction)
-        if next_target is None:
-            return f"You can't go {direction} from here.", False
-        if isinstance(next_target, str):
-            if next_target == "floor_6":
-                return f"TRANSITION:{next_target}:26", True
-            if next_target == "floor_4":
-                return f"TRANSITION:{next_target}:61", True
-        # Magical barrier in room 58 N -> 59 requires machine_activated
-        if loc == 58 and direction == "N" and not self.machine_activated:
-            return (
-                "There's a magical barrier shimmering in the air above. "
-                "The SUPER CALIFRAGILISTIC machine on the floor below is "
-                "still running forward and its field blocks the way. "
-                "If you could REVERSE the machine, the barrier would drop."
-            ), False
-        self.state.location = next_target
-        return self._look(), False
+    def _take(self, item):
+        items = self._room_items.setdefault(self.state.location, [])
+        if item in items:
+            items.remove(item)
+        if item not in self.state.inventory:
+            self.state.inventory.append(item)
+    def _drop(self, item):
+        if item in self.state.inventory:
+            self.state.inventory.remove(item)
+        self._room_items.setdefault(self.state.location, []).append(item)
+    def _find_item(self, noun):
+        """Match a typed noun against the listing's item names.
+
+        The original matches on the first three letters for GET and DROP
+        and the last three for everything else; the published walkthroughs
+        also use short forms such as GET BOOK for SMALL BOOK, so both
+        conventions and whole-word matches are accepted here.
+        """
+        n = (noun or "").strip().upper()
+        if not n:
+            return None
+        n = ITEM_ALIASES.get(n, n)
+        pool = (list(self._room_items.get(self.state.location, []))
+                + list(self.state.inventory))
+        for item in pool:
+            if item == n:
+                return item
+        for item in pool:
+            words = item.split()
+            if n in words:
+                return item
+        if len(n) >= 3:
+            for item in pool:
+                words = item.split()
+                if item.startswith(n[:3]) or item.endswith(n[-3:]):
+                    return item
+                if any(w.startswith(n[:3]) or w.endswith(n[-3:]) for w in words):
+                    return item
+        return None
+
+    # -- movement ------------------------------------------------------
+    def _orig__go(self, direction, loc):
+        target = self._room().get("exits", {}).get(direction)
+        if target is None:
+            return "You can't go that way."
+        self.state.location = target
+        return self._look()
 
     def _go_up(self, loc):
-        if loc == 51:
-            return f"TRANSITION:floor_6:26", True
-        return self._go("U", loc)
-
-    def _go_down(self, loc):
-        if loc == 59:
-            return f"TRANSITION:floor_4:61", True
-        return self._go("D", loc)
-
-    # ------------------------------------------------------------------
-    # GET / TAKE
-    # ------------------------------------------------------------------
-    def _do_get(self, noun, loc):
-        if not noun:
-            return "Take what?"
-        room_items = self._room_items.get(loc, [])
-
-        for item in list(room_items):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                if item in FIXED_ITEMS:
-                    return f"You can't take the {item}."
-                room_items.remove(item)
-                self._room_items[loc] = room_items
-                self.state.add_item(item)
-                if item == "MAGIC UMBRELLA":
-                    self.umbrella_found = True
-                return f"You take the {item}."
-        return "You don't see that here."
-
-    def _do_drop(self, noun, loc):
-        if not noun:
-            return "Drop what?"
-        for item in list(self.state.inventory):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                self.state.remove_item(item)
-                self._room_items.setdefault(loc, []).append(item)
-                return f"You drop the {item}."
-        return "You're not carrying that."
-
-    # ------------------------------------------------------------------
-    # USE / APPLY
-    # ------------------------------------------------------------------
-    def _do_use(self, noun, loc):
-        if not noun:
-            return "Use what?"
-        inv = self.state.inventory
-
-        # UMBRELLA
-        if "UMBRELLA" in noun:
-            if "MAGIC UMBRELLA" in inv:
-                if loc == 59:
-                    return "The magic umbrella hums in your hand, ready for whatever comes next."
-                return (
-                    "You open Mary Poppins' umbrella. A magical breeze "
-                    "lifts you momentarily - but not enough to fly."
-                )
-            if "SMALL UMBRELLA" in inv:
-                return "A nice umbrella, but not the magical one."
-            return "You don't have an umbrella to use."
-
-        # REVERSIBLE PIE / PIE
-        if "PIE" in noun:
-            if "REVERSIBLE PIE" in inv:
-                if loc == 57:
-                    if self.machine_activated:
-                        return "The SUPER CALIFRAGILISTIC machine is already running in reverse."
-                    # Use the pie to activate/reverse the machine
-                    self.pie_used = True
-                    self.machine_activated = True
-                    self.state.remove_item("REVERSIBLE PIE")
-                    return (
-                        "You press the REVERSIBLE PIE against the "
-                        "SUPER CALIFRAGILISTIC machine. The gears grind, "
-                        "then REVERSE direction with a satisfied CLUNK. "
-                        "A slip of paper pops out: 'MAGICAL BARRIER IN "
-                        "ATTIC DISABLED. ENJOY THE VIEW.'"
-                    )
-                return (
-                    "You hold up the REVERSIBLE PIE. It hums with magic, "
-                    "but doesn't seem to do anything here. Maybe try it "
-                    "in the room with the SUPER CALIFRAGILISTIC machine."
-                )
-            return "You don't have a pie to use."
-
-        return "You can't figure out how to use that here."
-
-    # ------------------------------------------------------------------
-    # PUSH / PRESS
-    # ------------------------------------------------------------------
-    def _do_push(self, noun, loc):
-        # PUSH BUTTON is the only pushable thing worth handling
-        if "BUTTON" in noun or "PUSH" in noun or noun == "":
-            if loc == 56:
-                if self.pie_taken:
-                    return "The trapdoor is closed. Nothing more comes down."
-                self.pie_taken = True
-                self.state.add_item("REVERSIBLE PIE")
-                return (
-                    "You push the button. Somewhere, a tiny bell rings. "
-                    "A trapdoor opens and a pie descends from above. "
-                    "'REVERSIBLE PIE,' the label says. "
-                    "You take it."
-                )
-            if loc == 58:
-                return "The button on the JUMP PLATFORM is for JUMPING, not pushing."
-            return "There's nothing here to push."
-        return "You can't push that."
-
-    # ------------------------------------------------------------------
-    # JUMP
-    # ------------------------------------------------------------------
-    def _do_jump(self, noun, loc):
-        if loc == 58:
-            if self.machine_activated:
-                # Successfully jump to room 59
-                self.state.location = 59
-                return (
-                    "You leap onto the springy JUMP PLATFORM! BOING! "
-                    "With the SUPER CALIFRAGILISTIC machine now running "
-                    "in REVERSE, the bounce amplifies and you SOAR upward "
-                    "through the disabled magical barrier! "
-                    "You tumble into the umbrella vault.\n\n" + self._look()
-                )
-            return (
-                "You leap onto the springy JUMP PLATFORM! BOING! "
-                "You bounce high into the air. As you come down, "
-                "you notice a hidden passage that only appears "
-                "when you're at the apex of your jump. "
-                "But a magical barrier blocks it. The SUPER "
-                "CALIFRAGILISTIC machine below is interfering somehow."
-            )
-        return "There's nothing to jump on here."
-
-    # ------------------------------------------------------------------
-    # EXAMINE / READ
-    # ------------------------------------------------------------------
-    def _examine(self, noun, loc):
-        if not noun:
-            return self._look()
-        noun_u = noun.upper()
-        inv = self.state.inventory
-        room_items = self._room_items.get(loc, [])
-
-        if "UMBRELLA" in noun_u:
-            if "MAGIC UMBRELLA" in inv or "MAGIC UMBRELLA" in room_items:
-                return (
-                    "Mary Poppins' magical umbrella. Cherry red with a "
-                    "curved handle. You can feel the magic humming in the "
-                    "handle. It's beautiful."
-                )
-            if "SMALL UMBRELLA" in inv or "SMALL UMBRELLA" in room_items:
-                return "A nice umbrella, but ordinary. Not the magical one."
-            return "No umbrella here."
-
-        if "MACHINE" in noun_u or "CALIF" in noun_u:
-            if loc == 57:
-                if self.machine_activated:
-                    return (
-                        "The SUPER CALIFRAGILISTIC machine is now running "
-                        "in REVERSE. The gears spin the other way and it "
-                        "makes a satisfied humming sound. The magical "
-                        "barrier in the room above is down."
-                    )
-                return (
-                    "The SUPER CALIFRAGILISTIC machine. It needs something "
-                    "to activate it. The note says: 'ONE PUSH TO BEGIN.' "
-                    "A drawer at the base looks like it might accept a pie."
-                )
-            return "No machine here."
-
-        if "SIGN" in noun_u:
-            if loc == 52:
-                return (
-                    "The sign reads: 'SIDE END OPEN MOST REVERSIBLE.' "
-                    "It doesn't make sense. But you wonder - the most "
-                    "REVERSIBLE thing in the area might be the answer. "
-                    "There's a pie shop to the EAST, perhaps?"
-                )
-            return "You don't see a sign here."
-
-        if "GRAFFITI" in noun_u:
-            if loc == 53:
-                return "The graffiti on the ceiling reads: 'MARY POPPINS WAS HERE.'"
-            return "No graffiti here."
-
-        if "BUTTON" in noun_u:
-            if loc == 56:
-                if self.pie_taken:
-                    return "The PUSH BUTTON. You already pressed it. The trapdoor above is closed."
-                return "The PUSH BUTTON on the wall, labeled 'PUSH FOR MEANING.'"
-            return "No button here."
-
-        if "PIE" in noun_u:
-            if "REVERSIBLE PIE" in inv:
-                return (
-                    "A REVERSIBLE PIE. The label says: "
-                    "'For reversing magical mechanisms. Use with caution.'"
-                )
-            if loc == 56 and not self.pie_taken:
-                return (
-                    "There are pies on the shelves, but they are just "
-                    "decorative. You need to push the button to get a real one."
-                )
-            return "No pie here."
-
-        if "JUMP" in noun_u or "PLATFORM" in noun_u:
-            if loc == 58:
-                return "A springy JUMP PLATFORM. You can JUMP on it."
-            return "No platform here."
-
-        if "NOTE" in noun_u:
-            if loc == 54:
-                return "The note reads: '2+2=5 OR 2+2=22.'"
-            if loc == 57:
-                return "The note on the machine reads: 'ONE PUSH TO BEGIN.'"
-            return "You don't see a note here."
-
-        return "Nothing unusual."
-
-    # ------------------------------------------------------------------
-    # Inventory / look
-    # ------------------------------------------------------------------
-    def _do_inventory(self):
-        items = self.state.inventory
-        if not items:
-            return "You are empty-handed."
-        return "You are carrying: " + ", ".join(items)
+        return "You can't go that way."
 
     def _look(self):
-        loc = self.state.location
-        r = self.get_room(loc)
-        if not r:
+        room = self._room()
+        if not room:
             return "You are nowhere."
-        desc = f"**{r['name']}**\n{r['desc']}"
-        items = self._room_items.get(loc, [])
-        if items:
-            desc += "\n\nYou can see: " + ", ".join(items) + "."
-        exits = r.get("exits", {})
-        exit_list = []
-        for d in ("N", "S", "E", "W", "U", "D"):
-            if d in exits:
-                t = exits[d]
-                if isinstance(t, int):
-                    target_name = ROOMS.get(t, {}).get("name", f"Room {t}")
-                    exit_list.append(f"{d} to {target_name}")
-                else:
-                    if d == "U" and t == "floor_6":
-                        exit_list.append("U to Floor 6")
-                    elif d == "D" and t == "floor_4":
-                        exit_list.append("D to Floor 4")
-                    else:
-                        exit_list.append(f"{d} to {t}")
-        if exit_list:
-            desc += "\n\nExits: " + ", ".join(exit_list) + "."
-        return desc
+        out = [room.get("desc", room.get("name", ""))]
+        exits = room.get("exits", {})
+        dirs = [d for d in ("N", "S", "E", "W") if d in exits]
+        out.append("Exits: " + ", ".join(f"{d} to {exits[d]}" for d in dirs)
+                   if dirs else "No way out that you can see.")
+        stuff = list(self._room_items.get(self.state.location, []))
+        if stuff:
+            out.append("You can see: " + ", ".join(stuff))
+        return "\n".join(out)
 
-    # ------------------------------------------------------------------
-    # Exits verification
-    # ------------------------------------------------------------------
-    @staticmethod
-    def verify_exits():
-        """Verify all numeric exits are bidirectional. Returns list of errors."""
-        errors = []
-        opp = {"N": "S", "S": "N", "E": "W", "W": "E", "U": "D", "D": "U"}
-        for rid, r in ROOMS.items():
-            for d, t in r["exits"].items():
-                if isinstance(t, str):
-                    continue
-                if t not in ROOMS:
-                    errors.append(f"Room {rid} -> {d}={t}, but room {t} does not exist")
-                    continue
-                ro = opp[d]
-                reverse = ROOMS[t]["exits"].get(ro)
-                if reverse is None:
-                    errors.append(f"Room {rid} -> {d}={t}, but {t} has no {ro}")
-                elif reverse != rid:
-                    errors.append(
-                        f"Room {rid} -> {d}={t}, but {t} -> {ro}={reverse} (not back to {rid})"
-                    )
-        return errors
+    def _do_inventory(self):
+        if not self.state.inventory:
+            return "You are carrying nothing."
+        return "You are carrying:\n" + "\n".join(f"  - {i}" for i in self.state.inventory)
 
+    def _examine(self, noun, loc):
+        item = self._find_item(noun)
+        if item:
+            return f"You look at the {item}."
+        return "You see nothing like that here."
 
-if __name__ == "__main__":
-    e = Floor5Engine.verify_exits()
-    if e:
-        print(f"FAIL: {len(e)} errors:")
-        for x in e:
-            print(f"  {x}")
-    else:
-        print(f"PASS: All exits bidirectional ({len(ROOMS)} rooms)")
+    # -- items ---------------------------------------------------------
+    def _do_get(self, noun, loc):
+        item = self._find_item(noun)
+        if item is None:
+            return "You don't see that here.", False
+        if item in FIXED_ITEMS:
+            return f"The {item} is fixed in place.", False
+        self._take(item)
+        return f"You pick up the {item}.", False
+
+    def _do_drop(self, noun, loc):
+        item = self._find_item(noun)
+        if item is None:
+            return "You aren't carrying that.", False
+        self._drop(item)
+        return f"You drop the {item}.", False
+
+    def _do_use(self, noun, loc):
+        return self._dispatch("USE", noun, loc)
+
+    # -- generic verbs (overridden per floor) --------------------------
+    def _v_use(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_open(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_read(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_press(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_play(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_pour(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_knit(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_tie(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_throw(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_climb(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_swim(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_drink(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_make(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_jump(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_go(self, noun, loc):
+        return "You can't do that here.", False
+
+    # -- dispatch ------------------------------------------------------
+    def _dispatch(self, verb, noun, loc):
+        handler = getattr(self, "_v_" + verb.lower(), None)
+        if handler is None:
+            return "You can't do that here.", False
+        return handler(noun, loc)
+
+    def handle_command(self, verb, noun):
+        verb = (verb or "").upper()
+        noun = (noun or "").upper()
+        if verb in ("LOOK", "L"):
+            return self._look(), False
+        if verb in ("INVENTORY", "INV", "I"):
+            return self._do_inventory(), False
+        if verb in ("N", "S", "E", "W"):
+            return self._go(verb, self.state.location), False
+        if verb == "GO":
+            target = noun.strip()
+            if target in ("N", "S", "E", "W"):
+                return self._go(target, self.state.location), False
+            if target in ("UP", "U"):
+                return self._go_up(self.state.location), False
+            if target in ("DOWN", "D"):
+                return self._v_go("DOWN", self.state.location)
+            return self._v_go(target, self.state.location)
+        if verb == "GET":
+            return self._do_get(noun, self.state.location)
+        if verb == "DROP":
+            return self._do_drop(noun, self.state.location)
+        if verb in ("EXAMINE", "X"):
+            return self._examine(noun, self.state.location), False
+        if verb in ("USE", "OPEN", "READ", "PRESS", "PUSH", "PLAY", "POUR",
+                    "KNIT", "TIE", "THROW", "CLIMB", "SWIM", "DRINK", "MAKE",
+                    "JUMP", "PUT", "PAY", "LIGHT", "TAPE", "INFLATE"):
+            return self._dispatch(verb, noun, self.state.location)
+        return "You can't do that here.", False
+
+    # -- floor 5: the fire, the knitting, the locked door --------------
+    def _v_press(self, noun, loc):
+        if "BUTTON" not in noun:
+            return "You can't do that here.", False
+        if not self._here("PUSH BUTTON ON WALL"):
+            return "There is no button here.", False
+        if self.flags.get("doused"):
+            return "The sprinklers have already doused the fire.", False
+        self.flags["doused"] = True
+        self.flags["soaked"] = True
+        self.flags.pop("clothed", None)
+        return ("The sprinklers go off. The fire dies in a hiss of steam, and you are\n"
+                "soaked through - your clothes are ruined. You strip them off."), False
+
+    def _v_push(self, noun, loc):
+        """PUSH and PRESS are the same action (DATA object: PUSH BUTTON ON WALL)."""
+        return self._v_press(noun, loc)
+
+    def _v_knit(self, noun, loc):
+        if not ("CLOTH" in noun or noun.endswith("THE")):
+            return "You can't knit that.", False
+        if not self._has("KNITTING NEEDLES"):
+            return "You need something to knit with.", False
+        if not self._has("BALL OF YARN"):
+            return "You need yarn to knit with.", False
+        if self.flags.get("clothed"):
+            return "You are already dressed.", False
+        self.flags["clothed"] = True
+        return "You knit a quick new set of clothes from the yarn and needles.", False
+
+    def _v_open(self, noun, loc):
+        if "DOOR" in noun:
+            if self._here("LOCKED DOOR"):
+                if not self._has("SMALL KEY"):
+                    return "The door is locked. You need a key.", False
+                self.flags["door_open"] = True
+                return "The small key turns in the lock. The door swings open.", False
+        return self._orig__v_open(noun, loc)
+
+    def _v_go(self, noun, loc):
+        if "DOOR" in noun:
+            if self._here("LOCKED DOOR"):
+                if not self.flags.get("door_open"):
+                    return "The door is locked.", False
+                self.state.location = 44
+                return self._look(), False
+        if "STAIR" in noun:
+            return self._v_climb(noun, loc)
+        return self._orig__v_go(noun, loc)
+
+    def _v_climb(self, noun, loc):
+        if "STAIR" in noun:
+            if not self.flags.get("clothed"):
+                return ("You are soaking wet and in nothing but your skin. The kidnapper's\n"
+                        "building is no place to be seen undressed - knit some clothes first."), False
+            return ("TRANSITION:floor_4:45", True)
+        return self._orig__v_climb(noun, loc)
+
+    def _go(self, direction, loc):
+        if direction == "N" and loc == 41 and not self.flags.get("doused"):
+            return "The fire to the north is too fierce. You have to put it out first."
+        return self._orig__go(direction, loc)
+

@@ -1,0 +1,377 @@
+{
+ "5": {
+  "title": "The Fire and the Knitting",
+  "lines": [
+   47,
+   54
+  ],
+  "rooms": [
+   37,
+   44
+  ],
+  "entry": 43,
+  "nextdown": 4,
+  "src": 6,
+  "room": {
+   "37": [
+    "AN OFFICE",
+    "An office. Smoke rolls along the ceiling and the fire is raging in here.",
+    {
+     "S": 41
+    },
+    [
+     "SEXY, YOUNG GIRL OFFICE WORKERS"
+    ]
+   ],
+   "38": [
+    "A HALLWAY",
+    "A hallway, hot with smoke.",
+    {
+     "E": 43,
+     "N": 39,
+     "S": 40
+    },
+    []
+   ],
+   "39": [
+    "AN OFFICE",
+    "A small office. A ball of yarn sits on the desk.",
+    {
+     "S": 38
+    },
+    []
+   ],
+   "40": [
+    "AN OFFICE",
+    "A small office. Knitting needles lie on the desk.",
+    {
+     "N": 38
+    },
+    []
+   ],
+   "41": [
+    "A HALLWAY",
+    "A hallway. To the north the fire roars.",
+    {
+     "W": 43,
+     "N": 37,
+     "S": 42
+    },
+    []
+   ],
+   "42": [
+    "AN OFFICE",
+    "A small office. A button is set into the wall.",
+    {
+     "N": 41
+    },
+    []
+   ],
+   "43": [
+    "A HALLWAY",
+    "A hallway. A locked door blocks the way east.",
+    {
+     "W": 38,
+     "E": 41
+    },
+    []
+   ],
+   "44": [
+    "A STAIRCASE",
+    "A staircase, going down.",
+    {},
+    []
+   ]
+  },
+  "fixed": {
+   "SEXY, YOUNG GIRL OFFICE WORKERS": 37,
+   "PUSH BUTTON ON WALL": 42,
+   "LOCKED DOOR": 43,
+   "STAIRS": 44
+  },
+  "movable": {
+   "SMALL KEY": 37,
+   "BALL OF YARN": 39,
+   "KNITTING NEEDLES": 40
+  },
+  "aliases": {
+   "VIAL OF YELLOW SOLUTION": "JAR OF YELLOW SOLUTION"
+  }
+ },
+ "4": {
+  "title": "The Pool and the Umbrella",
+  "lines": [
+   55,
+   61
+  ],
+  "rooms": [
+   45,
+   51
+  ],
+  "entry": 45,
+  "nextdown": 3,
+  "src": 5,
+  "room": {
+   "45": [
+    "A HALLWAY",
+    "A hallway.",
+    {
+     "N": 46,
+     "E": 48,
+     "S": 47
+    },
+    []
+   ],
+   "46": [
+    "AN OFFICE",
+    "A small office. A button is set into the wall.",
+    {
+     "S": 45
+    },
+    []
+   ],
+   "47": [
+    "A LIBRARY",
+    "A library. Books line the walls.",
+    {
+     "N": 45
+    },
+    []
+   ],
+   "48": [
+    "A SWIM ROOM",
+    "A swim room. An empty pool.",
+    {
+     "W": 45
+    },
+    []
+   ],
+   "49": [
+    "A SWIM ROOM",
+    "A swim room. The pool is full of water.",
+    {
+     "N": 50,
+     "E": 51
+    },
+    []
+   ],
+   "50": [
+    "A LAUNDRY ROOM",
+    "A laundry room, damp and echoing.",
+    {
+     "S": 49
+    },
+    []
+   ],
+   "51": [
+    "A DINING ROOM",
+    "A dining room. A window stands open to the night.",
+    {
+     "W": 49
+    },
+    []
+   ]
+  },
+  "fixed": {
+   "PUSH BUTTON ON WALL": 46,
+   "OPEN WINDOW": 51
+  },
+  "movable": {
+   "BOOK": 47,
+   "MARY POPPIN'S UMBRELLA": 50
+  },
+  "aliases": {}
+ },
+ "3": {
+  "title": "The Laboratory (Mr. Hyde)",
+  "lines": [
+   62,
+   67
+  ],
+  "rooms": [
+   52,
+   57
+  ],
+  "entry": 52,
+  "nextdown": 2,
+  "src": 4,
+  "room": {
+   "52": [
+    "A HALLWAY",
+    "A hallway.",
+    {
+     "N": 53,
+     "E": 54
+    },
+    []
+   ],
+   "53": [
+    "A RESTROOM",
+    "A restroom. The walls are covered in graffiti.",
+    {
+     "S": 52
+    },
+    []
+   ],
+   "54": [
+    "A HALLWAY",
+    "A hallway.",
+    {
+     "W": 52,
+     "E": 55
+    },
+    []
+   ],
+   "55": [
+    "A HALLWAY",
+    "A hallway. A steel door is set into the east wall.",
+    {
+     "W": 54,
+     "N": 56
+    },
+    []
+   ],
+   "56": [
+    "A LABORATORY",
+    "A laboratory. Glass jars line the benches.",
+    {
+     "S": 55
+    },
+    []
+   ],
+   "57": [
+    "A CHILD'S PLAYROOM",
+    "A child's playroom. A slide stands in the corner.",
+    {
+     "N": 55
+    },
+    []
+   ]
+  },
+  "fixed": {
+   "GRAFFITI ON WALL": 53,
+   "STEEL DOOR": 55,
+   "CHILD'S SLIDE": 57
+  },
+  "movable": {
+   "JAR OF YELLOW SOLUTION": 56,
+   "JAR OF FLUID": 56
+  },
+  "aliases": {
+   "VIAL OF YELLOW SOLUTION": "JAR OF YELLOW SOLUTION"
+  }
+ },
+ "2": {
+  "title": "The Plant and the Flute",
+  "lines": [
+   68,
+   72
+  ],
+  "rooms": [
+   58,
+   62
+  ],
+  "entry": 58,
+  "nextdown": 1,
+  "src": 3,
+  "room": {
+   "58": [
+    "AN OFFICE",
+    "An office. A water cooler stands in the corner.",
+    {
+     "W": 59
+    },
+    []
+   ],
+   "59": [
+    "A LOUNGE",
+    "A lounge. A potted plant stands against the wall.",
+    {
+     "E": 58
+    },
+    []
+   ],
+   "60": [
+    "A CRAWLWAY",
+    "A crawlway, low and close.",
+    {
+     "E": 61
+    },
+    []
+   ],
+   "61": [
+    "A CRAWLWAY",
+    "A crawlway. A rope hangs down into the dark.",
+    {
+     "W": 60
+    },
+    []
+   ],
+   "62": [
+    "A STAIRCASE",
+    "A staircase, going down.",
+    {},
+    []
+   ]
+  },
+  "fixed": {
+   "WATER COOLER": 58,
+   "SMALL-SIZED PLANT": 59,
+   "STAIRS": 62
+  },
+  "movable": {
+   "PAPER CUP": 58,
+   "FLUTE": 61
+  },
+  "aliases": {}
+ },
+ "1": {
+  "title": "Ground Floor - ESCAPE!",
+  "lines": [
+   73,
+   75
+  ],
+  "rooms": [
+   63,
+   65
+  ],
+  "entry": 63,
+  "nextdown": null,
+  "src": 2,
+  "room": {
+   "63": [
+    "A LOUNGE",
+    "A lounge. An upright piano stands against the wall.",
+    {
+     "E": 64
+    },
+    []
+   ],
+   "64": [
+    "A HALLWAY",
+    "A hallway. A pit opens in the floor ahead.",
+    {
+     "W": 63
+    },
+    []
+   ],
+   "65": [
+    "AN ENTRANCE HALL",
+    "The entrance hall. The front door is right there.",
+    {},
+    []
+   ]
+  },
+  "fixed": {
+   "PIANO": 63,
+   "FRONT DOOR": 65
+  },
+  "movable": {
+   "LONG ROPE": 63,
+   "SMALL BOOK": 64
+  },
+  "aliases": {
+   "BOOK": "SMALL BOOK"
+  }
+ }
+}

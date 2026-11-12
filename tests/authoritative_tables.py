@@ -19,13 +19,17 @@ TRUST RULES (this project failed before because these were ignored):
   * Listing dispatch is ON A GOTO 11,12,...,75, so global room number
     = BASIC line number - 10.
 
-Floors 1-5 and 7 have NOT been audited yet. Their room tables in the tests
-are still guesses, so the source-pair validation for them is skipped
-rather than validating a guess against itself (see
-tests/test_all_floors_map.py).
-
-Floors 6, 8 and 9 ARE audited: their tables below are the pixel-derived
+Floors 6, 7, 8 and 9 are audited: their tables below are the pixel-derived
 corrected ones and are compared against the floor modules.
+
+Floors 1-5 are audited too - their tables are loaded straight out of
+audit/floors_1_5_verified.json (the machine-readable form of
+audit/FLOORS_1_5_GROUND_TRUTH.md) so the table cannot drift from the
+audit. They are compared against the floor modules the same way.
+
+Fixed scenery for floors 1-5 is not carried in these tables: the audit
+records it separately (the "fixed" map) and the floor modules keep it in
+FIXED_ITEMS, so tests/test_floors_1_5_audit.py compares it directly.
 """
 
 # ---------------------------------------------------------------------
@@ -230,7 +234,7 @@ FLOOR6_FORBIDDEN_ROOMS = (set(range(1, 26)) | set(range(37, 66)))
 # floors/floor_8.py now carries the authoritative 13-17 table and the
 # map test compares the two.
 # ---------------------------------------------------------------------
-UNAUDITED_FLOORS = {1, 2, 3, 4, 5}
+UNAUDITED_FLOORS = set()
 
 # Audited floors, keyed by floor number.
 # Floor 7 - listing lines 28-35 of the original BASIC listing.
@@ -291,7 +295,57 @@ FLOOR7_ROOMS = {
     },
 }
 
+
+# ---------------------------------------------------------------------
+# FLOORS 1-5 - loaded from the pixel-verified audit file
+#
+# audit/floors_1_5_verified.json is the machine-readable form of
+# audit/FLOORS_1_5_GROUND_TRUTH.md.  Reading the table from the file
+# instead of transcribing it again means the tests compare the floor
+# modules against the audit, not against a second hand-copy of it.
+# ---------------------------------------------------------------------
+import json as _json
+import os as _os
+
+_AUDIT_1_5_PATH = _os.path.join(
+    _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+    "audit", "floors_1_5_verified.json")
+
+with open(_AUDIT_1_5_PATH) as _fh:
+    _AUDIT_1_5 = _json.load(_fh)
+
+
+def _rooms_from_audit(floor_num):
+    """Build an authoritative room table for a floor from the audit file.
+
+    The audit records each room as (name, desc, exits, items).  The
+    checker compares name, exits and items; desc is descriptive only.
+    """
+    data = _AUDIT_1_5[str(floor_num)]
+    rooms = {}
+    for rid, entry in data["room"].items():
+        name, _desc, exits, items = entry
+        rooms[int(rid)] = {
+            "name": name,
+            "exits": dict(exits),
+            "items": list(items),
+        }
+    return rooms
+
+
+FLOOR1_ROOMS = _rooms_from_audit(1)
+FLOOR2_ROOMS = _rooms_from_audit(2)
+FLOOR3_ROOMS = _rooms_from_audit(3)
+FLOOR4_ROOMS = _rooms_from_audit(4)
+FLOOR5_ROOMS = _rooms_from_audit(5)
+
+
 AUDITED_ROOMS = {
+    1: FLOOR1_ROOMS,
+    2: FLOOR2_ROOMS,
+    3: FLOOR3_ROOMS,
+    4: FLOOR4_ROOMS,
+    5: FLOOR5_ROOMS,
     6: FLOOR6_ROOMS,
     7: FLOOR7_ROOMS,
     8: FLOOR8_ROOMS,

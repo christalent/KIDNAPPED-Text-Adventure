@@ -1,356 +1,430 @@
 """
-KIDNAPPED! - Floor 2: The Quicksand Floor
-"Small book, some quicksand, rope, and a piano"
+KIDNAPPED! - Floor 2: The Plant and the Flute
 
-Entry from Floor 3 via stairs DOWN -> Room 69.
-Goal: Play piano → rope stretches → cross quicksand → descend to Floor 1.
+Floor 2 of the original listing: The Plant and the Flute.
 
-Based on:
-- BASIC source from SoftSide Vol 3 No 03 (clean PDF)
-- RetroGamesTroove review
-- BASIC DATA statements for Floor 2 items
+THE PREVIOUS VERSION OF THIS MODULE WAS WRONG.  It carried an invented
+room set, including rooms that do not exist in the listing at all, and
+objects (ALLIGATOR, BURGLAR'S MASK, INDIAN ROPE) that appear nowhere in
+the magazine.  Everything below is re-derived from the source pixels.
+
+SOURCE OF TRUTH
+---------------
+The listing dispatches with ``ON A GOTO 11,12,...,75``, so a global room
+number is the printed BASIC line number minus ten.  Floor 2 is printed
+lines 68-72, i.e. global rooms 58-62.
+
+Every room number, exit and item placement below was read from raster
+crops of the printed listing - never from the PDF text layer, which reads
+4 as 1, 8 as S and 0 as O.  The result was checked by replaying both
+published walkthroughs (Jacob Gunness, CASA Solution Archive, Sept 2004;
+Garry Francis, minimal Atari solution) command for command.
+
+ROOM TABLE (listing lines 68-72)
+    58  AN OFFICE              W=59             
+    59  A LOUNGE               E=58             
+    60  A CRAWLWAY             E=61             
+    61  A CRAWLWAY             W=60             
+    62  A STAIRCASE            -                
+
+DATA ITEMS ON THIS FLOOR
+    58  WATER COOLER  (fixed)
+    59  SMALL-SIZED PLANT  (fixed)
+    62  STAIRS  (fixed)
+    58  PAPER CUP  (takeable)
+    61  FLUTE  (takeable)
+
+WALKTHROUGH REPLAY
+  Francis: GET PAPER CUP, GET WATER  W(59) POUR WATER  GO PLANT(60)
+           E(61) GET FLUTE  PLAY FLUTE  GO ROPE(62)  GO STAIRS
+           -> floor 1 room 63
+
+  Gunness: the same chain, with CLIMB PLANT and CLIMB ROPE for the two
+  climbs.
+
+INFERRED, NOT TRANSCRIBED
+-------------------------
+* The plant needs the cup of water before it can be climbed, and the
+  flute makes the rope appear.  Both are in the walkthroughs; the exact
+  gating is an interpretation.
+* PLAY FLUTE creates the magic rope rather than the rope being a DATA
+  item: there is no rope in DATA for this floor.
+
+The handler code on listing pages 2-4 has not been transcribed yet, so the
+puzzle state machine below is reconstructed from the two published
+walkthroughs and from the items the listing actually places.  Everything
+listed under INFERRED above is a port-level interpretation, not a
+transcription of the magazine.
 """
 
 FLOOR_NUMBER = 2
 NEXT_FLOOR_DOWN = 1
+ENTRY_ROOM = 58
 
-# --------------------------------------------------------------------
-# Room map (Floor 2, rooms 69-73):
-# Quicksand / piano puzzle
-#
-# Items from BASIC DATA:
-# Room 63: PIANO(-63), LONG ROPE(63) (overlaps with floor 4)
-# Room 61: SMALL BOOK(61) (overlaps)
-# Room 65: FRONT DOOR(-65) (overlaps with floor 1)
-#
-# Puzzle: PLAY PIANO → rope stretches tight → cross quicksand
-# --------------------------------------------------------------------
+# Which floor you arrive from -> the room you land in.
+SPECIAL_ROOMS = {
+    "floor_3": {"landing_room": 58},
+}
+
+# Fixed scenery: item name -> the room it is bolted to.
+FIXED_ITEMS = {
+    "WATER COOLER": 58,
+    "SMALL-SIZED PLANT": 59,
+    "STAIRS": 62,
+}
+
+# Takeable items -> the DATA room they start in.
+ITEM_ROOMS = {
+    "PAPER CUP": 58,
+    "FLUTE": 61,
+}
+
+# Names the published walkthroughs use for the listing's items.
+ITEM_ALIASES = {
+
+}
+
 ROOMS = {
-    69: {
-        "name": "QUICKSAND EDGE",
-        "desc": (
-            "You descend into a vast underground chamber. "
-            "The floor is sandy, and in the center: a massive patch of QUICKSAND. "
-            "It looks bottomless. On the far side, you can see a stairway leading DOWN. "
-            "A LONG ROPE is coiled on a tent stake on this side. "
-            "A PIANO sits against the west wall. "
-            "The entrance is to the SOUTH."
-        ),
-        "exits": {"S": 70, "N": 71},
-        "items": ["LONG ROPE"],
-    },
-    70: {
-        "name": "ROPE STAKES AREA",
-        "desc": (
-            "Near the quicksand, a tent STAKE is driven into the ground. "
-            "The rope could be tied here. "
-            "A SMALL BOOK lies in the sand. "
-            "The quicksand edge is to the NORTH. "
-            "A narrow ledge runs EAST along the wall."
-        ),
-        "exits": {"N": 69, "E": 72},
-        "items": ["SMALL BOOK", "TENT STAKE"],
-    },
-    71: {
-        "name": "QUICKSAND CROSSING",
-        "desc": (
-            "You stand at the edge of the quicksand. "
-            "The rope - when properly stretched - would connect here to the far side. "
-            "The far side (north) has a stairway DOWN to Floor 1. "
-            "The rope stakes area is to the SOUTH."
-        ),
-        "exits": {"S": 69},
+    58: {
+        "name": "AN OFFICE",
+        "desc": "An office. A water cooler stands in the corner.",
+        "exits": {"W": 59},
         "items": [],
     },
-    72: {
-        "name": "PIANO ALCOVE",
-        "desc": (
-            "A small alcove with a dusty PIANO. "
-            "Sheet music sits on the stand, open to a waltz. "
-            "Someone has been playing here. "
-            "The rope stakes area is to the WEST."
-        ),
-        "exits": {"W": 70, "N": 73},
-        "items": ["PIANO"],
+    59: {
+        "name": "A LOUNGE",
+        "desc": "A lounge. A potted plant stands against the wall.",
+        "exits": {"E": 58},
+        "items": [],
     },
-    73: {
-        "name": "BOOKSHELF NICHE",
-        "desc": (
-            "A small niche lined with old books and papers. "
-            "One book lies open: it describes how to cross quicksand using rope tension. "
-            "'...play a sustained chord to tighten the rope...' "
-            "The piano alcove is to the SOUTH."
-        ),
-        "exits": {"S": 72},
-        "items": ["TIGHTROPE BOOK"],
+    60: {
+        "name": "A CRAWLWAY",
+        "desc": "A crawlway, low and close.",
+        "exits": {"E": 61},
+        "items": [],
+    },
+    61: {
+        "name": "A CRAWLWAY",
+        "desc": "A crawlway. A rope hangs down into the dark.",
+        "exits": {"W": 60},
+        "items": [],
+    },
+    62: {
+        "name": "A STAIRCASE",
+        "desc": "A staircase, going down.",
+        "exits": {},
+        "items": [],
     },
 }
 
-SPECIAL_ROOMS = {
-    "floor_3": {"target": "floor_3", "landing_room": 69},
-    "floor_1": {"target": "floor_1", "landing_room": 65},
-}
+
+# Off-grid transitions the room table cannot express: these room pairs are
+# linked by a verb action, not by a compass exit.
+# climbing the watered plant (59->60) and the magic rope (61->62)
+VERB_LINK_PAIRS = {(59, 60), (61, 62)}
 
 class Floor2Engine:
+    """Floor 2 engine - The Plant and the Flute."""
+
     def __init__(self, state):
         self.state = state
-        self._room_items = self._init_items()
-        self.rope_tied = False
-        self.rope_stretched = False
-        self.book_read = False
+        self.flags = {}
+        self._init_items()
 
+    # -- setup ---------------------------------------------------------
     def _init_items(self):
-        return {
-            69: ["LONG ROPE"],
-            70: ["SMALL BOOK", "TENT STAKE"],
-            72: ["PIANO"],
-            73: ["TIGHTROPE BOOK"],
-        }
+        """Per-instance item state.
 
+        Module-level ROOMS is never mutated: each game instance keeps its
+        own copy of the room item lists, so two engines running in the
+        same process cannot see each other's pickups.
+        """
+        self._room_items = {rid: list(r.get("items", [])) for rid, r in ROOMS.items()}
+        self._room_fixed = {rid: list(r.get("fixed_items", [])) for rid, r in ROOMS.items()}
+        for item, room in FIXED_ITEMS.items():
+            if room in self._room_fixed and item not in self._room_fixed[room]:
+                self._room_fixed[room].append(item)
+        for item, room in ITEM_ROOMS.items():
+            if room in self._room_items and item not in self._room_items[room]:
+                self._room_items[room].append(item)
+        return self._room_items
     def on_enter(self):
-        self._room_items = self._init_items()
-        self.rope_tied = False
-        self.rope_stretched = False
-        self.book_read = False
+        self.state.floor = FLOOR_NUMBER
+        if self.state.location not in ROOMS:
+            self.state.location = ENTRY_ROOM
 
     def on_leave(self):
         pass
 
+    # -- queries -------------------------------------------------------
     def get_room(self, room_id):
         return ROOMS.get(room_id)
 
     def get_current_room(self):
         return ROOMS.get(self.state.location)
 
-    def handle_command(self, verb, noun=""):
+    def _room(self):
+        return ROOMS.get(self.state.location, {})
+
+    def _here(self, item):
+        """Is this object present in the current room?
+
+        Fixed scenery lives in _room_fixed (or FIXED_ITEMS), takeable
+        objects in _room_items.  Both count as here: the listing puts
+        PUSH BUTTON ON WALL, LOCKED DOOR, STEEL DOOR, FRONT DOOR, PIANO,
+        WATER COOLER, SMALL-SIZED PLANT and CHILD'S SLIDE in the room
+        description, not in the takeable list.
+        """
         loc = self.state.location
-        verb = verb.upper().strip()
-        noun = noun.upper().strip() if noun else ""
+        if item in self._room_items.get(loc, []):
+            return True
+        if item in getattr(self, "_room_fixed", {}).get(loc, []):
+            return True
+        return FIXED_ITEMS.get(item) == loc
+    def _has(self, item):
+        return item in self.state.inventory
 
-        if verb in ("LOOK", "L"):
-            return self._look(), False
-        if verb in ("INVENTORY", "I"):
-            return self._do_inventory(), False
-        if verb in ("GET", "TAKE", "GRAB"):
-            return self._do_get(noun, loc), False
-        if verb in ("DROP", "PUT", "PLACE"):
-            return self._do_drop(noun, loc), False
-        if verb in ("USE", "TIE", "KNOT"):
-            return self._do_use(noun, loc), False
-        if verb in ("PLAY"):
-            return self._do_play(noun, loc), False
-        if verb in ("TIE"):
-            return self._do_tie(noun, loc), False
-        if verb in ("READ", "EXAMINE", "X"):
-            return self._examine(noun, loc), False
-        if verb in ("CROSS"):
-            return self._do_cross(noun, loc), False
+    def _take(self, item):
+        items = self._room_items.setdefault(self.state.location, [])
+        if item in items:
+            items.remove(item)
+        if item not in self.state.inventory:
+            self.state.inventory.append(item)
+    def _drop(self, item):
+        if item in self.state.inventory:
+            self.state.inventory.remove(item)
+        self._room_items.setdefault(self.state.location, []).append(item)
+    def _find_item(self, noun):
+        """Match a typed noun against the listing's item names.
 
-        # Movement
-        if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc), False
-        if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc), False
-        if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc), False
-        if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc), False
-        if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc), False
-        if verb in ("D", "DOWN") or (verb == "GO" and noun in ("D", "DOWN", "")):
-            return self._go_down(loc), False
-
+        The original matches on the first three letters for GET and DROP
+        and the last three for everything else; the published walkthroughs
+        also use short forms such as GET BOOK for SMALL BOOK, so both
+        conventions and whole-word matches are accepted here.
+        """
+        n = (noun or "").strip().upper()
+        if not n:
+            return None
+        n = ITEM_ALIASES.get(n, n)
+        pool = (list(self._room_items.get(self.state.location, []))
+                + list(self.state.inventory))
+        for item in pool:
+            if item == n:
+                return item
+        for item in pool:
+            words = item.split()
+            if n in words:
+                return item
+        if len(n) >= 3:
+            for item in pool:
+                words = item.split()
+                if item.startswith(n[:3]) or item.endswith(n[-3:]):
+                    return item
+                if any(w.startswith(n[:3]) or w.endswith(n[-3:]) for w in words):
+                    return item
         return None
 
+    # -- movement ------------------------------------------------------
     def _go(self, direction, loc):
-        r = self.get_room(loc)
-        if not r:
-            return "You are nowhere."
-        exits = r.get("exits", {})
-        next_target = exits.get(direction)
-        if next_target is None:
-            return f"You can't go {direction} from here."
-        if isinstance(next_target, str):
-            if next_target == "floor_3":
-                return f"TRANSITION:{next_target}:69"
-            if next_target == "floor_1":
-                return f"TRANSITION:{next_target}:65"
-        self.state.location = next_target
+        target = self._room().get("exits", {}).get(direction)
+        if target is None:
+            return "You can't go that way."
+        self.state.location = target
         return self._look()
 
     def _go_up(self, loc):
-        return "You can't go up from here."
-
-    def _go_down(self, loc):
-        if loc == 71 and self.rope_stretched:
-            return f"TRANSITION:floor_1:65"
-        if loc == 71:
-            return "The quicksand blocks your path. You need a way to cross safely."
-        return self._go("D", loc)
-
-    def _do_get(self, noun, loc):
-        if not noun:
-            return "Take what?"
-        room_items = self._room_items.get(loc, [])
-
-        for item in list(room_items):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                room_items.remove(item)
-                self._room_items[loc] = room_items
-                self.state.add_item(item)
-                return f"You take the {item}."
-        return "You don't see that here."
-
-    def _do_drop(self, noun, loc):
-        if not noun:
-            return "Drop what?"
-        for item in list(self.state.inventory):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                self.state.remove_item(item)
-                self._room_items.setdefault(loc, []).append(item)
-                return f"You drop the {item}."
-        return "You're not carrying that."
-
-    def _do_use(self, noun, loc):
-        if not noun:
-            return "Use what?"
-        inv = self.state.inventory
-
-        if "ROPE" in noun:
-            if "LONG ROPE" not in inv:
-                return "You don't have the rope."
-            if self.rope_tied:
-                return "The rope is already tied to the stake."
-            if loc == 70:
-                return self._do_tie("ROPE", loc)
-            return "You should TIE the rope to the stake first."
-
-        if "STAKE" in noun or "TENT" in noun:
-            if loc == 70:
-                return "The tent stake is driven firmly into the ground. You need rope to tie to it."
-            return "There's no stake here."
-
-        return "You can't figure out how to use that here."
-
-    def _do_tie(self, noun, loc):
-        if loc != 70:
-            return "There's nothing to tie the rope to here."
-        if "LONG ROPE" not in self.state.inventory:
-            return "You don't have the rope."
-        if self.rope_tied:
-            return "The rope is already tied."
-        self.rope_tied = True
-        self.state.remove_item("LONG ROPE")
-        return (
-            "You tie the LONG ROPE securely to the TENT STAKE. "
-            "The other end dangles across the quicksand toward the far side. "
-            "It's loose though - you need to tighten it somehow. "
-            "Maybe the PIANO could help create some vibration to tighten a rope?"
-        )
-
-    def _do_play(self, noun, loc):
-        if "PIANO" in noun or "MUSIC" in noun or noun == "":
-            if loc != 72:
-                return "There's no piano here."
-            if not self.rope_tied:
-                return (
-                    "You play a beautiful waltz on the piano. "
-                    "The notes echo through the chamber. "
-                    "But nothing special happens - the rope isn't here to benefit from the vibrations."
-                )
-            if self.rope_stretched:
-                return "The rope is already stretched tight from your previous playing."
-            self.rope_stretched = True
-            return (
-                "You play a sustained, thunderous chord on the piano. "
-                "The vibrations travel through the ground, up the rope... "
-                "and PING! The rope snaps taut! "
-                "It now forms a tightrope across the quicksand. "
-                "You can now CROSS north to the far side."
-            )
-
-        if "FLUTE" in noun or "BOOK" in noun:
-            return "You can't play that."
-
-        return "Play what?"
-
-    def _do_cross(self, noun, loc):
-        if loc == 69:
-            return "You can't cross from here - the rope is on the other side of the quicksand."
-        if loc == 71:
-            if not self.rope_stretched:
-                return "There's no way to cross the quicksand. The rope is loose and dangles uselessly."
-            return f"TRANSITION:floor_1:65"
-        if loc == 72:
-            return "You need to be at the quicksand edge to cross."
-        return "There's nothing to cross here."
-
-    def _examine(self, noun, loc):
-        if not noun:
-            return self._look()
-        noun = noun.upper()
-
-        if "QUICKSAND" in noun:
-            return (
-                "Dark, murky, bottomless-looking quicksand. "
-                "It would swallow you in seconds. "
-                "A tightrope - if properly stretched - could get you across."
-            )
-
-        if "ROPE" in noun:
-            if "LONG ROPE" in self.state.inventory:
-                if self.rope_tied:
-                    return "The rope is tied to the stake, dangling across the quicksand."
-                return "A long rope. Could be useful for crossing the quicksand."
-            if self.rope_tied:
-                return "A rope stretched across the quicksand, tied to the stake."
-            return "No rope here."
-
-        if "BOOK" in noun:
-            if "TIGHTROPE BOOK" in self._room_items.get(73, []) or "TIGHTROPE BOOK" in self.state.inventory:
-                return self.book_read and "The book explains how to tighten a rope using musical vibrations."
-            if "SMALL BOOK" in self._room_items.get(70, []) or "SMALL BOOK" in self.state.inventory:
-                return "A worn book. The text is too faded to read."
-            return "No book here."
-
-        if "PIANO" in noun:
-            if loc == 72:
-                return "An old upright piano. Dusty but playable. The strings could create quite a vibration."
-            return "No piano here."
-
-        return "Nothing unusual."
-
-    def _do_inventory(self):
-        items = self.state.inventory
-        if not items:
-            return "You are empty-handed."
-        return "You are carrying: " + ", ".join(items)
+        return "You can't go that way."
 
     def _look(self):
-        loc = self.state.location
-        r = self.get_room(loc)
-        if not r:
+        room = self._room()
+        if not room:
             return "You are nowhere."
-        desc = f"**{r['name']}**\n{r['desc']}"
+        out = [room.get("desc", room.get("name", ""))]
+        exits = room.get("exits", {})
+        dirs = [d for d in ("N", "S", "E", "W") if d in exits]
+        out.append("Exits: " + ", ".join(f"{d} to {exits[d]}" for d in dirs)
+                   if dirs else "No way out that you can see.")
+        stuff = list(self._room_items.get(self.state.location, []))
+        if stuff:
+            out.append("You can see: " + ", ".join(stuff))
+        return "\n".join(out)
 
-        if loc == 69 and self.rope_tied and not self.rope_stretched:
-            desc += "\n\nThe rope is tied to the stake, dangling across the quicksand. Loose."
-        elif loc == 69 and self.rope_stretched:
-            desc += "\n\nA tightrope of rope spans the quicksand! You can CROSS north."
+    def _do_inventory(self):
+        if not self.state.inventory:
+            return "You are carrying nothing."
+        return "You are carrying:\n" + "\n".join(f"  - {i}" for i in self.state.inventory)
 
-        items = self._room_items.get(loc, [])
-        if items:
-            desc += "\n\nYou can see: " + ", ".join(items) + "."
-        exits = r.get("exits", {})
-        exit_list = []
-        for d in ("N", "S", "E", "W", "U", "D"):
-            if d in exits:
-                t = exits[d]
-                if isinstance(t, int):
-                    target_name = ROOMS.get(t, {}).get("name", f"Room {t}")
-                    exit_list.append(f"{d} to {target_name}")
-                else:
-                    exit_list.append(f"{d} to {t}")
-        if exit_list:
-            desc += "\n\nExits: " + ", ".join(exit_list) + "."
-        return desc
+    def _examine(self, noun, loc):
+        item = self._find_item(noun)
+        if item:
+            return f"You look at the {item}."
+        return "You see nothing like that here."
+
+    # -- items ---------------------------------------------------------
+    def _orig__do_get(self, noun, loc):
+        item = self._find_item(noun)
+        if item is None:
+            return "You don't see that here.", False
+        if item in FIXED_ITEMS:
+            return f"The {item} is fixed in place.", False
+        self._take(item)
+        return f"You pick up the {item}.", False
+
+    def _do_drop(self, noun, loc):
+        item = self._find_item(noun)
+        if item is None:
+            return "You aren't carrying that.", False
+        self._drop(item)
+        return f"You drop the {item}.", False
+
+    def _do_use(self, noun, loc):
+        return self._dispatch("USE", noun, loc)
+
+    # -- generic verbs (overridden per floor) --------------------------
+    def _v_use(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_open(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_read(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_press(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_push(self, noun, loc):
+        """PUSH and PRESS are the same action (DATA object: PUSH BUTTON ON WALL)."""
+        return self._v_press(noun, loc)
+
+    def _orig__v_play(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_pour(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_knit(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_tie(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_throw(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_climb(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_swim(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_drink(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_make(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_jump(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_go(self, noun, loc):
+        return "You can't do that here.", False
+
+    # -- dispatch ------------------------------------------------------
+    def _dispatch(self, verb, noun, loc):
+        handler = getattr(self, "_v_" + verb.lower(), None)
+        if handler is None:
+            return "You can't do that here.", False
+        return handler(noun, loc)
+
+    def handle_command(self, verb, noun):
+        verb = (verb or "").upper()
+        noun = (noun or "").upper()
+        if verb in ("LOOK", "L"):
+            return self._look(), False
+        if verb in ("INVENTORY", "INV", "I"):
+            return self._do_inventory(), False
+        if verb in ("N", "S", "E", "W"):
+            return self._go(verb, self.state.location), False
+        if verb == "GO":
+            target = noun.strip()
+            if target in ("N", "S", "E", "W"):
+                return self._go(target, self.state.location), False
+            if target in ("UP", "U"):
+                return self._go_up(self.state.location), False
+            if target in ("DOWN", "D"):
+                return self._v_go("DOWN", self.state.location)
+            return self._v_go(target, self.state.location)
+        if verb == "GET":
+            return self._do_get(noun, self.state.location)
+        if verb == "DROP":
+            return self._do_drop(noun, self.state.location)
+        if verb in ("EXAMINE", "X"):
+            return self._examine(noun, self.state.location), False
+        if verb in ("USE", "OPEN", "READ", "PRESS", "PUSH", "PLAY", "POUR",
+                    "KNIT", "TIE", "THROW", "CLIMB", "SWIM", "DRINK", "MAKE",
+                    "JUMP", "PUT", "PAY", "LIGHT", "TAPE", "INFLATE"):
+            return self._dispatch(verb, noun, self.state.location)
+        return "You can't do that here.", False
+
+    # -- floor 2: the plant, the flute, the magic rope ------------------
+    def _do_get(self, noun, loc):
+        if "WATER" in noun:
+            if not self._here("WATER COOLER"):
+                return "There is no water here.", False
+            if not self._has("PAPER CUP"):
+                return "You need a cup to carry water in.", False
+            self.flags["cup_water"] = True
+            return "You fill the paper cup with water from the cooler.", False
+        return self._orig__do_get(noun, loc)
+
+    def _v_pour(self, noun, loc):
+        if "WATER" not in noun:
+            return "You can't pour that.", False
+        if not self.flags.get("cup_water"):
+            return "You have no water in the cup.", False
+        if not self._here("SMALL-SIZED PLANT"):
+            return "There is no plant here to water.", False
+        if self.flags.get("grown"):
+            return "The plant has already grown as far as it can.", False
+        self.flags["grown"] = True
+        return ("You pour the water on the plant. It drinks, and drinks, and then its stem\n"
+                "keeps going - right up past the ceiling. There is a way up now."), False
+
+    def _v_climb(self, noun, loc):
+        if "PLANT" in noun:
+            if not self._here("SMALL-SIZED PLANT"):
+                return "There is no plant here.", False
+            if not self.flags.get("grown"):
+                return "The plant is far too short to climb.", False
+            self.state.location = 60
+            return self._look(), False
+        if "ROPE" in noun:
+            if not self.flags.get("magic_rope"):
+                return "There is no rope to climb here.", False
+            self.state.location = 62
+            return self._look(), False
+        if "STAIR" in noun:
+            # The stairs down are a climb as well as a walk (GO STAIRS
+            # is handled in _v_go); keep both verbs consistent.
+            return ("TRANSITION:floor_1:63", True)
+        return self._orig__v_climb(noun, loc)
+
+    def _v_play(self, noun, loc):
+        if "FLUTE" in noun:
+            if not self._has("FLUTE"):
+                return "You do not have the flute.", False
+            self.flags["magic_rope"] = True
+            return ("You play the flute. The note hangs in the air, and a rope snakes down\n"
+                    "out of the dark and coils at your feet."), False
+        return self._orig__v_play(noun, loc)
+
+    def _v_go(self, noun, loc):
+        if "PLANT" in noun:
+            return self._v_climb(noun, loc)
+        if "ROPE" in noun:
+            return self._v_climb(noun, loc)
+        if "STAIR" in noun:
+            return ("TRANSITION:floor_1:63", True)
+        return self._orig__v_go(noun, loc)
+

@@ -1,315 +1,426 @@
 """
 KIDNAPPED! - Floor 1: Ground Floor - ESCAPE!
-"A burglar's mask blocks your way east. He has the remains of the kidnapper in his mouth."
 
-Entry from Floor 2 via tightrope CROSS -> Room 65.
-Goal: Deal with the alligator and burglar's mask, reach the front door, ESCAPE!
+Floor 1 of the original listing: Ground Floor - ESCAPE!.
 
-Based on:
-- BASIC source from SoftSide Vol 3 No 03 (clean PDF)
-- RetroGamesTroove review
-- BASIC DATA statements for Floor 1 items
+THE PREVIOUS VERSION OF THIS MODULE WAS WRONG.  It carried an invented
+room set, including rooms that do not exist in the listing at all, and
+objects (ALLIGATOR, BURGLAR'S MASK, INDIAN ROPE) that appear nowhere in
+the magazine.  Everything below is re-derived from the source pixels.
+
+SOURCE OF TRUTH
+---------------
+The listing dispatches with ``ON A GOTO 11,12,...,75``, so a global room
+number is the printed BASIC line number minus ten.  Floor 1 is printed
+lines 73-75, i.e. global rooms 63-65.
+
+Every room number, exit and item placement below was read from raster
+crops of the printed listing - never from the PDF text layer, which reads
+4 as 1, 8 as S and 0 as O.  The result was checked by replaying both
+published walkthroughs (Jacob Gunness, CASA Solution Archive, Sept 2004;
+Garry Francis, minimal Atari solution) command for command.
+
+ROOM TABLE (listing lines 73-75)
+    63  A LOUNGE               E=64             
+    64  A HALLWAY              W=63             
+    65  AN ENTRANCE HALL       -                
+
+DATA ITEMS ON THIS FLOOR
+    63  PIANO  (fixed)
+    65  FRONT DOOR  (fixed)
+    63  LONG ROPE  (takeable)
+    64  SMALL BOOK  (takeable)
+
+WALKTHROUGH REPLAY
+  Francis: GET KEY (off the piano, room 63)  GET LONG ROPE  E(64)
+           GET BOOK  READ BOOK  TIE ROPE  THROW ROPE  GO ROPE(65)
+           OPEN DOOR, GO DOOR -> escaped
+
+  Gunness: GET ROPE, GET KEY, E, GET BOOK ("How to walk a tightrope),
+           READ BOOK, TIE ROPE (to the stake), THROW ROPE (it catches on
+           to the hook), CLIMB ROPE (you cross the pit), OPEN DOOR,
+           GO DOOR (you have escaped!)
+
+INFERRED, NOT TRANSCRIBED
+-------------------------
+* The piano yields the key ("well, pianos have keys!").  There is no
+  KEY in DATA on this floor, so it is a found object.
+* TIE ROPE needs the book read first; the book is described as
+  "How to walk a tightrope".
+
+The handler code on listing pages 2-4 has not been transcribed yet, so the
+puzzle state machine below is reconstructed from the two published
+walkthroughs and from the items the listing actually places.  Everything
+listed under INFERRED above is a port-level interpretation, not a
+transcription of the magazine.
 """
 
 FLOOR_NUMBER = 1
-NEXT_FLOOR_DOWN = None  # This is the final floor!
+NEXT_FLOOR_DOWN = None
+ENTRY_ROOM = 63
 
-# --------------------------------------------------------------------
-# Room map (Floor 1, rooms 65-75):
-# Ground floor - final escape
-#
-# Items from BASIC DATA:
-# Room 65: FRONT DOOR(-65), ALLIGATOR(-65)
-#
-# Win condition: Navigate past the burglar's mask + alligator,
-# reach the FRONT DOOR and ESCAPE!
-# --------------------------------------------------------------------
-ROOMS = {
-    65: {
-        "name": "MAIN FLOOR - ENTRANCE HALL",
-        "desc": (
-            "You step into the grand entrance hall of the building. "
-            "Marble floors, a grand staircase - this is the ground floor. "
-            "The front door is directly ahead, your escape! "
-            "But an ALLIGATOR blocks the path, jaw agape. "
-            "A burglar's mask hangs on a hook nearby. "
-            "The stairway UP leads back to Floor 2. "
-            "The hall extends NORTH toward the exit."
-        ),
-        "exits": {"N": 66, "U": "floor_2"},
-        "items": ["BURGLAR'S MASK"],
-    },
-    66: {
-        "name": "NORTH HALL",
-        "desc": (
-            "The hallway north of the entrance. "
-            "Old paintings watch you from the walls. "
-            "The alligator is just to the SOUTH. "
-            "A doorway leads EAST, and another NORTH."
-        ),
-        "exits": {"S": 65, "N": 67, "E": 68},
-        "items": [],
-    },
-    67: {
-        "name": "SIDE ROOM",
-        "desc": (
-            "A small side room with a worn couch and old magazines. "
-            "Nothing of interest - but a clear path back SOUTH."
-        ),
-        "exits": {"S": 66},
-        "items": [],
-    },
-    68: {
-        "name": "NEAR THE EXIT",
-        "desc": (
-            "You approach the front door. "
-            "The ALLIGATOR is close - it's massive, teeth like knives. "
-            "The FRONT DOOR is right there - your freedom! "
-            "The hallway is to the WEST."
-        ),
-        "exits": {"W": 66, "E": "front_door"},
-        "items": [],
-    },
-}
-
+# Which floor you arrive from -> the room you land in.
 SPECIAL_ROOMS = {
-    "floor_2": {"target": "floor_2", "landing_room": 69},
+    "floor_2": {"landing_room": 63},
 }
+
+# Fixed scenery: item name -> the room it is bolted to.
+FIXED_ITEMS = {
+    "PIANO": 63,
+    "FRONT DOOR": 65,
+}
+
+# Takeable items -> the DATA room they start in.
+ITEM_ROOMS = {
+    "LONG ROPE": 63,
+    "SMALL BOOK": 64,
+}
+
+# Names the published walkthroughs use for the listing's items.
+ITEM_ALIASES = {
+
+    "BOOK": "SMALL BOOK"
+}
+
+ROOMS = {
+    63: {
+        "name": "A LOUNGE",
+        "desc": "A lounge. An upright piano stands against the wall.",
+        "exits": {"E": 64},
+        "items": [],
+    },
+    64: {
+        "name": "A HALLWAY",
+        "desc": "A hallway. A pit opens in the floor ahead.",
+        "exits": {"W": 63},
+        "items": [],
+    },
+    65: {
+        "name": "AN ENTRANCE HALL",
+        "desc": "The entrance hall. The front door is right there.",
+        "exits": {},
+        "items": [],
+    },
+}
+
+
+# Off-grid transitions the room table cannot express: these room pairs are
+# linked by a verb action, not by a compass exit.
+# tightrope (TIE/THROW/CLIMB ROPE) from the hallway to the entrance hall
+VERB_LINK_PAIRS = {(64, 65)}
 
 class Floor1Engine:
+    """Floor 1 engine - Ground Floor - ESCAPE!."""
+
     def __init__(self, state):
         self.state = state
-        self._room_items = self._init_items()
-        self.mask_worn = False
-        self.alligator_dead = False
-        self.escaped = False
+        self.flags = {}
+        self._init_items()
 
+    # -- setup ---------------------------------------------------------
     def _init_items(self):
-        return {
-            65: ["BURGLAR'S MASK"],
-        }
+        """Per-instance item state.
 
+        Module-level ROOMS is never mutated: each game instance keeps its
+        own copy of the room item lists, so two engines running in the
+        same process cannot see each other's pickups.
+        """
+        self._room_items = {rid: list(r.get("items", [])) for rid, r in ROOMS.items()}
+        self._room_fixed = {rid: list(r.get("fixed_items", [])) for rid, r in ROOMS.items()}
+        for item, room in FIXED_ITEMS.items():
+            if room in self._room_fixed and item not in self._room_fixed[room]:
+                self._room_fixed[room].append(item)
+        for item, room in ITEM_ROOMS.items():
+            if room in self._room_items and item not in self._room_items[room]:
+                self._room_items[room].append(item)
+        return self._room_items
     def on_enter(self):
-        self._room_items = self._init_items()
-        self.mask_worn = False
-        self.alligator_dead = False
-        self.escaped = False
+        self.state.floor = FLOOR_NUMBER
+        if self.state.location not in ROOMS:
+            self.state.location = ENTRY_ROOM
 
     def on_leave(self):
         pass
 
+    # -- queries -------------------------------------------------------
     def get_room(self, room_id):
         return ROOMS.get(room_id)
 
     def get_current_room(self):
         return ROOMS.get(self.state.location)
 
-    def handle_command(self, verb, noun=""):
+    def _room(self):
+        return ROOMS.get(self.state.location, {})
+
+    def _here(self, item):
+        """Is this object present in the current room?
+
+        Fixed scenery lives in _room_fixed (or FIXED_ITEMS), takeable
+        objects in _room_items.  Both count as here: the listing puts
+        PUSH BUTTON ON WALL, LOCKED DOOR, STEEL DOOR, FRONT DOOR, PIANO,
+        WATER COOLER, SMALL-SIZED PLANT and CHILD'S SLIDE in the room
+        description, not in the takeable list.
+        """
         loc = self.state.location
-        verb = verb.upper().strip()
-        noun = noun.upper().strip() if noun else ""
+        if item in self._room_items.get(loc, []):
+            return True
+        if item in getattr(self, "_room_fixed", {}).get(loc, []):
+            return True
+        return FIXED_ITEMS.get(item) == loc
+    def _has(self, item):
+        return item in self.state.inventory
 
-        if verb in ("LOOK", "L"):
-            return self._look(), False
-        if verb in ("INVENTORY", "I"):
-            return self._do_inventory(), False
-        if verb in ("GET", "TAKE", "GRAB"):
-            return self._do_get(noun, loc), False
-        if verb in ("DROP", "PUT", "PLACE"):
-            return self._do_drop(noun, loc), False
-        if verb in ("USE", "WEAR"):
-            return self._do_use(noun, loc), False
-        if verb in ("OPEN"):
-            return self._do_open(noun, loc), False
-        if verb in ("EXAMINE", "READ", "X"):
-            return self._examine(noun, loc), False
+    def _take(self, item):
+        items = self._room_items.setdefault(self.state.location, [])
+        if item in items:
+            items.remove(item)
+        if item not in self.state.inventory:
+            self.state.inventory.append(item)
+    def _drop(self, item):
+        if item in self.state.inventory:
+            self.state.inventory.remove(item)
+        self._room_items.setdefault(self.state.location, []).append(item)
+    def _find_item(self, noun):
+        """Match a typed noun against the listing's item names.
 
-        # Movement
-        if verb in ("N", "NORTH") or (verb == "GO" and noun in ("N", "NORTH", "")):
-            return self._go("N", loc), False
-        if verb in ("S", "SOUTH") or (verb == "GO" and noun in ("S", "SOUTH", "")):
-            return self._go("S", loc), False
-        if verb in ("E", "EAST") or (verb == "GO" and noun in ("E", "EAST", "")):
-            return self._go("E", loc), False
-        if verb in ("W", "WEST") or (verb == "GO" and noun in ("W", "WEST", "")):
-            return self._go("W", loc), False
-        if verb in ("U", "UP") or (verb == "GO" and noun in ("U", "UP", "")):
-            return self._go_up(loc), False
-
+        The original matches on the first three letters for GET and DROP
+        and the last three for everything else; the published walkthroughs
+        also use short forms such as GET BOOK for SMALL BOOK, so both
+        conventions and whole-word matches are accepted here.
+        """
+        n = (noun or "").strip().upper()
+        if not n:
+            return None
+        n = ITEM_ALIASES.get(n, n)
+        pool = (list(self._room_items.get(self.state.location, []))
+                + list(self.state.inventory))
+        for item in pool:
+            if item == n:
+                return item
+        for item in pool:
+            words = item.split()
+            if n in words:
+                return item
+        if len(n) >= 3:
+            for item in pool:
+                words = item.split()
+                if item.startswith(n[:3]) or item.endswith(n[-3:]):
+                    return item
+                if any(w.startswith(n[:3]) or w.endswith(n[-3:]) for w in words):
+                    return item
         return None
 
+    # -- movement ------------------------------------------------------
     def _go(self, direction, loc):
-        r = self.get_room(loc)
-        if not r:
-            return "You are nowhere."
-        exits = r.get("exits", {})
-        next_target = exits.get(direction)
-        if next_target is None:
-            return f"You can't go {direction} from here."
-
-        if isinstance(next_target, str):
-            if next_target == "floor_2":
-                return f"TRANSITION:{next_target}:69"
-            if next_target == "front_door":
-                return self._try_escape()
-
-        self.state.location = next_target
+        target = self._room().get("exits", {}).get(direction)
+        if target is None:
+            return "You can't go that way."
+        self.state.location = target
         return self._look()
 
     def _go_up(self, loc):
-        if loc == 65:
-            return f"TRANSITION:floor_2:69"
-        return "You can't go up from here."
-
-    def _try_escape(self):
-        if not self.alligator_dead:
-            return (
-                "The ALLIGATOR lunges as you approach the door! "
-                "You barely dodge back. You'll need to deal with it first."
-            )
-        self.escaped = True
-        return (
-            "YOU ESCAPE!\n\n"
-            "You push through the front door and burst into the cool night air. "
-            "You're free! The building looms behind you. "
-            "You don't look back.\n\n"
-            "========================================\n"
-            "  CONGRATULATIONS! YOU ESCAPED!\n"
-            "  KIDNAPPED! - A SoftSide Adventure\n"
-            "  (c) 1980 by Peter Kirsch\n"
-            "========================================\n\n"
-            "Thank you for playing!"
-        )
-
-    def _do_get(self, noun, loc):
-        if not noun:
-            return "Take what?"
-        room_items = self._room_items.get(loc, [])
-
-        for item in list(room_items):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                room_items.remove(item)
-                self._room_items[loc] = room_items
-                self.state.add_item(item)
-                return f"You take the {item}."
-        return "You don't see that here."
-
-    def _do_drop(self, noun, loc):
-        if not noun:
-            return "Drop what?"
-        for item in list(self.state.inventory):
-            if noun.lower() in item.lower() or item.lower() in noun.lower():
-                self.state.remove_item(item)
-                self._room_items.setdefault(loc, []).append(item)
-                return f"You drop the {item}."
-        return "You're not carrying that."
-
-    def _do_use(self, noun, loc):
-        if not noun:
-            return "Use what?"
-        inv = self.state.inventory
-
-        if "MASK" in noun or "WEAR" in noun:
-            if "BURGLAR'S MASK" not in inv:
-                return "You don't have the mask."
-            if self.mask_worn:
-                return "You're already wearing the mask."
-            self.mask_worn = True
-            return (
-                "You pull on the BURGLAR'S MASK. "
-                "Your face is now hidden. "
-                "The alligator might not recognize you as a threat now."
-            )
-
-        if "FLASHLIGHT" in noun or "LIGHT" in noun:
-            if "FLASHLIGHT" not in inv:
-                return "You don't have a flashlight."
-            if loc in (65, 66, 68):
-                return "The alligator doesn't seem affected by the light. You need something else."
-
-        return "You can't figure out how to use that here."
-
-    def _do_open(self, noun, loc):
-        if "DOOR" in noun or "FRONT" in noun:
-            if loc == 68:
-                return self._try_escape()
-            if loc == 65:
-                return "The front door is right there, but the alligator blocks the way."
-            return "There's no door to open here."
-
-        if "ALLIGATOR" in noun or "GATOR" in noun:
-            return self._examine("ALLIGATOR", loc)
-
-        return "You can't open that."
-
-    def _examine(self, noun, loc):
-        if not noun:
-            return self._look()
-        noun = noun.upper()
-
-        if "ALLIGATOR" in noun or "GATOR" in noun:
-            if loc in (65, 66, 68):
-                if self.alligator_dead:
-                    return "The alligator lies still. It won't be bothering anyone."
-                if self.mask_worn:
-                    return "The alligator eyes you warily. It's confused - you look like a burglar, not prey. Maybe it will let you pass if you're careful."
-                return (
-                    "A massive alligator, teeth bared, blocking the path to the front door. "
-                    "It's very much alive and very hungry. "
-                    "It seems to recognize you as prey. "
-                    "A burglar's mask might confuse it."
-                )
-            return "No alligator here."
-
-        if "MASK" in noun or "BURGLAR" in noun:
-            if "BURGLAR'S MASK" in self._room_items.get(loc, []) or "BURGLAR'S MASK" in self.state.inventory:
-                if self.mask_worn:
-                    return "You're wearing the burglar's mask. It smells like sweat and crime."
-                return "A dark mask with eye holes. The kind a burglar would wear."
-            return "No mask here."
-
-        if "DOOR" in noun or "FRONT" in noun:
-            if loc == 65 or loc == 68:
-                return "The front door. Freedom is just on the other side - if you can get past the alligator."
-            return "No front door here."
-
-        return "Nothing unusual."
-
-    def _do_inventory(self):
-        items = self.state.inventory
-        if not items:
-            return "You are empty-handed."
-        return "You are carrying: " + ", ".join(items)
+        return "You can't go that way."
 
     def _look(self):
-        loc = self.state.location
-        r = self.get_room(loc)
-        if not r:
+        room = self._room()
+        if not room:
             return "You are nowhere."
-        desc = f"**{r['name']}**\n{r['desc']}"
+        out = [room.get("desc", room.get("name", ""))]
+        exits = room.get("exits", {})
+        dirs = [d for d in ("N", "S", "E", "W") if d in exits]
+        out.append("Exits: " + ", ".join(f"{d} to {exits[d]}" for d in dirs)
+                   if dirs else "No way out that you can see.")
+        stuff = list(self._room_items.get(self.state.location, []))
+        if stuff:
+            out.append("You can see: " + ", ".join(stuff))
+        return "\n".join(out)
 
-        if self.escaped:
-            return desc
+    def _do_inventory(self):
+        if not self.state.inventory:
+            return "You are carrying nothing."
+        return "You are carrying:\n" + "\n".join(f"  - {i}" for i in self.state.inventory)
 
-        if loc == 65:
-            if self.alligator_dead:
-                desc = desc.replace("an ALLIGATOR blocks the path", "a dead ALLIGATOR blocks the path")
-            if self.mask_worn:
-                desc += "\n\nYou're wearing the burglar's mask."
+    def _examine(self, noun, loc):
+        item = self._find_item(noun)
+        if item:
+            return f"You look at the {item}."
+        return "You see nothing like that here."
 
-        items = self._room_items.get(loc, [])
-        if items:
-            desc += "\n\nYou can see: " + ", ".join(items) + "."
-        exits = r.get("exits", {})
-        exit_list = []
-        for d in ("N", "S", "E", "W", "U", "D"):
-            if d in exits:
-                t = exits[d]
-                if isinstance(t, int):
-                    target_name = ROOMS.get(t, {}).get("name", f"Room {t}")
-                    exit_list.append(f"{d} to {target_name}")
-                else:
-                    exit_list.append(f"{d} to {t}")
-        if exit_list:
-            desc += "\n\nExits: " + ", ".join(exit_list) + "."
-        return desc
+    # -- items ---------------------------------------------------------
+    def _orig__do_get(self, noun, loc):
+        item = self._find_item(noun)
+        if item is None:
+            return "You don't see that here.", False
+        if item in FIXED_ITEMS:
+            return f"The {item} is fixed in place.", False
+        self._take(item)
+        return f"You pick up the {item}.", False
+
+    def _do_drop(self, noun, loc):
+        item = self._find_item(noun)
+        if item is None:
+            return "You aren't carrying that.", False
+        self._drop(item)
+        return f"You drop the {item}.", False
+
+    def _do_use(self, noun, loc):
+        return self._dispatch("USE", noun, loc)
+
+    # -- generic verbs (overridden per floor) --------------------------
+    def _v_use(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_open(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_read(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_press(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_push(self, noun, loc):
+        """PUSH and PRESS are the same action (DATA object: PUSH BUTTON ON WALL)."""
+        return self._v_press(noun, loc)
+
+    def _v_play(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_pour(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_knit(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_tie(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_throw(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_climb(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_swim(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_drink(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_make(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _v_jump(self, noun, loc):
+        return "You can't do that here.", False
+
+    def _orig__v_go(self, noun, loc):
+        return "You can't do that here.", False
+
+    # -- dispatch ------------------------------------------------------
+    def _dispatch(self, verb, noun, loc):
+        handler = getattr(self, "_v_" + verb.lower(), None)
+        if handler is None:
+            return "You can't do that here.", False
+        return handler(noun, loc)
+
+    def handle_command(self, verb, noun):
+        verb = (verb or "").upper()
+        noun = (noun or "").upper()
+        if verb in ("LOOK", "L"):
+            return self._look(), False
+        if verb in ("INVENTORY", "INV", "I"):
+            return self._do_inventory(), False
+        if verb in ("N", "S", "E", "W"):
+            return self._go(verb, self.state.location), False
+        if verb == "GO":
+            target = noun.strip()
+            if target in ("N", "S", "E", "W"):
+                return self._go(target, self.state.location), False
+            if target in ("UP", "U"):
+                return self._go_up(self.state.location), False
+            if target in ("DOWN", "D"):
+                return self._v_go("DOWN", self.state.location)
+            return self._v_go(target, self.state.location)
+        if verb == "GET":
+            return self._do_get(noun, self.state.location)
+        if verb == "DROP":
+            return self._do_drop(noun, self.state.location)
+        if verb in ("EXAMINE", "X"):
+            return self._examine(noun, self.state.location), False
+        if verb in ("USE", "OPEN", "READ", "PRESS", "PUSH", "PLAY", "POUR",
+                    "KNIT", "TIE", "THROW", "CLIMB", "SWIM", "DRINK", "MAKE",
+                    "JUMP", "PUT", "PAY", "LIGHT", "TAPE", "INFLATE"):
+            return self._dispatch(verb, noun, self.state.location)
+        return "You can't do that here.", False
+
+    # -- floor 1: piano key, rope, book, tightrope, the front door ------
+    def _do_get(self, noun, loc):
+        if "KEY" in noun:
+            if self._here("PIANO"):
+                if "KEY" not in self.state.inventory:
+                    self.state.inventory.append("KEY")
+                    return ("You work a key loose from the piano. It is a small, black,\n"
+                            "ivory-tipped key - and it opens things."), False
+            return self._orig__do_get(noun, loc)
+        return self._orig__do_get(noun, loc)
+
+    def _v_read(self, noun, loc):
+        if "BOOK" in noun:
+            if not self._has("SMALL BOOK"):
+                return "You do not have the book.", False
+            self.flags["know_rope"] = True
+            return ("'How To Walk A Tightrope', by a man with one eye. Chapter one:\n"
+                    "'Tie the rope to something solid. Throw it. Catch the hook.'"), False
+        return self._orig__v_read(noun, loc)
+
+    def _v_tie(self, noun, loc):
+        if "ROPE" not in noun:
+            return "You can't tie that.", False
+        if not self._has("LONG ROPE"):
+            return "You do not have the rope.", False
+        if not self.flags.get("know_rope"):
+            return "You have no idea how to tie a rope for this.", False
+        if self.flags.get("tied"):
+            return "The rope is already tied.", False
+        self.flags["tied"] = True
+        return "You tie one end of the rope around a post, tight and true.", False
+
+    def _v_throw(self, noun, loc):
+        if "ROPE" not in noun:
+            return "You can't throw that.", False
+        if not self.flags.get("tied"):
+            return "The rope is not tied to anything yet.", False
+        if self.flags.get("hooked"):
+            return "The rope is already thrown.", False
+        self.flags["hooked"] = True
+        return ("You throw the rope across the pit. It catches on a hook in the far wall\n"
+                "with a thwap that echoes."), False
+        return None
+
+    def _v_climb(self, noun, loc):
+        if "ROPE" in noun:
+            if not self.flags.get("hooked"):
+                return "There is no rope to climb.", False
+            self.state.location = 65
+            return self._look(), False
+        return self._orig__v_climb(noun, loc)
+
+    def _v_go(self, noun, loc):
+        if "ROPE" in noun:
+            return self._v_climb(noun, loc)
+        if "DOOR" in noun:
+            if self._here("FRONT DOOR"):
+                if not self.flags.get("front_open"):
+                    return "The front door is shut.", False
+                return ("You have escaped the building.", True)
+        return self._orig__v_go(noun, loc)
+
+    def _v_open(self, noun, loc):
+        if "DOOR" in noun:
+            if self._here("FRONT DOOR"):
+                if not self._has("KEY"):
+                    return "The front door is locked. You need a key.", False
+                self.flags["front_open"] = True
+                return "The piano key fits the lock. The front door swings open.", False
+        return self._orig__v_open(noun, loc)
+
