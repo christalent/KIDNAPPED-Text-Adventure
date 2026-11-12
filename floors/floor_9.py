@@ -410,6 +410,9 @@ class Floor9Engine:
             return self._drop(noun), False
         if verb in ("USE", "APPLY"):
             return self._use(noun), False
+        if verb in ("LIGHT", "SWITCH ON", "TURN ON"):
+            # Both published walkthroughs say "LIGHT FLASHLIGHT".
+            return self._use(noun), False
         if verb in ("TIE", "TAPE"):
             return self._use("TAPE"), False
         if verb in ("OPEN", "UNLOCK"):

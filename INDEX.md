@@ -32,3 +32,24 @@ against an audit table. `tests/run_all.py`: 14/14 test files pass.
 Still open on floors 1-5: the listing's handler code (pages 2-4) has not been
 transcribed, so the puzzle state machines are reconstructed from the two
 published walkthroughs and marked INFERRED in each module docstring.
+
+
+## Full-game escape test (2026-11-11)
+
+`tests/test_full_game_escape.py` replays BOTH published solutions - Francis
+(`archive/solutions/sol_atari.txt`) and Gunness (`archive/solutions/
+sol_gunness.txt`) - command for command, floor 9 down to the street.
+
+It drives `kidnapped.GameRunner`, a REPL-free wrapper around the real
+dispatcher that `main()` also uses, so the test and the game share one
+transition path. Every room is checked against the pixel-verified tables in
+`tests/authoritative_tables.py`, every floor transition against that floor's
+audited arrival room.
+
+The test found three real defects, all fixed:
+- floor 9 did not accept `LIGHT FLASHLIGHT` (both walkthroughs use it)
+- floor 1 matched a carried floor-8 `ROPE` before the room's own
+  `LONG ROPE`, so `GET ROPE` grabbed the wrong rope
+- the REPL and a test had no shared entry point
+
+`tests/run_all.py`: 15/15 test files pass.

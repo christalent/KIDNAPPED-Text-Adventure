@@ -192,22 +192,28 @@ class Floor1Engine:
         if not n:
             return None
         n = ITEM_ALIASES.get(n, n)
-        pool = (list(self._room_items.get(self.state.location, []))
-                + list(self.state.inventory))
-        for item in pool:
-            if item == n:
-                return item
-        for item in pool:
-            words = item.split()
-            if n in words:
-                return item
-        if len(n) >= 3:
+        # Match against what is IN THE ROOM first, then against what the
+        # player carries.  A carried item must not shadow the room's own
+        # item of a similar name: on floor 8 the player picks up a ROPE
+        # and still carries it on floor 1, where the listing's rope is
+        # the LONG ROPE.  Room-first keeps "GET ROPE" on floor 1 from
+        # matching the stale floor-8 ROPE.
+        for pool in (list(self._room_items.get(self.state.location, [])),
+                     list(self.state.inventory)):
+            for item in pool:
+                if item == n:
+                    return item
             for item in pool:
                 words = item.split()
-                if item.startswith(n[:3]) or item.endswith(n[-3:]):
+                if n in words:
                     return item
-                if any(w.startswith(n[:3]) or w.endswith(n[-3:]) for w in words):
-                    return item
+            if len(n) >= 3:
+                for item in pool:
+                    words = item.split()
+                    if item.startswith(n[:3]) or item.endswith(n[-3:]):
+                        return item
+                    if any(w.startswith(n[:3]) or w.endswith(n[-3:]) for w in words):
+                        return item
         return None
 
     # -- movement ------------------------------------------------------

@@ -101,6 +101,70 @@ def ensure_valid_location(engine, state):
             return
 
 
+
+class GameRunner:
+    """Plays the game without the REPL.
+
+    main() is a thin wrapper around this class, so a test can drive a
+    whole route through the REAL dispatcher - the same transition
+    handling, the same arrival rules - instead of re-implementing them
+    and drifting away from the game.
+    """
+
+    def __init__(self, floor=9):
+        self.state = GameState(floor=floor)
+        engine_class = load_floor_engine(floor)
+        if not engine_class:
+            raise RuntimeError("could not load floor %d" % floor)
+        self.engine = engine_class(self.state)
+        self.engine.on_enter()
+        ensure_valid_location(self.engine, self.state)
+        self.escaped = False
+
+    def send(self, verb, noun=""):
+        """Run one command.
+
+        Returns (text, transitioned, escaped).  A transition either
+        hands the player to the next floor or ends the game.
+        """
+        _res = self.engine.handle_command(verb, noun)
+        if _res is None:
+            result, transition = "You can't do that here.", False
+        else:
+            result, transition = _res
+
+        if not transition:
+            return result, False, False
+
+        target_floor = None
+        landing_room = None
+        if isinstance(result, str) and result.startswith("TRANSITION:floor_"):
+            try:
+                _pf, _pr = result[len("TRANSITION:"):].split(":", 1)
+                target_floor = int(_pf.split("_")[1])
+                landing_room = int(_pr)
+            except (ValueError, IndexError):
+                target_floor = None
+
+        next_floor = target_floor if target_floor is not None else self.state.floor - 1
+        if next_floor < 1:
+            # Floor 1's front door: the game is won.
+            self.escaped = True
+            return result, True, True
+
+        engine_class = load_floor_engine(next_floor)
+        if not engine_class:
+            raise RuntimeError("floor %d not implemented" % next_floor)
+
+        self.state.floor = next_floor
+        if landing_room is not None:
+            self.state.location = landing_room
+        self.engine = engine_class(self.state)
+        self.engine.on_enter()
+        ensure_valid_location(self.engine, self.state)
+        return result, True, False
+
+
 def main():
     parser = argparse.ArgumentParser(description="KIDNAPPED! text adventure")
     parser.add_argument("--floor", type=int, default=9,
@@ -118,19 +182,16 @@ def main():
     print("Type HELP for commands.")
     print()
 
-    state = GameState(floor=args.floor)
-    engine_class = load_floor_engine(state.floor)
-    if not engine_class:
-        print(f"FATAL: Could not load starting floor {state.floor}!")
+    try:
+        runner = GameRunner(floor=args.floor)
+    except RuntimeError as exc:
+        print(f"FATAL: {exc}")
         return
-
-    engine = engine_class(state)
-    engine.on_enter()
-    ensure_valid_location(engine, state)
+    state = runner.state
 
     print(f"\n=== Floor {state.floor}: {get_floor_name(state.floor)} ===\n")
 
-    result, transition = engine.handle_command("LOOK", "")
+    result, transition = runner.engine.handle_command("LOOK", "")
     print(result)
 
     while not state.game_over:
@@ -164,53 +225,30 @@ def main():
             state.show_inventory()
             continue
 
-        # Pass to floor engine
-        _res = engine.handle_command(verb, noun)
-        if _res is None:
-            # Floors 1-4 return bare None for unhandled verbs.
-            result, transition = "You can't do that here.", False
-        else:
-            result, transition = _res
+        # Pass to the floor engine, through the real dispatcher
+        prev_floor = state.floor
+        try:
+            result, transitioned, escaped = runner.send(verb, noun)
+        except RuntimeError as exc:
+            print(f"FATAL: {exc}")
+            state.game_over = True
+            break
         if not (isinstance(result, str) and result.startswith("TRANSITION:")):
             print(result)
 
         # Handle floor transition
-        if transition:
-            target_floor = None
-            landing_room = None
-            if isinstance(result, str) and result.startswith("TRANSITION:floor_"):
-                try:
-                    _pf, _pr = result[len("TRANSITION:"):].split(":", 1)
-                    target_floor = int(_pf.split("_")[1])
-                    landing_room = int(_pr)
-                except (ValueError, IndexError):
-                    target_floor = None
-            next_floor = target_floor if target_floor is not None else state.floor - 1
-            if next_floor < 1:
+        if transitioned:
+            if escaped:
                 print("\n" + "=" * 60)
                 print("CONGRATULATIONS! You escaped the building!")
                 print("=" * 60)
                 state.game_over = True
                 break
 
-            _word = "Descending to" if next_floor < state.floor else "Ascending to"
-            print(f"\n=== {_word} Floor {next_floor}... ===\n")
-            state.floor = next_floor
-
-            engine_class = load_floor_engine(state.floor)
-            if not engine_class:
-                print(f"FATAL: Floor {next_floor} not implemented yet!")
-                state.game_over = True
-                break
-
-            if landing_room is not None:
-                state.location = landing_room
-
-            engine = engine_class(state)
-            engine.on_enter()
-            ensure_valid_location(engine, state)
+            _word = "Descending to" if state.floor < prev_floor else "Ascending to"
+            print(f"\n=== {_word} Floor {state.floor}... ===\n")
             print(f"\n=== Floor {state.floor}: {get_floor_name(state.floor)} ===\n")
-            result, _ = engine.handle_command("LOOK", "")
+            result, _ = runner.engine.handle_command("LOOK", "")
             print(result)
 
     print("\nThanks for playing KIDNAPPED!")
