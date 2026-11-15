@@ -42,19 +42,20 @@ WALKTHROUGH REPLAY
 
   Gunness detours first: N(53) READ GRAFFITI  S(52) E(54) E(55) N(56) ...
 
-INFERRED, NOT TRANSCRIBED
--------------------------
-* The steel door needs Mr. Hyde's strength (drink the fluid first).
-  Gunness says "DRINK FLUID (you turn into the strong Mr. Hyde), OPEN
-  DOOR, GO DOOR, DRINK SOLUTION (you revert to normal)".
-* The graffiti text is invented - the listing only shows the words
-  GRAFFITI ON WALL in room 53.
+    SOURCE-VERIFIED FROM THE LISTING (pixel transcription)
+    --------------------------------------------------
+    * Strength is a flag, not a guess.  Line 980 (DRINK) reverts JK=1
+      to JK=0 when the player drinks the yellow SOLUTION (E$="ION",
+      I(44)=1) and prints "YOU'VE CHANGED BACK!", so JK=1 is the
+      transformed Mr. Hyde state.
+    * STILL NOT TRANSCRIBED: the OPEN branch for the STEEL DOOR in
+      room 55 (lines 615-618) and the room 53 graffiti text, so the
+      claim that the graffiti text is invented is still unproven.
 
-The handler code on listing pages 2-4 has not been transcribed yet, so the
-puzzle state machine below is reconstructed from the two published
-walkthroughs and from the items the listing actually places.  Everything
-listed under INFERRED above is a port-level interpretation, not a
-transcription of the magazine.
+    The handler code on listing pages 2-4 is only partly transcribed;
+    everything marked STILL NOT TRANSCRIBED above is a port-level
+    interpretation taken from the walkthroughs, not a transcription of
+    the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
 """
 
 FLOOR_NUMBER = 3

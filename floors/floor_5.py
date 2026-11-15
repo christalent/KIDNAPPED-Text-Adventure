@@ -53,23 +53,24 @@ room 43 and Gunness at the same room, then they diverge and rejoin.
            E(41) S(42) PRESS BUTTON  KNIT CLOTHES  N(41) N(37) GET KEY
            S(41) W(43) OPEN DOOR  GO DOOR(44) CLIMB STAIRS -> floor 4 room 45
 
-INFERRED, NOT TRANSCRIBED
--------------------------
-* The fire blocks the northward move from room 41 until the button in
-  room 42 is pressed.  The walkthroughs only say "there's a fire to the
-  north", so the block itself is an interpretation.
-* Pressing the button drowns you and costs your clothes; KNIT CLOTHES
-  (needles + yarn) replaces them.  The listing does not say so - the
-  walkthrough says "sprinklers are turned on and douse the fire - you
-  remove your wet clothes ... you quickly produce a new set".
-* The stairs refuse a naked player.  Not stated anywhere; it exists so
-  the knitting step is not optional.
+    SOURCE-VERIFIED FROM THE LISTING (pixel transcription)
+    --------------------------------------------------
+    * The fire blocks the way north out of room 41, and only until the
+      sprinkler is triggered.  Line 361 skips the "NORTH" exit while
+      (A=41) AND (FR=0), and line 1520 prints "THERE IS A PATH NORTH,
+      BUT A RAGING FIRE BLOCKS YOUR WAY."
+    * The button in room 42 (line 710) turns the sprinkler on, puts the
+      fire out, soaks your clothes and leaves you naked (FR=1).
+    * KNIT replaces the clothes.  Line 970 (KNIT) needs I(32)=1 and
+      I(33)=1 - needles and yarn - and R=1, prints "YOU HAVE KNITTED
+      A FINE SUIT AND ARE WEARING IT" and sets FR=2.
+    * STILL NOT TRANSCRIBED: the STAIRS refusal for a naked player, so
+      that claim stays an interpretation.
 
-The handler code on listing pages 2-4 has not been transcribed yet, so the
-puzzle state machine below is reconstructed from the two published
-walkthroughs and from the items the listing actually places.  Everything
-listed under INFERRED above is a port-level interpretation, not a
-transcription of the magazine.
+    The handler code on listing pages 2-4 is only partly transcribed;
+    everything marked STILL NOT TRANSCRIBED above is a port-level
+    interpretation taken from the walkthroughs, not a transcription of
+    the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
 """
 
 FLOOR_NUMBER = 5

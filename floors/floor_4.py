@@ -44,18 +44,28 @@ WALKTHROUGH REPLAY
   on to 51 first.  The listing's room table has both routes open, so the
   jump is accepted from room 50 and from room 51.
 
-INFERRED, NOT TRANSCRIBED
--------------------------
-* SWIM needs both the filled pool (button in room 46) and the swimming
-  chapter of the book (room 47).  Both are in the walkthroughs; the
-  dependency on both is an interpretation.
-* JUMP is accepted from room 50 (Gunness) and from room 51 (Francis).
+    SOURCE-VERIFIED FROM THE LISTING (pixel transcription)
+    --------------------------------------------------
+    * SWIM is gated twice, in the listing itself.  Line 975: with SP=0
+      the game refuses (line 1000 prints "YOU CAN'T DO THAT NOW."); SP
+      is set by the button in room 46 (line 720 prints "CLICK"); and if
+      the book has not been read (BR=0) the game prints "YOU DON'T
+      KNOW HOW TO SWIM!".  The book in room 47 is the swimming chapter
+      (line 474 prints "HOW TO " then "SWIM" for A=47).
+    * The descent to floor 3 is the UMBRELLA.  Line 805: with the
+      umbrella in hand (I(39)=1) and open (UM=1) the game prints "YOU
+      FLOAT DOWN ONE FLOOR" and sets A=52.
+    * There is no JUMP verb.  DATA 2100/2110 hold 27 verbs and 27
+      codes; no verb maps to a JUMP or SWIM command.  How line 975 is
+      reached is still to be transcribed.
+    * STILL NOT TRANSCRIBED: the OPEN UMBRELLA body and the SWIM
+      dispatch, so "JUMP is accepted from room 50 and from room 51"
+      stays an interpretation.
 
-The handler code on listing pages 2-4 has not been transcribed yet, so the
-puzzle state machine below is reconstructed from the two published
-walkthroughs and from the items the listing actually places.  Everything
-listed under INFERRED above is a port-level interpretation, not a
-transcription of the magazine.
+    The handler code on listing pages 2-4 is only partly transcribed;
+    everything marked STILL NOT TRANSCRIBED above is a port-level
+    interpretation taken from the walkthroughs, not a transcription of
+    the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
 """
 
 FLOOR_NUMBER = 4

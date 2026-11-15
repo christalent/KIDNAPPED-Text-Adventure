@@ -1,0 +1,172 @@
+{
+ "359": {
+  "text": "PRINT#50;\"FLOUR\" ... (clipped right) / continuation: RINT\"SOME EXITS ARE: \";:FORB=1TO12:B(B)=0:NEXT",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "clipped"
+ },
+ "360": {
+  "text": "IFW>=0PRINT\" WEST\";:B(1)=W:B(2)=W",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "high"
+ },
+ "361": {
+  "text": "IF(A=41)X(FR=0)THEN363ELSEIFN>=0PRINT\" NORTH\";:B(3)=N:B(4)=N",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "high"
+ },
+ "362": {
+  "text": "IF(A=16)X(DF=0)THEN366ELSEIFE>=0PRINT\" EAST\";:B(5)=E:B(6)=E",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "high"
+ },
+ "363": {
+  "text": "IFS>=0PRINT\" SOUTH\";:B(7)=S:B(8)=S",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "high"
+ },
+ "364": {
+  "text": "IFU>=0PRINT\" UP\";:B(9)=U:B(10)=U",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "high"
+ },
+ "365": {
+  "text": "IFD>=0PRINT\" DOWN\";:B(11)=D:B(12)=D",
+  "crop": "p2l_359_366_hi.png",
+  "confidence": "high"
+ },
+ "388": {
+  "text": "IF(A=16)X(DP=0)THEN1500ELSEIF(A=14)X(PF=0)THEN1505ELSEIF(A=25)X(SC=0)THEN1510ELSEIF(A=35)X(PW=0)THEN1515ELSEIF(A=35)X(PW=1)T[...]",
+  "crop": "p2r_388_zoom.png",
+  "confidence": "partial-cropped"
+ },
+ "465": {
+  "text": "IF A=63 IF E$=\"KEY\" PRINT\"WE ALL KNOW PIANOS HAVE KEYS\"",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "468": {
+  "text": "... \"CUP OF WATER\" ... A=58 ...",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "474": {
+  "text": "IF E$=\"OOK\" PRINT\"TITLE OF BOOK: HOW TO \"; IF A=47 THEN PRINT\"SWIM\" ELSE IF A=64 PRINT\"WALK A TIGHTROPE\"",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "550": {
+  "text": "IF A=32 IF E$=\"LAR\" A$(57)=\"LONG STRING\": H$(57)=A$(57): A(57)=32: K1=57: K3=56: M$=\"\": GOSUB 1200",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "608": {
+  "text": "IF E$=\"DOW\" IF A=34 OR A=36 A=A-1: GOTO 300",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "610": {
+  "text": "IF E$=\"DGE\" IF A=7 THEN PRINT \"LEDGE BREAKS!\": GOTO 7200 ELSE IF A=33 OR A=35 A=A+1: GOTO 300",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "612": {
+  "text": "IF E$=\"IRS\" IF A=25 OR A=44 OR A=62 A=A+1: GOTO 8000",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "670": {
+  "text": "IF E$=\"IGN\" IF A=32 PRINT \"SIGN: STRING COSTS $1.00\": GOTO 5000",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "710": {
+  "text": "... SPRINKLER TURNED ON, FIRE OUT ... FR=1 ... WET CLOTHES ... A=42 ...",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "720": {
+  "text": "IF A=46 IF SP=0 PRINT\"CLICK\":SP=1:GOTO5000",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "730": {
+  "text": "PRINT\"NOTHING HAPPENS\":GOTO50[?]0",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "800": {
+  "text": "IF A=60 OR A=61 OR A=64 THEN 7100 ELSE IF A=34 OR A=36 IF I(25)=1 AND B0=2 THEN PRINT\"BALLOON CARRIES YOU DOWN ONE FLOOR\":A=43:GOTO800 ELSE 7100",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "805": {
+  "text": "IF I(39)=1 IF UM=1 THEN PRINT\"YOU FLOAT DOWN ONE FLOOR\":A=52:GOTO800 ELSE PRINT\"UMBRELLA WASN'T OPEN\":GOTO7100",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "975": {
+  "text": "IF SP=0 THEN 1000 ELSE IF A=49 THEN A=48:GOTO300 ELSE IF A=48 IF BR=0 THEN PRINT\"YOU DON'T KNOW HOW TO SWIM!\":GOTO720 ELSE A=49:GOTO4900",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "980": {
+  "text": "IF D(B)<>18 THEN 985 ELSE IF E$=\"ION\" IF I(44)=1 IF JK=1 THEN PRINT\"YOU'VE CHANGED BACK!\":JK=0:GOTO5000 ELSE 4900",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "995": {
+  "text": "IF D(B)<>21 THEN 1000 ELSE IF E$=\"OPE\" IF A=64 IF RS=0 PRINT\"TIE THE OTHER END FIRST\":GOTO5000 ELSE IF RS=1 THEN PRINT\"HOOK ON ROPE CATCHES HOOK NEAR ENTRANCE AND STRETCHES TIGHT\":RS=2:K3=54:M$=\"\":GOSUB1200:GOTO5000",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "1000": {
+  "text": "PRINT\"YOU CAN'T DO THAT NOW.\":GOTO390",
+  "crop": "(session transcript 2026-11-13)",
+  "confidence": "high"
+ },
+ "1500": {
+  "text": "PRINT\"THERE IS A PATH EAST, BUT A VISCOUS, SNARLING DOBERMAN BLOCKS YOUR WAY.\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "1505": {
+  "text": "PRINT\"AQUARIUM IS FULL OF PIRANHA FISH.\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "1510": {
+  "text": "PRINT\"THE STAIRCASE IS VERY ROTTEN AND ONE WOODEN STEP IS MISSING.\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "1515": {
+  "text": "PRINT\"KIDNAPPER IS COUNTING MONEY. HE DOESN'T SEE YOU YET.\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "1516": {
+  "text": "PRINT\"KIDNAPPER IS SCARED\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "1520": {
+  "text": "PRINT\"THERE IS A PATH NORTH, BUT A RAGING FIRE BLOCKS YOUR WAY.\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "1530": {
+  "text": "PRINT\"A LARGE SWIMMING POOL SPANS ACROSS THE ENTIRE ROOM, DIVIDING IT IN HALF. IT IS VERY DEEP AND IT IS EMPTY.\":GOTO390",
+  "crop": "p4l_1500_1530.png",
+  "confidence": "high"
+ },
+ "2100": {
+  "text": "DATA WEST,N,NORTH,N,EAST,E,SOUTH,S,UP,U,DOWN,D,GET,TAKE,DROP\n     ,PUT,GIVE,PAY,CLIMB,GO,ENTER,OPEN,READ,CHECK,WATCH,PRESS,PUSH,TA\n     PE,TIE,LIGHT,MAKE,GLUE,INFLATE,SHOOT,KNIT,DRINK,POUR,PLAY,THROW",
+  "crop": "p4r_data_2100.png",
+  "confidence": "high"
+ },
+ "2110": {
+  "text": "DATA 1,1,2,2,2,2,3,3,3,4,5,5,5,6,6,9,9,10,11,12,13,14,15,18,\n     19,20,21",
+  "crop": "p4r_data_2100.png",
+  "confidence": "high"
+ }
+}

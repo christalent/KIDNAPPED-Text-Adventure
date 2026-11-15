@@ -42,19 +42,19 @@ WALKTHROUGH REPLAY
   Gunness: the same chain, with CLIMB PLANT and CLIMB ROPE for the two
   climbs.
 
-INFERRED, NOT TRANSCRIBED
--------------------------
-* The plant needs the cup of water before it can be climbed, and the
-  flute makes the rope appear.  Both are in the walkthroughs; the exact
-  gating is an interpretation.
-* PLAY FLUTE creates the magic rope rather than the rope being a DATA
-  item: there is no rope in DATA for this floor.
+    SOURCE-VERIFIED FROM THE LISTING (pixel transcription)
+    --------------------------------------------------
+    * The cup of water is made at the water cooler.  Line 468 (room 58)
+      produces "CUP OF WATER" from the PAPER CUP.
+    * STILL NOT TRANSCRIBED: the plant gating body and the PLAY FLUTE
+      body (lines 460-490 GET region, 985-993 PLAY region), so the
+      claim that the flute creates the rope and that the plant needs
+      the water is still an interpretation.
 
-The handler code on listing pages 2-4 has not been transcribed yet, so the
-puzzle state machine below is reconstructed from the two published
-walkthroughs and from the items the listing actually places.  Everything
-listed under INFERRED above is a port-level interpretation, not a
-transcription of the magazine.
+    The handler code on listing pages 2-4 is only partly transcribed;
+    everything marked STILL NOT TRANSCRIBED above is a port-level
+    interpretation taken from the walkthroughs, not a transcription of
+    the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
 """
 
 FLOOR_NUMBER = 2

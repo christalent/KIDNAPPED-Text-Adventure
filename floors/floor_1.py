@@ -41,18 +41,25 @@ WALKTHROUGH REPLAY
            to the hook), CLIMB ROPE (you cross the pit), OPEN DOOR,
            GO DOOR (you have escaped!)
 
-INFERRED, NOT TRANSCRIBED
--------------------------
-* The piano yields the key ("well, pianos have keys!").  There is no
-  KEY in DATA on this floor, so it is a found object.
-* TIE ROPE needs the book read first; the book is described as
-  "How to walk a tightrope".
+    SOURCE-VERIFIED FROM THE LISTING (pixel transcription)
+    --------------------------------------------------
+    * The piano yields the key.  Line 465 (room 63, the piano lounge)
+      prints "WE ALL KNOW PIANOS HAVE KEYS" and hands the player a KEY;
+      there is no KEY in DATA on this floor, so it is a found object.
+    * The book in room 64 is the tightrope manual.  Line 474 prints
+      "TITLE OF BOOK: HOW TO " and, for A=64, "WALK A TIGHTROPE".
+      The same line, for A=47 on floor 4, prints "SWIM".
+    * The rope chain is TIE then THROW.  Line 995 (THROW) refuses with
+      "TIE THE OTHER END FIRST" while RS=0, and with RS=1 prints
+      "HOOK ON ROPE CATCHES HOOK NEAR ENTRANCE AND STRETCHES TIGHT"
+      and sets RS=2.
+    * STILL NOT TRANSCRIBED: the TIE handler body (lines 830-845) and
+      whether reading the book gates the TIE command.
 
-The handler code on listing pages 2-4 has not been transcribed yet, so the
-puzzle state machine below is reconstructed from the two published
-walkthroughs and from the items the listing actually places.  Everything
-listed under INFERRED above is a port-level interpretation, not a
-transcription of the magazine.
+    The handler code on listing pages 2-4 is only partly transcribed;
+    everything marked STILL NOT TRANSCRIBED above is a port-level
+    interpretation taken from the walkthroughs, not a transcription of
+    the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
 """
 
 FLOOR_NUMBER = 1
