@@ -427,14 +427,29 @@ class Floor4Engine:
         return self._orig__v_read(noun, loc)
 
     def _v_swim(self, noun, loc):
+        """Source: printed line 975 and line 1000.
+
+        975  IF SP=0 THEN 1000 ELSE IF A=49 THEN A=48:GOTO300 ELSE
+             IF A=48 IF BR=0 THEN PRINT"YOU DON'T KNOW HOW TO SWIM!":
+             GOTO7200 ELSE A=49:GOTO4900
+        1000 PRINT"YOU CAN'T DO THAT NOW.":GOTO390
+
+        Swimming from 49 to 48 is unconditional.  Swimming from 48 back to
+        49 needs BR=1 (the book read); without it the source does not
+        merely refuse, it jumps to 7200 and kills the player.
+        """
         if loc not in (48, 49):
             return "There is no water here.", False
         if not self.flags.get("filled"):
-            return "The pool is dry. You would need water in it.", False
+            return "You can't do that now.", False
+        if loc == 49:
+            self.state.location = 48
+            return ("You swim across to the shallow end of the pool.", False)
         if not self.flags.get("can_swim"):
-            return "You flail about and go under. You need to learn how to swim first.", False
+            self._vault_death("YOU DON'T KNOW HOW TO SWIM!")
+            return ("You don't know how to swim!", False)
         self.state.location = 49
-        return self._look(), False
+        return ("You swim out into the deep end of the pool.", False)
 
     def _v_open(self, noun, loc):
         if "UMBREL" in noun:
