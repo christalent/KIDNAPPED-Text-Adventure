@@ -49,8 +49,13 @@ variable `A=`.  The verb dispatcher keys off `D(B)`, the verb index.
 | | | 20 | PLAY |
 | | | 21 | THROW |
 
-**There is no SWIM verb and no JUMP verb.**  That is a hard finding, and it
-invalidates one port claim outright (see floor 4).  The codes skip 7, 8, 16 and
+**There is no SWIM verb and no JUMP verb** in the `DATA` verb table — but that
+does NOT mean the source lacks them.  The parser at **line 390** special-cases
+`LOOK`, `" JUMP"` → 800, `SWIM` → 975, and `WAIT` → 1050 *before* it ever
+consults `B$(1..12)` (directions) or `B$(13..39)` (the 27 ordinary verbs).
+So the source **does** implement a jump and a swim; the earlier "hard finding"
+was an artefact of reading only the verb table.  See
+`audit/F15_PIXEL_ROUND2.md` section 1.  The codes skip 7, 8, 16 and
 17, which is consistent with the magazine omitting those verbs.
 
 ## Floor-by-floor
@@ -95,16 +100,37 @@ Also confirmed: line 800 handles the balloon descent (`BALLOON CARRIES YOU DOWN 
 | KNIT CLOTHES (needles + yarn) replaces them | **CONFIRMED** | line 970 (KNIT) requires `I(32)=1` and `I(33)=1` plus `R=1`, prints `YOU HAVE KNITTED A FINE SUIT AND ARE WEARING IT` and sets `FR=2` |
 | the stairs refuse a naked player | **UNPROVEN** | the stairs handler is at line 612 (`IF E$="IRS" IF A=25 OR A=44 OR A=62 A=A+1: GOTO 8000`) with no `FR` test visible; the naked-player refusal may live in the 615-618 region, still unread |
 
-## Still to transcribe
+## Resolved in round 2 (see audit/F15_PIXEL_ROUND2.md)
 
 1. Lines 615-618 (p3L) - the floor 3 STEEL DOOR branch, the room 53 graffiti
    print, and any `FR` refusal on the stairs.
+   **RESOLVED (round 2)** for the steel door and graffiti: transcribed verbatim in
+   `audit/F15_PIXEL_ROUND2.md` (lines 616, 620, 650) and in `audit/F15_SOURCE_LINES.json`.
+   The `FR` refusal on the stairs is still unlocated, but the `FR` flag itself is now
+   pixel-confirmed: `710` sets `FR=1` ("YOU ARE NOW NAKED"), `970` sets `FR=2`
+   ("YOU HAVE KNITTED A FINE SUIT AND ARE WEARING IT"), and line `612` (the stairs
+   handler) contains no `FR` test - so the refusal, if it exists, is elsewhere.
 2. Lines 460-490 (p2R) - the GET region: plant, flute, piano key body.
+   **RESOLVED (round 2)**: line 465 (piano yields runtime item 56 = KEY), 468 (fill the
+   paper cup at the cooler -> item 57 = CUP OF WATER), 470-474 (item lookup and the
+   book-title print), 480 (the carry put). Transcribed verbatim in
+   `audit/F15_PIXEL_ROUND2.md` and `audit/F15_SOURCE_LINES.json`.
 3. Lines 985-993 (p4L) - the PLAY region: PLAY FLUTE, and how the SWIM
    command at 975 is reached when SWIM is not a verb.
+   **RESOLVED (round 2)**: 985 (POUR WATER -> plant grows, `PT=1`), 990 (PLAY FLUTE at
+   room 61 with flute 50 -> `R1=1` and rope item 56 appears), 993 (the "LIBERACE
+   YOU'RE NOT!" branch). And the SWIM question is answered outright: the parser at
+   line 390 dispatches the literal input `SWIM` to 975, so SWIM *is* a source command -
+   it is simply not one of the 27 `DATA` verbs.
 4. Line 800-810 header says "JMP command" - a typo'd JUMP?  Worth a
    high-zoom look, because it suggests the magazine does dispatch a JUMP
    somehow.
+   **RESOLVED (round 2)**: the listing's own printed comment reads *"Lines 800-810:
+   JMP command."* and the parser at line 390 dispatches the literal input
+   `" JUMP"` to handler 800. So the magazine's own label "JMP" is a typo for JUMP,
+   and the source **does** dispatch a jump command. The umbrella branch at 805
+   (`I(39)=1` and `UM=1` -> "YOU FLOAT DOWN ONE FLOOR", `A=52`) is what a jump
+   with an open umbrella does; line 810 is `GOTO730`.
 5. `BR` - where is it set?  It must be in the READ handler around 650-700.
 6. `R` - line 970 requires `R=1` for KNIT; find where R is set.
 

@@ -1,0 +1,106 @@
+{
+  "generated": "2026-11-15",
+  "purpose": "pixel-read queue for the six open source regions; OCR text is locator only",
+  "ocr_rule": "OCR reads printed digit 4 as 1; reverse it using the pixel number maps",
+  "e_semantics": "E$ = last 3 chars of the object word (source line 450)",
+  "composite_root": "/home/chris/projects/kidnap-decoder/open/comp",
+  "items": [
+    {
+      "id": "Q1",
+      "claim": "floor 3 steel door (line 616) / graffiti / FR stairs refusal",
+      "source_lines": "600-618",
+      "page": 3,
+      "column": "L",
+      "rows": [
+        16,
+        36
+      ],
+      "composites": [
+        "/home/chris/projects/kidnap-decoder/open/comp/c_3L_600_618.png"
+      ],
+      "ocr_locator": "615 E$=\"OOR\" A=55 SD=1 OR K=1 -> A=57 else \"IT'S STUCK! YOU'RE NOT STRONG ENOUGH TO OPEN IT\"",
+      "status": "queued"
+    },
+    {
+      "id": "Q2",
+      "claim": "GET region: piano key body (465), book title (474), cabinet (461)",
+      "source_lines": "450-490",
+      "page": 2,
+      "column": "R",
+      "rows": [
+        18,
+        57
+      ],
+      "composites": [
+        "/home/chris/projects/kidnap-decoder/open/comp/c_2R_450_475.png",
+        "/home/chris/projects/kidnap-decoder/open/comp/c_2R_476_490.png"
+      ],
+      "ocr_locator": "465 A=63 E$=\"KEY\" -> J=56 A$(56)=E$ A(56)=63; 474 E$=\"OOK\" A=47 SWIM / A=64 TIGHTROPE",
+      "status": "queued"
+    },
+    {
+      "id": "Q3",
+      "claim": "PLAY/POUR: plant water (985), play flute (990)",
+      "source_lines": "973-1000",
+      "page": 4,
+      "column": "L",
+      "rows": [
+        0,
+        20
+      ],
+      "composites": [
+        "/home/chris/projects/kidnap-decoder/open/comp/c_4L_973_993.png"
+      ],
+      "ocr_locator": "985 D(B)=19 POUR E$=\"TER\" A=59 I(57)=1; 990 D(B)=20 PLAY E$=\"UTE\" A=61 I(50)=1 R1=0",
+      "status": "queued"
+    },
+    {
+      "id": "Q4",
+      "claim": "descent block 800-810 (balloon/umbrella), no JUMP verb",
+      "source_lines": "800-850",
+      "page": 3,
+      "column": "R",
+      "rows": [
+        15,
+        36
+      ],
+      "composites": [
+        "/home/chris/projects/kidnap-decoder/open/comp/c_3R_800_845.png"
+      ],
+      "ocr_locator": "800 A=60/61/64 -> 7100; A=34/36 I(25)=1 BO=2 -> BALLOON CARRIES YOU DOWN ONE FLOOR A=43",
+      "status": "queued"
+    },
+    {
+      "id": "Q5",
+      "claim": "BR set by READ BOOK at 696 (I(38)=1)",
+      "source_lines": "650-696",
+      "page": 3,
+      "column": "L/R",
+      "rows": [
+        48,
+        56
+      ],
+      "composites": [
+        "/home/chris/projects/kidnap-decoder/open/comp/c_3L_648_670.png",
+        "/home/chris/projects/kidnap-decoder/open/comp/c_3R_670_700.png"
+      ],
+      "ocr_locator": "696 E$=\"OOK\" I(38)=1 -> GOTO 4900 (sets BR)",
+      "status": "queued"
+    },
+    {
+      "id": "Q6",
+      "claim": "KNIT gate is FR=1 (naked), not R=1",
+      "source_lines": "970",
+      "page": 3,
+      "column": "R",
+      "rows": [
+        50,
+        54
+      ],
+      "composites": [],
+      "ocr_locator": "970 D(B)=15 KNIT: IF FR=1 IF I(32)=1 IF I(33)=1 IF E$=\"HES\" -> \"YOU HAVE KNITTED A FINE SUIT...\" FR=2",
+      "status": "queued",
+      "note": "needs composite for p3R rows 50..54; run open/mkcomp2.py"
+    }
+  ]
+}
