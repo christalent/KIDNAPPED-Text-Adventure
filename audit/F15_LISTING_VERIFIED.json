@@ -1,0 +1,171 @@
+{
+  "artifact": "F15_ROUND4_LISTING_FINDINGS",
+  "date": "2026-11-15",
+  "source": "KIDNAPPED_OCR.txt (complete 744-line BASIC listing) + native 300-DPI raster",
+  "evidence_classes": [
+    "pixel+ocr",
+    "pixel",
+    "ocr+logic",
+    "ocr"
+  ],
+  "lines": [
+    {
+      "n": 390,
+      "text": "ON ERROR GOTO 3000:C=0:TM=TM+1:PRINT:PRINT\"WHAT DO YOU WANT TO DO\";:INPUT A$:IF DT=2 THEN 720 ELSE IF A$=\"LOOK\" THEN 300 ELSE IF A$=\" JUMP\" THEN 800 ELSE IF A$=\"SWIM\" THEN 975 ELSE IF A$=\"WAIT\" THEN 1050 ELSE PRINT:FOR B=1 TO 12:IF A$=B$(B) THEN 392 ELSE NEXT:GOTO394",
+      "evidence": "pixel+ocr",
+      "note": "LOOK/JUMP/SWIM/WAIT special-cased before 12 directions and 27 ordinary verbs"
+    },
+    {
+      "n": 600,
+      "text": "IF D(B)<>3 THEN 620 ELSE IF((A=16)X(E$=\"MAN\"))+((A=58)X(E$=\"TOR\")) THEN 7000 ELSE IF((A=41)X(E$=\"IRE\"))+((A=64)X(E$=\"AND\")) THEN 7200 ELSE IF A=25 AND E$=\"IRS\" AND SC=0 PRINT\"STEP IS MISSING! YOU FELL DOWN THE STAIRS\":GOTO7200",
+      "evidence": "ocr",
+      "note": "four E$ tokens unconfirmed by pixels"
+    },
+    {
+      "n": 607,
+      "text": "IF E$=\"IPE\" IF A=65 THEN A=64:GOTO300 ELSE IF RS=2 IF A=64 IF BR=1 THEN A=65:GOTO300 ELSE PRINT\"YOU DON'T KNOW HOW TO WALK A TIGHTROPE\":GOTO7200",
+      "evidence": "pixel+ocr",
+      "note": "tightrope gate is here, not at TIE (840)"
+    },
+    {
+      "n": 696,
+      "text": "IF E$=\"OOK\" IF I(38)=1 OR I(52)=1 THEN BR=1:GOTO4900",
+      "evidence": "ocr+logic",
+      "note": "BR=1 book-read flag set on reading book (38) or small book (52); BR read only at 607 and 975 so this must be the assignment"
+    },
+    {
+      "n": 710,
+      "text": "IF A=42 IF FR=0 PRINT\"SPRINKLER TURNS ON. [?] BUT YOUR CLOTHES ARE ALREADY WET AND YOU TAKE THEM OFF. YOU ARE NOW NAKED.\":FR=1:A$(57)=\"WET CLOTHES\":H$(57)=A$(57):A(57)=-42:GOTO5000",
+      "evidence": "ocr",
+      "note": "FR 0->1; WET CLOTHES item 57 placed at room 42; message wording damaged"
+    },
+    {
+      "n": 720,
+      "text": "IF A=46 IF SP=0 PRINT\"CLICK\":SP=1:GOTO5000",
+      "evidence": "ocr",
+      "note": "floor-4 pool button sets SP=1"
+    },
+    {
+      "n": 730,
+      "text": "PRINT\"NOTHING HAPPENS\":GOTO5000",
+      "evidence": "ocr"
+    },
+    {
+      "n": 800,
+      "text": "IF A=60 OR A=61 OR A=64 THEN 7100 ELSE IF A=34 OR A=36 IF I(25)=1 AND BO=2 THEN PRINT\"BALLOON CARRIES YOU DOWN ONE FLOOR\":A=43:GOTO8000 ELSE [?]",
+      "evidence": "ocr",
+      "note": "FINAL TOKEN OPEN: 7100 vs 805 vs 810"
+    },
+    {
+      "n": 805,
+      "text": "IF I(39)=1 IF UM=1 THEN PRINT\"YOU FLOAT DOWN ONE FLOOR\":A=52:GOTO[?] ELSE PRINT\"UMBRELLA WASN'T OPEN!\":GOTO7100",
+      "evidence": "ocr",
+      "note": "needs carrying umbrella (39) AND umbrella open (UM=1)"
+    },
+    {
+      "n": 810,
+      "text": "GOTO730",
+      "evidence": "ocr"
+    },
+    {
+      "n": 840,
+      "text": "TIE (unconditional)",
+      "evidence": "pixel",
+      "note": "TIE itself has no book check; the gate is at 607"
+    },
+    {
+      "n": 970,
+      "text": "IF D(B)<>15 THEN 980 ELSE IF FR=1 IF I(32)=1 IF I(33)=1 IF E$=\"[?]ES\" PRINT\"YOU HAVE KNITTED A FINE SUIT AND ARE WEARING IT\":FR=2:GOTO5000",
+      "evidence": "ocr",
+      "note": "KNIT needs sprinkler state FR=1 + yarn(32) + needles(33); E$ token open (LES/HES/IES)"
+    },
+    {
+      "n": 975,
+      "text": "IF SP=0 THEN 1000 ELSE IF A=49 THEN A=48:GOTO300 ELSE IF A=48 IF BR=0 THEN PRINT\"YOU DON'T KNOW HOW TO SWIM!\":GOTO7200 ELSE A=49:GOTO4900",
+      "evidence": "ocr+logic",
+      "note": "49->48 unconditional; 48->49 needs BR=1; failure is death via 7200"
+    },
+    {
+      "n": 1000,
+      "text": "PRINT\"YOU CAN'T DO THAT NOW.\":GOTO390",
+      "evidence": "ocr"
+    },
+    {
+      "n": 7200,
+      "text": "PRINT\"YOU SEEM TO HAVE GOTTEN YOURSELF KILLED!\"",
+      "evidence": "ocr",
+      "note": "OCR margin reads 720 with code starting 0 PRINT; printed label is 7200"
+    }
+  ],
+  "flag_semantics": {
+    "BR": {
+      "states": {
+        "1": "book read"
+      },
+      "reads_at": [
+        607,
+        975
+      ],
+      "set_at": [
+        696
+      ]
+    },
+    "FR": {
+      "states": {
+        "0": "pre-sprinkler",
+        "1": "post-sprinkler / naked / WET CLOTHES exists",
+        "2": "wearing knitted suit"
+      },
+      "set_at": [
+        710,
+        970
+      ],
+      "tested_at": [
+        710,
+        970
+      ]
+    },
+    "RS": {
+      "states": {
+        "0": "loose",
+        "1": "tied to stake",
+        "2": "stretched"
+      },
+      "note": "legend"
+    },
+    "SP": {
+      "states": {
+        "0": "not set",
+        "1": "button pressed"
+      },
+      "note": "pool button at room 46, line 720"
+    },
+    "UM": {
+      "states": {
+        "0": "closed",
+        "1": "open"
+      },
+      "note": "OPEN UMBRELLA, line 630"
+    },
+    "I(32)": "yarn",
+    "I(33)": "needles",
+    "I(39)": "umbrella",
+    "I(38)": "book",
+    "I(52)": "small book"
+  },
+  "open_items": [
+    "printed 800 final token (7100 / 805 / 810)",
+    "printed 970 E$ token (LES / HES / IES)",
+    "printed 710 message wording",
+    "printed 7100 refusal text",
+    "printed 600 four E$ tokens",
+    "printed 650 graffiti strings re-confirmation"
+  ],
+  "port_changes_owed": [
+    "floor_5: KNIT drops R=1 book-read gate, requires FR=1 (sprinkler) + yarn + needles, sets FR=2",
+    "floor_4: SWIM 49->48 unconditional; 48->49 gated on book read; failure is death; SP=0 -> YOU CAN'T DO THAT NOW",
+    "floor_3: graffiti text must be GRAFFITI: DO YOU HAVE A SPLIT PERSONALITY?",
+    "audit/FLOORS_1_5_SOURCE_HANDLERS.md: drop obsolete FR=1=naked reading and KNIT-requires-R=1 claim",
+    "audit/F15_SOURCE_LINES.json: merge round-4 lines"
+  ]
+}
