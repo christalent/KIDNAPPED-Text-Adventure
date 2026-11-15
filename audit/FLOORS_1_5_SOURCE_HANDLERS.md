@@ -164,3 +164,17 @@ premise in the old `rowdump2.py` was wrong - the source raster is exactly
   "steel door / strong man" wording was invented and has been removed.
 * Full evidence: `audit/F15_ROUND4_LISTING_FINDINGS.md`,
   `audit/F15_LISTING_VERIFIED.json`.
+
+### Divergence still open (needs a decision, not a blind patch)
+
+* The source has **one** book-read flag, `BR=1`, set at printed 696 by reading
+  either book (`I(38)` or `I(52)`) and read at 607 (tightrope) and 975 (SWIM).
+  The port keeps two flags, `know_rope` (floor 1) and `can_swim` (floor 4).
+  In the printed listing, reading the floor-1 book also sets `BR=1`, and the
+  printed book title itself is room-dependent: line 474 prints
+  `TITLE OF BOOK: HOW TO ` then `SWIM` for A=47 and `WALK A TIGHTROPE` for
+  A=64.  Unifying the two port flags is a gameplay change (a player who has
+  read either book can do both), so it is flagged rather than forced.
+* `E$` at printed 970 is unresolved between `HES` (CLOTHES), `LES` (NEEDLES)
+  and `IES`; the port accepts both `CLOTH...` and a noun ending in `THE`,
+  which covers the plausible readings without a risky narrowing.

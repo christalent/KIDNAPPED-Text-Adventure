@@ -167,5 +167,10 @@
     "floor_3: graffiti text must be GRAFFITI: DO YOU HAVE A SPLIT PERSONALITY?",
     "audit/FLOORS_1_5_SOURCE_HANDLERS.md: drop obsolete FR=1=naked reading and KNIT-requires-R=1 claim",
     "audit/F15_SOURCE_LINES.json: merge round-4 lines"
+  ],
+  "divergences_open": [
+    "source has one book-read flag BR=1 (set 696, read 607/975); port uses know_rope (floor1) + can_swim (floor4)",
+    "printed 474 prints book title by room: 'SWIM' at A=47, 'WALK A TIGHTROPE' at A=64",
+    "printed 970 E$ token unresolved: HES / LES / IES"
   ]
 }

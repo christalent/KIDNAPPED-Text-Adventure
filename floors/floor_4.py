@@ -426,6 +426,28 @@ class Floor4Engine:
                     "wedged in the middle. Now you know how to swim."), False
         return self._orig__v_read(noun, loc)
 
+
+    def _swim_death(self, message, extra=""):
+        """Printed GOTO7200 / GOTO7300 from line 975.
+
+        The source does not merely refuse: failing the swim check prints
+        "YOU DON'T KNOW HOW TO SWIM!" and jumps to 7200, which kills the
+        player, then to 7300 for the restart text.
+        """
+        try:
+            self.state.alive = False
+        except Exception:
+            pass
+        try:
+            self.state.game_over = True
+        except Exception:
+            pass
+        parts = [message]
+        if extra:
+            parts.append(extra)
+        parts.append("YOU SEEM TO HAVE GOTTEN YOURSELF KILLED!")
+        parts.append("TO TRY AGAIN YOU'LL HAVE TO START OVER FROM THE 9TH FLOOR.")
+        return "\n".join(parts)
     def _v_swim(self, noun, loc):
         """Source: printed line 975 and line 1000.
 
@@ -446,8 +468,7 @@ class Floor4Engine:
             self.state.location = 48
             return ("You swim across to the shallow end of the pool.", False)
         if not self.flags.get("can_swim"):
-            self._vault_death("YOU DON'T KNOW HOW TO SWIM!")
-            return ("You don't know how to swim!", False)
+            return (self._swim_death("YOU DON'T KNOW HOW TO SWIM!"), False)
         self.state.location = 49
         return ("You swim out into the deep end of the pool.", False)
 

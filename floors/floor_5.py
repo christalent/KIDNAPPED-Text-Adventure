@@ -429,6 +429,11 @@ class Floor5Engine:
             return "You need something to knit with.", False
         if not self._has("BALL OF YARN"):
             return "You need yarn to knit with.", False
+        # Source 970: KNIT requires FR=1 -- the sprinkler has already run
+        # (FR=0 pre-sprinkler, FR=1 naked/wet, FR=2 wearing the suit).
+        # It does NOT require having read a book (that is BR=1).
+        if not (self.flags.get("doused") or self.flags.get("soaked")):
+            return ("You are dry and dressed. There is nothing to knit yet.", False)
         if self.flags.get("clothed"):
             return "You are already dressed.", False
         self.flags["clothed"] = True

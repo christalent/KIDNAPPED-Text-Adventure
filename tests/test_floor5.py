@@ -195,6 +195,12 @@ def test_fire_blocks_north_until_doused():
 # --- 8. knitting ------------------------------------------------------
 def test_knit_needs_needles_and_yarn():
     state, engine = fresh_engine(location=39)
+    # Printed 970: KNIT is gated on FR=1, so the sprinkler must have
+    # already run (the source pops FR=1 there, sets FR=2 when the suit
+    # is knitted).  It is not gated on having read a book.
+    engine.flags["doused"] = True
+    engine.flags["soaked"] = True
+    engine.flags.pop("clothed", None)
     text, _ = cmd(engine, "KNIT", "CLOTHES")
     assert "knit" in text.lower(), text
     state.inventory.append("KNITTING NEEDLES")
