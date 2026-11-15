@@ -71,6 +71,10 @@ room 43 and Gunness at the same room, then they diverge and rejoin.
     everything marked STILL NOT TRANSCRIBED above is a port-level
     interpretation taken from the walkthroughs, not a transcription of
     the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
+
+    ROUND 4 (printed 970): KNIT is gated on FR=1 (the sprinkler has run and
+    you are naked), plus yarn (32) and needles (33) -- not on having read a
+    book.  FR=2 afterwards means the knitted suit is being worn.
 """
 
 FLOOR_NUMBER = 5

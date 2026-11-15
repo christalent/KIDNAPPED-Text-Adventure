@@ -141,3 +141,26 @@ cuts native-pixel bands from the extracted page rasters; `vision_analyze` on
 those crops is the only trustworthy transcription path.  The 3000-DPI render
 premise in the old `rowdump2.py` was wrong - the source raster is exactly
 300 DPI, so higher-DPI renders only interpolate.
+
+## Round 4 corrections (supersede earlier claims in this file)
+
+* **`FR` is not "naked".** `FR` is a three-state flag: `0` pre-sprinkler,
+  `1` post-sprinkler (naked, and the `WET CLOTHES` item 57 exists at room
+  42), `2` wearing the knitted suit.  Uses: set at 710 and 970, tested at
+  710 and 970.  Any earlier note here reading "`FR=1` means naked" or
+  "`FR=1`/`FR=2` are the suit states" is superseded.
+* **`KNIT` does not require having read a book.**  Printed 970 requires
+  `FR=1` (the sprinkler has run) plus `I(32)=1` (yarn) and `I(33)=1`
+  (needles).  The earlier "`KNIT` requires `R=1`" claim is wrong.
+* **The book-read flag is `BR`,** set at printed 696
+  (`IF E$="OOK" IF I(38)=1 OR I(52)=1 THEN BR=1:GOTO4900`) and read only at
+  607 (tightrope) and 975 (SWIM).  Reading a book sets `BR=1`.
+* **SWIM is asymmetric and fatal on failure.**  Printed 975: `SP=0` ->
+  "YOU CAN'T DO THAT NOW." (1000); from room 49 -> 48 unconditionally; from
+  room 48 -> needs `BR=1`, and `BR=0` prints "YOU DON'T KNOW HOW TO SWIM!"
+  and jumps to 7200 (death), it does not merely refuse.
+* **Floor-3 graffiti text.**  The source string is
+  `GRAFFITI: DO YOU HAVE A SPLIT PERSONALITY?`; the earlier
+  "steel door / strong man" wording was invented and has been removed.
+* Full evidence: `audit/F15_ROUND4_LISTING_FINDINGS.md`,
+  `audit/F15_LISTING_VERIFIED.json`.

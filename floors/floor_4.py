@@ -46,26 +46,42 @@ WALKTHROUGH REPLAY
 
     SOURCE-VERIFIED FROM THE LISTING (pixel transcription)
     --------------------------------------------------
-    * SWIM is gated twice, in the listing itself.  Line 975: with SP=0
-      the game refuses (line 1000 prints "YOU CAN'T DO THAT NOW."); SP
-      is set by the button in room 46 (line 720 prints "CLICK"); and if
-      the book has not been read (BR=0) the game prints "YOU DON'T
-      KNOW HOW TO SWIM!".  The book in room 47 is the swimming chapter
-      (line 474 prints "HOW TO " then "SWIM" for A=47).
+    * SWIM AND JUMP ARE SOURCE COMMANDS.  The parser at line 390
+      special-cases them before it ever consults the verb table:
+      ...IF A$="LOOK" THEN 300 ELSE IF A$=" JUMP" THEN 800 ELSE
+      IF A$="SWIM" THEN 975 ELSE IF A$="WAIT" THEN 1050...
+      DATA 2100/2110 holds only the 27 ordinary verbs, so a search of
+      the verb table cannot find SWIM or JUMP.  An earlier audit note
+      claiming "there is no JUMP verb" was WRONG - it had read only the
+      verb table and missed the parser's special cases.  The listing's
+      own printed comment for lines 800-810 reads "JMP command.", a
+      typo for JUMP.  See audit/F15_PIXEL_ROUND2.md section 1.
+    * SWIM, line 975: IF SP=0 THEN 1000 (refusal, line 1000 prints
+      "YOU CAN'T DO THAT NOW.") ELSE IF A=49 THEN A=48 (room 49 -> room
+      48, no know-how needed) ELSE IF A=48 IF BR=0 THEN PRINT"YOU DON'T
+      KNOW HOW TO SWIM!":GOTO7200 (death) ELSE A=49 (room 48 -> room 49
+      requires BR=1, the know-how flag).  SP is set by the button in
+      room 46 (line 720 prints "CLICK").
     * The descent to floor 3 is the UMBRELLA.  Line 805: with the
       umbrella in hand (I(39)=1) and open (UM=1) the game prints "YOU
       FLOAT DOWN ONE FLOOR" and sets A=52.
-    * There is no JUMP verb.  DATA 2100/2110 hold 27 verbs and 27
-      codes; no verb maps to a JUMP or SWIM command.  How line 975 is
-      reached is still to be transcribed.
-    * STILL NOT TRANSCRIBED: the OPEN UMBRELLA body and the SWIM
-      dispatch, so "JUMP is accepted from room 50 and from room 51"
-      stays an interpretation.
+    * OPEN UMBRELLA, line 630: IF I(39)=1 IF E$="LLA" ... UM=1 - the
+      flag is UM and the item is MARY POPPIN'S UMBRELLA.
+    * The book in room 47 is the swimming chapter (line 474 prints
+      "HOW TO " then "SWIM" for A=47); the same line prints "WALK A
+      TIGHTROPE" for A=64 on floor 1.
 
-    The handler code on listing pages 2-4 is only partly transcribed;
-    everything marked STILL NOT TRANSCRIBED above is a port-level
-    interpretation taken from the walkthroughs, not a transcription of
-    the magazine.  See audit/FLOORS_1_5_SOURCE_HANDLERS.md.
+    ONE FLOOR-4 CLAIM IS STILL AN INTERPRETATION: which rooms may be
+    jumped from.  The parser's " JUMP" branch reaches 800, and the
+    listed branch for floor-4 rooms is not yet pixel-confirmed, so
+    "JUMP is accepted from room 50 and from room 51" remains a
+    walkthrough-derived reading rather than a transcription.  See
+    audit/FLOORS_1_5_SOURCE_HANDLERS.md and audit/F15_PIXEL_ROUND2.md.
+
+    ROUND 4 (printed 970/975): FR is a THREE-state flag -- 0 pre-sprinkler,
+    1 post-sprinkler (naked, WET CLOTHES item 57 at room 42), 2 wearing the
+    knitted suit.  FR is not "naked" by itself and KNIT is not gated on
+    having read a book.  BR (book read) is a separate flag, set at 696.
 """
 
 FLOOR_NUMBER = 4

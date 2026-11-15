@@ -382,7 +382,7 @@ class Floor3Engine:
                 return "There is no graffiti here.", False
             self.flags["read_graffiti"] = True
             return ("The graffiti is a child's scrawl: 'THE STEEL DOOR ONLY OPENS FOR THE\n"
-                    "STRONG MAN. THE BIG MAN DRINKS THE FLUID.'"), False
+                    "GRAFFITI: DO YOU HAVE A SPLIT PERSONALITY?"), False
         return self._orig__v_read(noun, loc)
 
     def _v_drink(self, noun, loc):
