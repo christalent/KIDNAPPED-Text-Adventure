@@ -423,7 +423,12 @@ class Floor5Engine:
         return self._v_press(noun, loc)
 
     def _v_knit(self, noun, loc):
-        if not ("CLOTH" in noun or noun.endswith("THE")):
+        # Source 970, pixel read (audit/F15_ROUND5_PIXEL_READS.md):
+        #     IF E$="HES"
+        # E$ is the last three characters of the object, so the source
+        # accepts CLOTHES and rejects CLOTH / CLOTHS.  FR=1 is tested
+        # further down, in source order.
+        if not noun.upper().rstrip().endswith("HES"):
             return "You can't knit that.", False
         if not self._has("KNITTING NEEDLES"):
             return "You need something to knit with.", False

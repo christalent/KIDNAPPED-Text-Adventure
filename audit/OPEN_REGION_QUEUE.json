@@ -19,7 +19,8 @@
         "/home/chris/projects/kidnap-decoder/open/comp/c_3L_600_618.png"
       ],
       "ocr_locator": "615 E$=\"OOR\" A=55 SD=1 OR K=1 -> A=57 else \"IT'S STUCK! YOU'RE NOT STRONG ENOUGH TO OPEN IT\"",
-      "status": "queued"
+      "status": "partial",
+      "round5_2026-11-16": "617 read (new). 616 still unread. 650 head read, tail open."
     },
     {
       "id": "Q2",
@@ -36,7 +37,8 @@
         "/home/chris/projects/kidnap-decoder/open/comp/c_2R_476_490.png"
       ],
       "ocr_locator": "465 A=63 E$=\"KEY\" -> J=56 A$(56)=E$ A(56)=63; 474 E$=\"OOK\" A=47 SWIM / A=64 TIGHTROPE",
-      "status": "queued"
+      "status": "partial",
+      "round5_2026-11-16": "465 and 474 read. 461 (cabinet) still unread."
     },
     {
       "id": "Q3",
@@ -52,7 +54,8 @@
         "/home/chris/projects/kidnap-decoder/open/comp/c_4L_973_993.png"
       ],
       "ocr_locator": "985 D(B)=19 POUR E$=\"TER\" A=59 I(57)=1; 990 D(B)=20 PLAY E$=\"UTE\" A=61 I(50)=1 R1=0",
-      "status": "queued"
+      "status": "partial",
+      "round5_2026-11-16": "985 and 990 read: gates confirmed, message tails cropped."
     },
     {
       "id": "Q4",
@@ -68,7 +71,8 @@
         "/home/chris/projects/kidnap-decoder/open/comp/c_3R_800_845.png"
       ],
       "ocr_locator": "800 A=60/61/64 -> 7100; A=34/36 I(25)=1 BO=2 -> BALLOON CARRIES YOU DOWN ONE FLOOR A=43",
-      "status": "queued"
+      "status": "open",
+      "round5_2026-11-16": "800 head read (IF A=60 OR A=61 OR A=64 THEN 7100 ...); tail (ELSE 7100/805/810) not read."
     },
     {
       "id": "Q5",
@@ -85,7 +89,8 @@
         "/home/chris/projects/kidnap-decoder/open/comp/c_3R_670_700.png"
       ],
       "ocr_locator": "696 E$=\"OOK\" I(38)=1 -> GOTO 4900 (sets BR)",
-      "status": "queued"
+      "status": "open",
+      "round5_2026-11-16": "696 not re-read this round; composite crop transcription was not captured."
     },
     {
       "id": "Q6",
@@ -99,8 +104,9 @@
       ],
       "composites": [],
       "ocr_locator": "970 D(B)=15 KNIT: IF FR=1 IF I(32)=1 IF I(33)=1 IF E$=\"HES\" -> \"YOU HAVE KNITTED A FINE SUIT...\" FR=2",
-      "status": "queued",
-      "note": "needs composite for p3R rows 50..54; run open/mkcomp2.py"
+      "status": "resolved",
+      "note": "needs composite for p3R rows 50..54; run open/mkcomp2.py",
+      "round5_2026-11-16": "970 read: IF D(B)<>15 THEN 980 ELSE IF FR=1 IF I(32)=1 IF I(33)=1 IF E$=\"HES\" PRINT."
     }
   ]
 }

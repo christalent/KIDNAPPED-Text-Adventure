@@ -523,6 +523,54 @@
       "text": "PRINT\"YOU SEEM TO HAVE GOTTEN YOURSELF KILLED!\"",
       "evidence": "ocr",
       "note": "OCR margin reads 720 with code starting 0 PRINT; printed label is 7200"
+    },
+    {
+      "n": 617,
+      "text": "IF$=\"IDE\" IF A=57 PRINT\"YOU SLIDE THROUGH HOLE IN FLOOR\":A=58",
+      "source": "pixel-raster",
+      "crop": "open/lines/3L_617.png",
+      "read_date": "2026-11-16",
+      "round": 5
+    },
+    {
+      "n": 650,
+      "text": "IF D(B)>5 THEN 700 ELSE IF S=\"ITI\" IF A=6 THEN PRINT\"GRAFFITI! WATCH",
+      "source": "pixel-raster",
+      "crop": "open/lines/3L_650.png",
+      "read_date": "2026-11-16",
+      "round": 5
+    },
+    {
+      "n": 465,
+      "text": "IF A=63 IF$=\"KEY\" PRINT\"WE ALL KNOW PIANOS HAVE KEYS\":J=56:A$(",
+      "source": "pixel-raster",
+      "crop": "open/lines/2R_465.png",
+      "read_date": "2026-11-16",
+      "round": 5
+    },
+    {
+      "n": 474,
+      "text": "IF E$=\"OOK\" PRINT\"TITLE OF BOOK; HOW TO \";;IF A=47 THEN PRINT\"SHI",
+      "source": "pixel-raster",
+      "crop": "open/lines/2R_474.png",
+      "read_date": "2026-11-16",
+      "round": 5
+    },
+    {
+      "n": 985,
+      "text": "IF D(B)<>19 THEN 990 ELSE IF A=59 IF E$=\"TER\" IF I(57)=1 PRINT\"PLANT GR",
+      "source": "pixel-raster",
+      "crop": "open/lines/4L_985.png",
+      "read_date": "2026-11-16",
+      "round": 5
+    },
+    {
+      "n": 990,
+      "text": "IF D(B)<>20 THEN 995 ELSE SET IF S=\"UTE\" IF A=61 IF I(50)=1 IF R1=0 PRINT\"IN",
+      "source": "pixel-raster",
+      "crop": "open/lines/4L_990.png",
+      "read_date": "2026-11-16",
+      "round": 5
     }
   ]
 }
